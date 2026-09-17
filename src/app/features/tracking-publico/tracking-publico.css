@@ -1,0 +1,165 @@
+.tracking {
+  padding: 50px 20px;
+}
+
+.tracking-container {
+  width: 90%;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.tracking-header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.tracking-header h2 {
+  margin-bottom: 10px;
+  font-size: 32px;
+}
+
+.tracking-header p {
+  margin: 0;
+  color: #666;
+}
+
+.tracking-form {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 30px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.form-group input {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #333;
+}
+
+.tracking-form button {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.error-message {
+  margin: -5px 0 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+
+/* RESULTADO */
+
+.resultado {
+  margin-top: 25px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 25px;
+}
+
+.resultado-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.resultado-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #666;
+  font-size: 13px;
+}
+
+.resultado-header strong {
+  font-size: 18px;
+}
+
+.estado {
+  padding: 8px 14px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.resultado-datos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding-top: 20px;
+}
+
+.resultado-datos div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.resultado-datos span {
+  color: #666;
+  font-size: 13px;
+}
+
+.resultado-datos strong {
+  font-size: 15px;
+}
+
+
+/* NAVEGACIÓN */
+
+.tracking-help {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.tracking-help p {
+  margin: 0 0 8px;
+  color: #666;
+}
+
+.tracking-help a {
+  text-decoration: none;
+  font-weight: 600;
+  color: inherit;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 600px) {
+
+  .resultado-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .resultado-datos {
+    grid-template-columns: 1fr;
+  }
+
+}

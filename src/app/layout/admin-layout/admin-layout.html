@@ -1,0 +1,44 @@
+<header class="admin-header">
+
+  <div class="admin-container">
+
+    <h1>
+      <a routerLink="/admin/dashboard">
+        Gestión de Envíos
+      </a>
+    </h1>
+
+    <span class="admin-role">
+      Administrador
+    </span>
+
+    <nav>
+      <a routerLink="/admin/dashboard">
+        Dashboard
+      </a>
+
+      <a routerLink="/admin/paquetes">
+        Paquetes
+      </a>
+
+      <button
+        type="button"
+        (click)="cerrarSesion()"
+      >
+        Cerrar sesión
+      </button>
+    </nav>
+
+  </div>
+
+</header>
+
+<main class="admin-main">
+
+  <div class="admin-container">
+
+    <router-outlet />
+
+  </div>
+
+</main>

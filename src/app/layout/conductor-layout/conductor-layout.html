@@ -1,0 +1,44 @@
+<header class="conductor-header">
+
+  <div class="conductor-container">
+
+    <h1>
+      <a routerLink="/conductor/asignaciones">
+        Gestión de Envíos
+      </a>
+    </h1>
+
+    <span class="conductor-role">
+      Conductor
+    </span>
+
+    <nav>
+      <a routerLink="/conductor/asignaciones">
+        Mis asignaciones
+      </a>
+
+      <a routerLink="/conductor/lote">
+        Detalle de lote
+      </a>
+
+      <button
+        type="button"
+        (click)="cerrarSesion()"
+      >
+        Cerrar sesión
+      </button>
+    </nav>
+
+  </div>
+
+</header>
+
+<main class="conductor-main">
+
+  <div class="conductor-container">
+
+    <router-outlet />
+
+  </div>
+
+</main>

@@ -1,0 +1,81 @@
+.asignaciones {
+  width: 100%;
+}
+
+.asignaciones-header {
+  margin-bottom: 30px;
+}
+
+.asignaciones-header h2 {
+  margin: 0 0 8px;
+  font-size: 32px;
+}
+
+.asignaciones-header p {
+  margin: 0;
+  color: #666;
+}
+
+.asignaciones-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.asignacion-card {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 20px;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 25px;
+}
+
+.asignacion-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.asignacion-info h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.asignacion-info strong {
+  font-size: 16px;
+}
+
+.asignacion-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.estado {
+  font-weight: 600;
+}
+
+@media (max-width: 800px) {
+  .asignacion-card {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 500px) {
+  .asignacion-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detalle-button {
+  display: inline-block;
+  padding: 10px 16px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  text-decoration: none;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: inherit;
+}

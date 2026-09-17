@@ -1,0 +1,80 @@
+<section class="login">
+
+  <div class="login-container">
+
+    <div class="login-header">
+
+      <span class="login-role">
+        Conductor
+      </span>
+
+      <h2>Conductor Login</h2>
+
+      <p>
+        Ingresa tus credenciales para acceder a tus rutas y entregas.
+      </p>
+
+    </div>
+
+    <form
+      class="login-form"
+      (ngSubmit)="iniciarSesion()"
+    >
+
+      <div class="form-group">
+
+        <label for="correo">
+          Correo electrónico
+        </label>
+
+        <input
+          id="correo"
+          name="correo"
+          type="email"
+          placeholder="Ingresa tu correo"
+          [(ngModel)]="correo"
+          required
+        />
+
+      </div>
+
+      <div class="form-group">
+
+        <label for="contrasena">
+          Contraseña
+        </label>
+
+        <input
+          id="contrasena"
+          name="contrasena"
+          type="password"
+          placeholder="Ingresa tu contraseña"
+          [(ngModel)]="contrasena"
+          required
+        />
+
+      </div>
+
+      @if (error) {
+        <p class="login-error">
+          {{ error }}
+        </p>
+      }
+
+      <button type="submit">
+        Iniciar sesión
+      </button>
+
+    </form>
+
+    <div class="login-footer">
+
+      <a routerLink="/">
+        Volver al inicio
+      </a>
+
+    </div>
+
+  </div>
+
+</section>

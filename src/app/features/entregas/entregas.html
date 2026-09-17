@@ -1,0 +1,347 @@
+<section class="detalle-lote">
+
+  <div class="detalle-header">
+
+    <div>
+
+      <h2>
+        Detalle de lote
+      </h2>
+
+      <p>
+        Consulta los paquetes incluidos en el lote asignado.
+      </p>
+
+    </div>
+
+    <span class="estado-lote">
+      {{ lote.estado }}
+    </span>
+
+  </div>
+
+
+  <div class="lote-resumen">
+
+    <div class="resumen-item">
+
+      <span>
+        Lote
+      </span>
+
+      <strong>
+        {{ lote.id }}
+      </strong>
+
+    </div>
+
+
+    <div class="resumen-item">
+
+      <span>
+        Zona
+      </span>
+
+      <strong>
+        {{ lote.zona }}
+      </strong>
+
+    </div>
+
+
+    <div class="resumen-item">
+
+      <span>
+        Total de paquetes
+      </span>
+
+      <strong>
+        {{ lote.totalPaquetes }}
+      </strong>
+
+    </div>
+
+  </div>
+
+
+  <div class="paquetes-section">
+
+    <h3>
+      Paquetes del lote
+    </h3>
+
+
+    <div class="paquetes-list">
+
+
+      @if (lote.id === 'LOTE-2026-001') {
+
+        <article class="paquete-card">
+
+          <div>
+
+            <span class="paquete-label">
+              Tracking
+            </span>
+
+            <strong>
+              ENV-2026-00118
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span class="paquete-label">
+              Destino
+            </span>
+
+            <span>
+              Miraflores
+            </span>
+
+          </div>
+
+
+          <div>
+
+            <span class="paquete-label">
+              Estado
+            </span>
+
+            <span>
+              Asignado
+            </span>
+
+          </div>
+
+        </article>
+
+
+        <article class="paquete-card">
+
+          <div>
+
+            <span class="paquete-label">
+              Tracking
+            </span>
+
+            <strong>
+              ENV-2026-00119
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span class="paquete-label">
+              Destino
+            </span>
+
+            <span>
+              Miraflores
+            </span>
+
+          </div>
+
+
+          <div>
+
+            <span class="paquete-label">
+              Estado
+            </span>
+
+            <span>
+              Asignado
+            </span>
+
+          </div>
+
+        </article>
+
+
+        <article class="paquete-card">
+
+          <div>
+
+            <span class="paquete-label">
+              Tracking
+            </span>
+
+            <strong>
+              ENV-2026-00120
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span class="paquete-label">
+              Destino
+            </span>
+
+            <span>
+              Miraflores
+            </span>
+
+          </div>
+
+
+          <div>
+
+            <span class="paquete-label">
+              Estado
+            </span>
+
+            <span>
+              Asignado
+            </span>
+
+          </div>
+
+        </article>
+
+      }
+
+
+      @if (lote.id === 'LOTE-2026-002') {
+
+        <article class="paquete-card">
+
+          <div>
+
+            <span class="paquete-label">
+              Tracking
+            </span>
+
+            <strong>
+              ENV-2026-00121
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span class="paquete-label">
+              Destino
+            </span>
+
+            <span>
+              San Isidro
+            </span>
+
+          </div>
+
+
+          <div>
+
+            <span class="paquete-label">
+              Estado
+            </span>
+
+            <span>
+              En ruta
+            </span>
+
+          </div>
+
+        </article>
+
+
+        <article class="paquete-card">
+
+          <div>
+
+            <span class="paquete-label">
+              Tracking
+            </span>
+
+            <strong>
+              ENV-2026-00122
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span class="paquete-label">
+              Destino
+            </span>
+
+            <span>
+              San Isidro
+            </span>
+
+          </div>
+
+
+          <div>
+
+            <span class="paquete-label">
+              Estado
+            </span>
+
+            <span>
+              En ruta
+            </span>
+
+          </div>
+
+        </article>
+
+
+        <article class="paquete-card">
+
+          <div>
+
+            <span class="paquete-label">
+              Tracking
+            </span>
+
+            <strong>
+              ENV-2026-00123
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span class="paquete-label">
+              Destino
+            </span>
+
+            <span>
+              San Isidro
+            </span>
+
+          </div>
+
+
+          <div>
+
+            <span class="paquete-label">
+              Estado
+            </span>
+
+            <span>
+              Entregado
+            </span>
+
+          </div>
+
+        </article>
+
+      }
+
+
+    </div>
+
+  </div>
+
+</section>

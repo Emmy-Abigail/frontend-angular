@@ -1,0 +1,45 @@
+.header {
+  border-bottom: 1px solid #ddd;
+  padding: 20px 0;
+}
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h1 {
+  margin: 0;
+}
+
+nav {
+  display: flex;
+  gap: 20px;
+}
+
+nav a {
+  text-decoration: none;
+}
+
+.main {
+  min-height: 70vh;
+  padding: 60px 0;
+}
+
+.footer {
+  border-top: 1px solid #ddd;
+  padding: 20px 0;
+  text-align: center;
+}
+
+.header h1 a {
+  text-decoration: none;
+  color: inherit;
+}

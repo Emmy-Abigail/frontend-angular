@@ -1,0 +1,372 @@
+<section class="paquetes">
+
+  <div class="paquetes-header">
+
+    <div>
+      <h2>Gestión de paquetes</h2>
+
+      <p>
+        Consulta y administra los paquetes registrados.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      (click)="abrirFormulario()"
+    >
+      Nuevo paquete
+    </button>
+
+  </div>
+
+
+  @if (mostrarFormulario) {
+
+    <div class="formulario-container">
+
+      <div class="formulario-header">
+
+        <div>
+          <h3>Nuevo paquete</h3>
+
+          <p>
+            Registra los datos del nuevo paquete.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="cerrar-button"
+          (click)="cerrarFormulario()"
+        >
+          Cerrar
+        </button>
+
+      </div>
+
+
+      @if (errorFormulario) {
+
+        <div class="error-message">
+          {{ errorFormulario }}
+        </div>
+
+      }
+
+
+      <form
+        class="paquete-form"
+        (ngSubmit)="agregarPaquete()"
+      >
+
+        <div class="form-row">
+
+          <div class="form-group">
+
+            <label for="nuevo-tracking">
+              Código de seguimiento
+            </label>
+
+            <input
+              id="nuevo-tracking"
+              name="tracking"
+              type="text"
+              placeholder="Ej. ENV-2026-00126"
+              [(ngModel)]="nuevoPaquete.tracking"
+              required
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="nuevo-cliente">
+              Cliente
+            </label>
+
+            <input
+              id="nuevo-cliente"
+              name="cliente"
+              type="text"
+              placeholder="Nombre del cliente"
+              [(ngModel)]="nuevoPaquete.cliente"
+              required
+            />
+
+          </div>
+
+        </div>
+
+
+        <div class="form-row">
+
+          <div class="form-group">
+
+            <label for="nuevo-origen">
+              Origen
+            </label>
+
+            <input
+              id="nuevo-origen"
+              name="origen"
+              type="text"
+              placeholder="Lugar de origen"
+              [(ngModel)]="nuevoPaquete.origen"
+              required
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="nuevo-destino">
+              Destino
+            </label>
+
+            <input
+              id="nuevo-destino"
+              name="destino"
+              type="text"
+              placeholder="Lugar de destino"
+              [(ngModel)]="nuevoPaquete.destino"
+              required
+            />
+
+          </div>
+
+        </div>
+
+
+        <div class="form-row">
+
+          <div class="form-group">
+
+            <label for="nuevo-estado">
+              Estado
+            </label>
+
+            <select
+              id="nuevo-estado"
+              name="estado"
+              [(ngModel)]="nuevoPaquete.estado"
+            >
+
+              <option value="En Almacén">
+                En Almacén
+              </option>
+
+              <option value="Asignado">
+                Asignado
+              </option>
+
+              <option value="En Ruta">
+                En Ruta
+              </option>
+
+              <option value="Entregado">
+                Entregado
+              </option>
+
+              <option value="Fallido">
+                Fallido
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="nueva-fecha">
+              Fecha
+            </label>
+
+            <input
+              id="nueva-fecha"
+              name="fecha"
+              type="date"
+              [(ngModel)]="nuevoPaquete.fecha"
+              required
+            />
+
+          </div>
+
+        </div>
+
+
+        <div class="form-actions">
+
+          <button
+            type="button"
+            class="secondary-button"
+            (click)="cerrarFormulario()"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="primary-button"
+          >
+            Guardar paquete
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  }
+
+
+  <div class="filters">
+
+    <div class="form-group">
+
+      <label for="tracking">
+        Código de seguimiento
+      </label>
+
+      <input
+        id="tracking"
+        type="text"
+        placeholder="Buscar por código"
+        [(ngModel)]="filtroTracking"
+      />
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label for="estado">
+        Estado
+      </label>
+
+      <select
+        id="estado"
+        [(ngModel)]="filtroEstado"
+      >
+
+        <option value="">
+          Todos los estados
+        </option>
+
+        <option value="En Almacén">
+          En Almacén
+        </option>
+
+        <option value="Asignado">
+          Asignado
+        </option>
+
+        <option value="En Ruta">
+          En Ruta
+        </option>
+
+        <option value="Entregado">
+          Entregado
+        </option>
+
+        <option value="Fallido">
+          Fallido
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div class="filter-actions">
+
+      <button
+        type="button"
+        (click)="limpiarFiltros()"
+      >
+        Limpiar filtros
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <div class="table-container">
+
+    <table>
+
+      <thead>
+
+        <tr>
+          <th>Tracking</th>
+          <th>Cliente</th>
+          <th>Origen</th>
+          <th>Destino</th>
+          <th>Estado</th>
+          <th>Fecha</th>
+        </tr>
+
+      </thead>
+
+
+      <tbody>
+
+        @for (paquete of paquetesFiltrados; track paquete.tracking) {
+
+          <tr>
+
+            <td>
+              {{ paquete.tracking }}
+            </td>
+
+            <td>
+              {{ paquete.cliente }}
+            </td>
+
+            <td>
+              {{ paquete.origen }}
+            </td>
+
+            <td>
+              {{ paquete.destino }}
+            </td>
+
+            <td>
+              {{ paquete.estado }}
+            </td>
+
+            <td>
+              {{ paquete.fecha }}
+            </td>
+
+          </tr>
+
+        }
+
+
+        @if (paquetesFiltrados.length === 0) {
+
+          <tr>
+
+            <td
+              colspan="6"
+              class="empty-message"
+            >
+              No se encontraron paquetes.
+            </td>
+
+          </tr>
+
+        }
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</section>
