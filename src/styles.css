@@ -1,1 +1,13 @@
-/* You can add global styles to this file, and also import other style files */
+/* ==========================================================================
+   GLOBAL STYLES — Sistema de Gestión de Envíos
+   Arquitectura modular:
+     styles/_tokens.css     -> variables de diseño (colores, tipografía, etc.)
+     styles/_base.css       -> reset y estilos base de elementos nativos
+     styles/_utilities.css  -> clases compartidas por varios componentes
+   Cada feature/layout conserva su propio .css con estilos scoped al
+   componente, consumiendo estas variables para mantener consistencia.
+   ========================================================================== */
+
+@import './styles/_tokens.css';
+@import './styles/_base.css';
+@import './styles/_utilities.css';

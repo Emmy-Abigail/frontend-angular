@@ -1,11 +1,16 @@
 .admin-header {
-  border-bottom: 1px solid #ddd;
-  padding: 20px 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  padding: 16px 0;
 }
 
 .admin-container {
   width: 90%;
-  max-width: 1200px;
+  max-width: var(--content-max-width);
   margin: 0 auto;
 }
 
@@ -18,45 +23,68 @@
 .admin-header h1 {
   margin: 0;
   margin-right: auto;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-extrabold);
+  letter-spacing: -0.02em;
 }
 
 .admin-header h1 a {
   text-decoration: none;
-  color: inherit;
+  color: var(--color-text);
 }
 
 .admin-role {
-  font-size: 14px;
-  color: #666;
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-200);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-primary);
 }
 
 nav {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-6);
 }
 
 nav a {
   text-decoration: none;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast);
+}
+
+nav a:hover {
+  color: var(--color-primary);
 }
 
 nav button {
-  padding: 9px 14px;
-  border: 1px solid #333;
-  border-radius: 6px;
-  background: transparent;
-  font-size: 14px;
-  font-weight: 600;
+  padding: 9px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
   cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
 }
 
 nav button:hover {
-  background: #f5f5f5;
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger-border);
+  color: var(--color-danger);
 }
 
 .admin-main {
   min-height: 70vh;
-  padding: 40px 0;
+  padding: 40px 0 60px;
+  background: var(--color-bg);
 }
 
 @media (max-width: 700px) {

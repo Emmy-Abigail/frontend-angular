@@ -7,30 +7,23 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
+  gap: var(--space-4);
 }
 
 .detalle-header h2 {
   margin: 0 0 8px;
-  font-size: 32px;
+  font-size: var(--fs-2xl);
 }
 
 .detalle-header p {
   margin: 0;
-  color: #666;
-}
-
-.estado-lote {
-  padding: 8px 14px;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 600;
+  color: var(--color-text-secondary);
 }
 
 .lote-resumen {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: var(--space-5);
   margin-bottom: 40px;
 }
 
@@ -38,38 +31,50 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
   padding: 20px;
 }
 
 .resumen-item span {
-  color: #666;
-  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
 }
 
 .resumen-item strong {
-  font-size: 18px;
+  font-size: var(--fs-lg);
+  color: var(--color-text);
 }
 
 .paquetes-section h3 {
   margin-bottom: 15px;
+  font-size: var(--fs-lg);
 }
 
 .paquetes-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: var(--space-4);
 }
 
 .paquete-card {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 20px;
+  gap: var(--space-5);
   align-items: center;
-  border: 1px solid #ddd;
-  border-radius: 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
   padding: 20px;
+  transition: box-shadow var(--transition-fast);
+}
+
+.paquete-card:hover {
+  box-shadow: var(--shadow-sm);
 }
 
 .paquete-card > div {
@@ -78,9 +83,17 @@
   gap: 6px;
 }
 
+.paquete-card strong {
+  color: var(--color-text);
+  font-size: var(--fs-md);
+}
+
 .paquete-label {
-  color: #666;
-  font-size: 13px;
+  color: var(--color-text-muted);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 @media (max-width: 700px) {
