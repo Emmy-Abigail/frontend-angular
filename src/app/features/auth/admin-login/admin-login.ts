@@ -13,8 +13,13 @@ export class AdminLogin {
   correo = '';
   contrasena = '';
   error = '';
+  mostrarContrasena = false;
 
   constructor(private router: Router) {}
+
+  alternarContrasena() {
+    this.mostrarContrasena = !this.mostrarContrasena;
+  }
 
   iniciarSesion() {
     if (
