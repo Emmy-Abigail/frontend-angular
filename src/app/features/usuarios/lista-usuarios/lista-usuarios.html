@@ -1,0 +1,146 @@
+<div class="page-container">
+
+  <!-- Encabezado de página según Visily Pantalla 12 -->
+  <div class="page-header">
+    <div class="header-text">
+      <h1 class="page-title">Personal Registrado</h1>
+      <p class="page-subtitle">Operadores y Conductores registrados</p>
+    </div>
+  </div>
+
+  <!-- Barra de Filtros y Acción -->
+  <div class="toolbar-row">
+    <div class="filters-left">
+      <div class="filter-item">
+        <label for="filtroRol">Rol</label>
+        <select id="filtroRol" [(ngModel)]="filtroRol" (change)="cargarUsuarios()">
+          <option value="Todos">Todos</option>
+          <option value="OPERADOR">Operador</option>
+          <option value="CONDUCTOR">Conductor</option>
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <label for="filtroEstado">Estado</label>
+        <select id="filtroEstado" [(ngModel)]="filtroEstado">
+          <option value="Todos">Todos</option>
+          <option value="Activo">Activo</option>
+          <option value="Inactivo">Inactivo</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="actions-right">
+      <a routerLink="/admin/usuarios/nuevo" class="btn-nuevo-usuario">
+        Nuevo Usuario
+      </a>
+    </div>
+  </div>
+
+  <!-- Tabla de Personal Registrado -->
+  <div class="table-container">
+
+    @if (cargando) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <span>Cargando lista de personal...</span>
+      </div>
+    } @else if (usuariosFiltrados.length === 0) {
+      <div class="empty-state">
+        <p>No hay personal registrado que coincida con los filtros seleccionados.</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>NOMBRE</th>
+              <th>DNI</th>
+              <th>CORREO</th>
+              <th>ROLE</th>
+              <th>SEDE/VEHÍCULO</th>
+              <th>ESTADO</th>
+              <th class="col-action">ACCIÓN</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of usuariosFiltrados; track user.id) {
+              <tr>
+                <td class="col-nombre font-semibold">{{ user.nombres }}</td>
+                <td class="col-dni">{{ user.dni || '—' }}</td>
+                <td class="col-correo">{{ user.correo }}</td>
+                <td>
+                  <span
+                    class="role-pill"
+                    [class.role-operador]="user.rol === 'OPERADOR'"
+                    [class.role-conductor]="user.rol === 'CONDUCTOR'"
+                  >
+                    {{ user.rol === 'OPERADOR' ? 'Operador' : 'Conductor' }}
+                  </span>
+                </td>
+                <td class="col-meta">
+                  {{ user.sede_nombre || user.tipo_vehiculo || '—' }}
+                </td>
+                <td class="col-estado">
+                  {{ user.activo ? 'Activo' : 'Inactivo' }}
+                </td>
+                <td class="col-action">
+                  <button
+                    type="button"
+                    class="btn-link-action"
+                    [disabled]="cambiandoEstadoId === user.id"
+                    (click)="solicitarCambioEstado(user)"
+                  >
+                    @if (cambiandoEstadoId === user.id) {
+                      <span>...</span>
+                    } @else if (user.activo) {
+                      <span>Desactivar</span>
+                    } @else {
+                      <span>Activar</span>
+                    }
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  </div>
+
+</div>
+
+<!-- Modal Flotante de Confirmación para Desactivar Usuario (Visily Pantalla 13) -->
+@if (usuarioADesactivar) {
+  <div class="modal-backdrop">
+    <div class="modal-card">
+
+      <div class="modal-badge-container">
+        <div class="modal-check-badge">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#5c67f2" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+      </div>
+
+      <h2 class="modal-confirm-title">
+        ¿Desactivar a {{ usuarioADesactivar.nombres }}?
+      </h2>
+
+      <p class="modal-confirm-subtitle">
+        {{ usuarioADesactivar.nombres }} · {{ usuarioADesactivar.rol === 'OPERADOR' ? 'Operador' : 'Conductor' }} · {{ usuarioADesactivar.sede_nombre || usuarioADesactivar.tipo_vehiculo || 'Asignado' }}
+      </p>
+
+      <div class="modal-confirm-actions">
+        <button type="button" class="btn-cancel" (click)="cerrarModalDesactivar()">
+          Cancel
+        </button>
+        <button type="button" class="btn-confirm" (click)="confirmarDesactivacion()">
+          Confirm
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

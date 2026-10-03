@@ -1,80 +1,152 @@
-<section class="login">
+<div class="mobile-viewport">
 
-  <div class="login-container">
+  <div class="mobile-shell">
 
-    <div class="login-header">
+    <!-- Barra de estado simulada móvil (Visily) -->
+    <div class="status-bar">
+      <span class="status-time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+          <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L12 22l7.03-4.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/>
+        </svg>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+          <path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/>
+        </svg>
+      </div>
+    </div>
 
-      <span class="login-role">
-        Conductor
-      </span>
+    <!-- Marca e icono de camión de reparto (Visily pág 14) -->
+    <div class="mobile-brand">
+      <div class="truck-badge">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="3" width="15" height="13"></rect>
+          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+          <circle cx="5.5" cy="18.5" r="2.5"></circle>
+          <circle cx="18.5" cy="18.5" r="2.5"></circle>
+        </svg>
+      </div>
+      <span class="brand-caption">ECOSISTEMA RIVA</span>
+    </div>
 
-      <h2>Conductor Login</h2>
+    <div class="login-card">
 
-      <p>
-        Ingresa tus credenciales para acceder a tus rutas y entregas.
-      </p>
+      <!-- Encabezado de la pantalla -->
+      <div class="screen-title-row">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#38bdf8" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+        <h1>ACCESO DE CONDUCTOR</h1>
+      </div>
+
+      <!-- Alerta estilo Visily dark (pág 14) -->
+      @if (error) {
+        <div class="dark-alert">
+          <button type="button" class="dark-alert-close" (click)="error = ''">×</button>
+          <div class="dark-alert-body">
+            <span class="dark-alert-title">CREDENCIALES INCORRECTAS</span>
+            <p>{{ error }}</p>
+          </div>
+        </div>
+      }
+
+      @if (sessionExpired) {
+        <div class="dark-alert">
+          <button type="button" class="dark-alert-close" (click)="sessionExpired = false">×</button>
+          <div class="dark-alert-body">
+            <span class="dark-alert-title">SESIÓN EXPIRADA</span>
+            <p>Su token de acceso ha caducado. Por seguridad, ingrese nuevamente.</p>
+          </div>
+        </div>
+      }
+
+      <!-- Formulario para móvil -->
+      <form class="mobile-form" (ngSubmit)="iniciarSesion()">
+
+        <div class="input-block">
+          <label for="correo">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            CORREO ELECTRÓNICO
+          </label>
+          <input
+            id="correo"
+            name="correo"
+            type="email"
+            placeholder="Ej. luis.ramos@rivap.pe"
+            [(ngModel)]="correo"
+            [disabled]="cargando"
+            required
+          />
+        </div>
+
+        <div class="input-block">
+          <div class="input-label-row">
+            <label for="contrasena">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              CONTRASEÑA
+            </label>
+            <a routerLink="/recuperar" class="link-forgot">¿Olvidaste tu clave?</a>
+          </div>
+
+          <div class="input-with-eye">
+            <input
+              id="contrasena"
+              name="contrasena"
+              [type]="mostrarContrasena ? 'text' : 'password'"
+              placeholder="••••••••"
+              [(ngModel)]="contrasena"
+              [disabled]="cargando"
+              required
+            />
+            <button
+              type="button"
+              class="eye-btn"
+              (click)="alternarContrasena()"
+              [attr.aria-label]="mostrarContrasena ? 'Ocultar' : 'Mostrar'"
+            >
+              @if (mostrarContrasena) {
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              } @else {
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              }
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login-mobile" [disabled]="cargando">
+          @if (cargando) {
+            <span>INGRESANDO...</span>
+          } @else {
+            <span>INGRESAR</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          }
+        </button>
+
+      </form>
 
     </div>
 
-    <form
-      class="login-form"
-      (ngSubmit)="iniciarSesion()"
-    >
-
-      <div class="form-group">
-
-        <label for="correo">
-          Correo electrónico
-        </label>
-
-        <input
-          id="correo"
-          name="correo"
-          type="email"
-          placeholder="Ingresa tu correo"
-          [(ngModel)]="correo"
-          required
-        />
-
-      </div>
-
-      <div class="form-group">
-
-        <label for="contrasena">
-          Contraseña
-        </label>
-
-        <input
-          id="contrasena"
-          name="contrasena"
-          type="password"
-          placeholder="Ingresa tu contraseña"
-          [(ngModel)]="contrasena"
-          required
-        />
-
-      </div>
-
-      @if (error) {
-        <p class="login-error">
-          {{ error }}
-        </p>
-      }
-
-      <button type="submit">
-        Iniciar sesión
-      </button>
-
-    </form>
-
-    <div class="login-footer">
-
-      <a routerLink="/">
-        Volver al inicio
-      </a>
-
+    <!-- Footer móvil -->
+    <div class="mobile-footer">
+      <span class="footer-copy">© 2026 RIVA</span>
+      <span class="footer-sub">Uso restringido a personal de logística autorizado.</span>
     </div>
 
   </div>
 
-</section>
+</div>

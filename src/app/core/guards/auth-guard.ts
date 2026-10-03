@@ -1,36 +1,45 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+import { AuthService } from '../services/auth';
 
 export const authGuard: CanActivateFn = (route) => {
   const router = inject(Router);
+  const authService = inject(AuthService);
 
-  const rol = route.data['rol'];
-  const sesion = localStorage.getItem('sesion');
+  const token = localStorage.getItem('token');
+  const user = authService.currentUser();
+  const requiredRol = route.data['rol'];
 
-  if (!sesion) {
-    if (rol === 'admin') {
-      return router.parseUrl('/login/admin');
-    }
-
-    if (rol === 'conductor') {
+  if (!token || !user) {
+    if (requiredRol === 'conductor' || requiredRol === 'CONDUCTOR') {
       return router.parseUrl('/login/conductor');
     }
-
-    return router.parseUrl('/');
+    return router.parseUrl('/login/admin');
   }
 
-  const sesionData = JSON.parse(sesion);
+  if (requiredRol) {
+    const userRol = (user.rol || '').toUpperCase();
+    const targetRol = (requiredRol || '').toUpperCase();
 
-  if (sesionData.rol !== rol) {
-    if (sesionData.rol === 'admin') {
-      return router.parseUrl('/admin/dashboard');
+    const isMatch =
+      userRol === targetRol ||
+      (targetRol === 'ADMIN' && userRol === 'ADMINISTRADOR') ||
+      (targetRol === 'ADMINISTRADOR' && userRol === 'ADMIN') ||
+      (targetRol === 'OPERADOR' && (userRol === 'OPERADOR' || userRol === 'ORGANIZADOR')) ||
+      (targetRol === 'CONDUCTOR' && (userRol === 'CONDUCTOR' || userRol === 'CHOFER'));
+
+    if (!isMatch) {
+      if (userRol === 'ADMINISTRADOR' || userRol === 'ADMIN') {
+        return router.parseUrl('/admin/usuarios');
+      }
+      if (userRol === 'OPERADOR') {
+        return router.parseUrl('/operador');
+      }
+      if (userRol === 'CONDUCTOR') {
+        return router.parseUrl('/conductor/mis-lotes');
+      }
+      return router.parseUrl('/');
     }
-
-    if (sesionData.rol === 'conductor') {
-      return router.parseUrl('/conductor/asignaciones');
-    }
-
-    return router.parseUrl('/');
   }
 
   return true;

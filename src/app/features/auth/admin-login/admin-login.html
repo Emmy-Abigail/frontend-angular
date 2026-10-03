@@ -1,137 +1,139 @@
-<section class="login">
+<section class="login-wrapper">
 
-  <div class="login-topbar"></div>
+  <div class="login-backdrop"></div>
 
   <div class="login-card">
 
     <div class="login-brand">
-
-      <span class="login-brand-icon">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2 3 6.5v11L12 22l9-4.5v-11L12 2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-          <path d="M3 6.5 12 11l9-4.5M12 11v11" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <div class="brand-badge">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2 3 6.5v11L12 22l9-4.5v-11L12 2Z" stroke="#3b82f6" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M3 6.5 12 11l9-4.5M12 11v11" stroke="#3b82f6" stroke-width="2" stroke-linejoin="round"/>
         </svg>
-      </span>
-
-      <span class="login-brand-name">RIVA</span>
-
+      </div>
+      <h2 class="brand-title">RIVA</h2>
     </div>
 
     <div class="login-header">
-
-      <h1>Acceso Administrativo</h1>
-
-      <p>Gestión de Envíos v1.0</p>
-
+      <h1>Acceso al Sistema</h1>
+      <p class="subtitle">GESTIÓN DE ENVÍOS V1.0</p>
     </div>
 
-    <form
-      class="login-form"
-      (ngSubmit)="iniciarSesion()"
-    >
+    <!-- Alerta de Credenciales Incorrectas (Visily pág 34) -->
+    @if (error) {
+      <div class="visily-alert alert-danger">
+        <button type="button" class="alert-dismiss" (click)="error = ''" aria-label="Cerrar">×</button>
+        <div class="alert-content">
+          <span class="alert-heading">CREDENCIALES INCORRECTAS</span>
+          <p class="alert-message">{{ error }}</p>
+        </div>
+      </div>
+    }
+
+    <!-- Alerta de Sesión Expirada (Visily pág 35) -->
+    @if (sessionExpired) {
+      <div class="visily-alert alert-warning">
+        <button type="button" class="alert-dismiss" (click)="sessionExpired = false" aria-label="Cerrar">×</button>
+        <div class="alert-content">
+          <span class="alert-heading">SESIÓN EXPIRADA</span>
+          <p class="alert-message">Su token de acceso ha caducado. Por seguridad, ingrese nuevamente.</p>
+        </div>
+      </div>
+    }
+
+    <form class="login-form" (ngSubmit)="iniciarSesion()">
 
       <div class="form-group">
-
         <label for="correo">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8"/>
-            <path d="M4 20c1.5-3.5 4.8-5.5 8-5.5s6.5 2 8 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
           </svg>
-          Nombre de Usuario
+          Correo Electrónico
         </label>
-
         <input
           id="correo"
           name="correo"
-          type="text"
-          placeholder="Ej. admin_logistic"
+          type="email"
+          placeholder="Ej. ana@riva.pe"
           [(ngModel)]="correo"
+          [disabled]="cargando"
           required
         />
-
       </div>
 
       <div class="form-group">
-
-        <div class="login-field-row">
-
+        <div class="password-label-row">
           <label for="contrasena">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="5" y="10.5" width="14" height="9.5" rx="2" stroke="currentColor" stroke-width="1.8"/>
-              <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.8"/>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
             Contraseña
           </label>
-
-          <a class="login-forgot" href="javascript:void(0)">
+          <a class="forgot-link" routerLink="/recuperar">
             ¿Olvidó su contraseña?
           </a>
-
         </div>
 
-        <div class="login-password-field">
-
+        <div class="password-input-wrap">
           <input
             id="contrasena"
             name="contrasena"
             [type]="mostrarContrasena ? 'text' : 'password'"
             placeholder="••••••••"
             [(ngModel)]="contrasena"
+            [disabled]="cargando"
             required
           />
 
           <button
             type="button"
-            class="login-toggle-password"
+            class="toggle-eye"
             (click)="alternarContrasena()"
-            [attr.aria-label]="mostrarContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            [attr.aria-label]="mostrarContrasena ? 'Ocultar' : 'Mostrar'"
           >
             @if (mostrarContrasena) {
-              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 3l18 18M10.6 10.6a2.8 2.8 0 0 0 3.95 3.95M9.5 5.2A10.6 10.6 0 0 1 12 5c5 0 8.6 3.4 10 7-0.5 1.3-1.3 2.6-2.3 3.7M6.6 6.6C4.4 8 2.9 9.9 2 12c1.4 3.6 5 7 10 7 1.2 0 2.4-0.2 3.5-0.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
               </svg>
             } @else {
-              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2 12c1.4-3.6 5-7 10-7s8.6 3.4 10 7c-1.4 3.6-5 7-10 7s-8.6-3.4-10-7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
               </svg>
             }
           </button>
-
         </div>
-
       </div>
 
-      @if (error) {
-        <p class="login-error">
-          {{ error }}
-        </p>
-      }
-
-      <button type="submit" class="login-submit">
-        Entrar al Sistema
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+      <button type="submit" class="submit-btn" [disabled]="cargando">
+        @if (cargando) {
+          <span>Ingresando...</span>
+        } @else {
+          <span>Entrar al Sistema</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        }
       </button>
 
     </form>
 
     <div class="login-footer">
-
-      <div class="login-secure">
-        <svg viewBox="0 0 24 24" width="13" h eight="13" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 3 5 6v5.5c0 4.4 3 8 7 9 4-1 7-4.6 7-9V6l-7-3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-          <path d="m9.5 12 1.8 1.8L14.8 10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <div class="secure-badge">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
         </svg>
-        Conexión segura bajo protocolo SSL de 256 bits
+        <span>CONEXIÓN SEGURA</span>
       </div>
 
-      <p class="login-copy">
-        © 2026 LogisticAdmin Pro. Todos los derechos reservados.<br>
+      <p class="copyright-text">
+        © 2026 RIVA Todos los derechos reservados.<br>
         Acceso restringido únicamente a personal autorizado.
       </p>
-
     </div>
 
   </div>

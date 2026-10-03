@@ -1,22 +1,22 @@
-import { Component } from '@angular/core';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth';
 
 @Component({
-  imports: [RouterLink, RouterOutlet],
+  standalone: true,
+  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet],
   selector: 'app-admin-layout',
   styleUrl: './admin-layout.css',
   templateUrl: './admin-layout.html',
 })
 export class AdminLayout {
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  readonly currentUser = this.authService.currentUser;
 
   cerrarSesion(): void {
     this.authService.cerrarSesion();
-    this.router.navigate(['/login/admin']);
   }
 }
