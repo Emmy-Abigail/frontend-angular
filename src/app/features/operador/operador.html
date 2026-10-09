@@ -1,0 +1,115 @@
+<div class="admin-layout-container">
+
+  <!-- Sidebar del Operador (Visily Pantalla 14) -->
+  <aside class="sidebar">
+
+    <!-- Brand / Logo -->
+    <div class="sidebar-header">
+      <div class="brand-cube">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#ffffff" stroke-width="2">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+          <line x1="12" y1="22.08" x2="12" y2="12"></line>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">RIVA</span>
+        <span class="brand-version">Pro v1.0</span>
+      </div>
+    </div>
+
+    <!-- Menú de Operador -->
+    <nav class="sidebar-nav">
+      <a href="javascript:void(0)" class="nav-item">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="16"></line>
+          <line x1="8" y1="12" x2="16" y2="12"></line>
+        </svg>
+        <span>Registro de Paquete</span>
+      </a>
+
+      <a href="javascript:void(0)" class="nav-item">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <span>Consulta de Paquetes</span>
+      </a>
+
+      <a href="javascript:void(0)" class="nav-item">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        <span>Gestión de Lotes</span>
+      </a>
+
+      <a href="javascript:void(0)" class="nav-item">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+        <span>Dashboard</span>
+      </a>
+    </nav>
+
+    <!-- Perfil del usuario en la parte inferior -->
+    <div class="sidebar-footer">
+      <div class="user-chip" (click)="cerrarSesion()" title="Haga clic para cerrar sesión">
+        <div class="avatar-badge">
+          <span>OP</span>
+        </div>
+        <div class="user-details">
+          <span class="user-name">{{ currentUser()?.nombres || 'Operador' }}</span>
+          <span class="user-email">{{ currentUser()?.correo || 'operador@riva.pe' }}</span>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- Contenido Principal -->
+  <div class="main-wrapper">
+
+    <!-- Header superior según Visily Pantalla 14 -->
+    <header class="top-header">
+      <div class="header-breadcrumb">
+        <span>Inicio</span>
+      </div>
+
+      <div class="header-profile-badge">
+        <div class="profile-avatar-circle">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#334155" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <div class="profile-info-column">
+          <span class="profile-user-name">{{ currentUser()?.nombres || 'Ana Torres' }}</span>
+          <span class="profile-user-sede">{{ currentUser()?.sede?.nombre || 'Sede Sur' }}</span>
+        </div>
+        <button type="button" class="btn-logout-mini" (click)="cerrarSesion()" title="Cerrar sesión">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Área de trabajo: Pantalla Temporal (Visily 14) -->
+    <main class="page-body">
+      <div class="temporal-screen-content">
+        <h1 class="temporal-title">Pantalla Temporal</h1>
+        <p class="temporal-desc">Pronto podrás registrar paquetes y armar lotes desde el menú</p>
+      </div>
+    </main>
+
+  </div>
+
+</div>

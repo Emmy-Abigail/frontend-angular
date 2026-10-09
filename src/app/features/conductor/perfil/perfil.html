@@ -1,0 +1,46 @@
+<div class="perfil-view">
+
+  <!-- Header de pantalla (Visily Pantalla 17) -->
+  <header class="view-header">
+    <h1>MI PERFIL</h1>
+  </header>
+
+  <div class="view-content">
+
+    <!-- Tarjeta de Perfil -->
+    <div class="profile-card">
+
+      <div class="avatar-large">
+        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#1e293b" stroke-width="1.75">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+
+      <h2 class="profile-name">
+        {{ currentUser()?.nombres || 'Luis Ramos' }}
+      </h2>
+      <p class="profile-email">
+        {{ currentUser()?.correo || 'luis.ramos@riva.pe' }}
+      </p>
+
+      <div class="profile-specs">
+        <div class="spec-row">
+          <span class="spec-label">Vehículo</span>
+          <span class="spec-val">Motorizado</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-label">Capacidad</span>
+          <span class="spec-val">20 kg · 40 cm</span>
+        </div>
+      </div>
+
+      <button type="button" class="btn-logout-conductor" (click)="cerrarSesion()">
+        Cerrar Sesión
+      </button>
+
+    </div>
+
+  </div>
+
+</div>

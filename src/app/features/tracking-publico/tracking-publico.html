@@ -1,0 +1,132 @@
+<section class="tracking">
+
+  <div class="tracking-container">
+
+    <div class="tracking-header">
+
+      <h2>Rastrea tu envío</h2>
+
+      <p>
+        Ingresa tu código de seguimiento para consultar el estado de tu envío.
+      </p>
+
+    </div>
+
+
+    <form
+      class="tracking-form"
+      (ngSubmit)="consultarEnvio()"
+    >
+
+      <div class="form-group">
+
+        <label for="codigo">
+          Código de seguimiento
+        </label>
+
+        <input
+          id="codigo"
+          name="codigo"
+          type="text"
+          placeholder="Ej. ENV-2026-00125"
+          [(ngModel)]="codigo"
+        />
+
+      </div>
+
+
+      @if (error) {
+
+        <p class="error-message">
+          {{ error }}
+        </p>
+
+      }
+
+
+      <button type="submit">
+        Consultar envío
+      </button>
+
+    </form>
+
+
+    @if (mostrarResultado) {
+
+      <div class="resultado">
+
+        <div class="resultado-header">
+
+          <div>
+            <span class="resultado-label">
+              Código de seguimiento
+            </span>
+
+            <strong>
+              ENV-2026-00125
+            </strong>
+          </div>
+
+          <span class="estado">
+            En Ruta
+          </span>
+
+        </div>
+
+
+        <div class="resultado-datos">
+
+          <div>
+            <span>
+              Origen
+            </span>
+
+            <strong>
+              Lima
+            </strong>
+          </div>
+
+
+          <div>
+            <span>
+              Destino
+            </span>
+
+            <strong>
+              Miraflores
+            </strong>
+          </div>
+
+
+          <div>
+            <span>
+              Última actualización
+            </span>
+
+            <strong>
+              16/09/2026
+            </strong>
+          </div>
+
+        </div>
+
+      </div>
+
+    }
+
+
+    <div class="tracking-help">
+
+      <p>
+        ¿No tienes un código de seguimiento?
+      </p>
+
+      <a routerLink="/cotizar">
+        Cotiza un nuevo envío
+      </a>
+
+    </div>
+
+  </div>
+
+</section>

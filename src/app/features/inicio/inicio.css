@@ -1,0 +1,271 @@
+.inicio {
+  min-height: calc(100vh - 70px);
+  padding: 40px 30px;
+  background: #f5f7fa;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.inicio-container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 65px;
+}
+
+.inicio-left-card {
+  width: 465px;
+  flex-shrink: 0;
+  background: #ffffff;
+  border: 1px dashed #d5d9df;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.inicio-image-wrapper {
+  width: 100%;
+  height: 390px;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.inicio-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.inicio-features {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-top: none;
+  padding: 14px 30px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.feature-icon {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 8px;
+  background: #3b92df;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.feature-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.feature-text h3 {
+  margin: 0;
+  color: #252525;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.feature-text p {
+  margin: 3px 0 0;
+  color: #777d85;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.inicio-content {
+  width: 450px;
+  flex-shrink: 0;
+  text-align: left;
+}
+
+.inicio-badge {
+  display: none;
+}
+
+.inicio-content h2 {
+  margin: 0 0 12px;
+  color: #25272b;
+  font-family: Arial, sans-serif;
+  font-size: 48px;
+  line-height: 0.98;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+.inicio-content h2 span {
+  display: inline-block;
+  color: #3794df;
+}
+
+.inicio-content p {
+  max-width: 380px;
+  margin: 0 0 35px;
+  color: #73777c;
+  font-family: Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.15;
+}
+
+.inicio-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.primary-button,
+.secondary-button {
+  min-width: 145px;
+  padding: 12px 22px;
+  box-sizing: border-box;
+  border-radius: 3px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.primary-button {
+  background: #3794df;
+  color: #ffffff;
+  border: 1px solid #3794df;
+}
+
+.primary-button:hover {
+  background: #247fc9;
+  border-color: #247fc9;
+}
+
+.secondary-button {
+  background: #ffffff;
+  color: #3794df;
+  border: 1px solid #3794df;
+}
+
+.secondary-button:hover {
+  background: #3794df;
+  color: #ffffff;
+}
+
+@media (max-width: 1000px) {
+  .inicio {
+    padding: 40px 20px;
+  }
+
+  .inicio-container {
+    gap: 35px;
+  }
+
+  .inicio-left-card {
+    width: 430px;
+  }
+
+  .inicio-content {
+    width: 400px;
+  }
+
+  .inicio-content h2 {
+    font-size: 42px;
+  }
+}
+
+@media (max-width: 850px) {
+  .inicio {
+    min-height: auto;
+    padding: 50px 20px;
+  }
+
+  .inicio-container {
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .inicio-left-card,
+  .inicio-content {
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .inicio-content {
+    text-align: center;
+  }
+
+  .inicio-content h2 {
+    font-size: 42px;
+  }
+
+  .inicio-content p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .inicio-actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 500px) {
+  .inicio {
+    padding: 30px 12px;
+  }
+
+  .inicio-left-card {
+    padding: 10px;
+  }
+
+  .inicio-image-wrapper {
+    height: 280px;
+  }
+
+  .inicio-features {
+    padding: 14px 12px;
+  }
+
+  .inicio-content h2 {
+    font-size: 36px;
+  }
+
+  .inicio-content p {
+    font-size: 15px;
+  }
+
+  .inicio-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .primary-button,
+  .secondary-button {
+    width: 100%;
+  }
+}

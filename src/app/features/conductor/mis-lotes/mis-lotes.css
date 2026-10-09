@@ -1,0 +1,95 @@
+.mis-lotes-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.view-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: center;
+  background-color: #ffffff;
+}
+
+.view-header h1 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: 0.5px;
+}
+
+.view-content {
+  padding: 16px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0 12px;
+  height: 40px;
+}
+
+.search-box input {
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 13px;
+  color: #1e293b;
+  width: 100%;
+}
+
+.search-box input::placeholder {
+  color: #94a3b8;
+}
+
+.tabs-segment {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.tab-btn {
+  border: none;
+  background: none;
+  padding: 10px 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-right: 1px solid #cbd5e1;
+}
+
+.tab-btn:last-child {
+  border-right: none;
+}
+
+.tab-btn.active {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+.empty-state-card {
+  margin-top: 60px;
+  padding: 30px 20px;
+  text-align: center;
+}
+
+.empty-text {
+  margin: 0;
+  font-size: 13.5px;
+  color: #64748b;
+  line-height: 1.6;
+}

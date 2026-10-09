@@ -1,0 +1,220 @@
+<div class="page-container">
+
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <a routerLink="/admin/usuarios">Usuarios</a>
+    <span class="sep">&gt;</span>
+    <span class="current">Nuevo Usuario</span>
+  </nav>
+
+  <!-- Encabezado de página -->
+  <div class="page-header">
+    <h1>Alta de Personal</h1>
+    <p>Registra un nuevo usuario en el sistema. Se generará una contraseña temporal.</p>
+  </div>
+
+  <!-- Tarjeta de formulario estilo Visily -->
+  <div class="form-card">
+
+    @if (errorMsg) {
+      <div class="alert-box">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>{{ errorMsg }}</span>
+      </div>
+    }
+
+    <form class="user-form" (ngSubmit)="guardar()">
+
+      <!-- Nombre Completo -->
+      <div class="form-group full-width">
+        <label for="nombres">Nombre Completo</label>
+        <input
+          id="nombres"
+          name="nombres"
+          type="text"
+          placeholder="Ej. Juan Pérez"
+          [(ngModel)]="nombres"
+          required
+        />
+      </div>
+
+      <!-- Fila 2: DNI y Teléfono -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="dni">DNI</label>
+          <input
+            id="dni"
+            name="dni"
+            type="text"
+            maxlength="8"
+            placeholder="Documento de identidad (8 dígitos)"
+            [(ngModel)]="dni"
+            (input)="onDniInput($event)"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="telefono">Teléfono Celular (9 dígitos)</label>
+          <input
+            id="telefono"
+            name="telefono"
+            type="text"
+            maxlength="9"
+            placeholder="Ej. 987654321"
+            [(ngModel)]="telefono"
+            (input)="onTelefonoInput($event)"
+          />
+        </div>
+      </div>
+
+      <!-- Fila 3: Correo y Rol -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="correo">Correo corporativo</label>
+          <input
+            id="correo"
+            name="correo"
+            type="email"
+            placeholder="Ej. maria@gmail.com"
+            [(ngModel)]="correo"
+            required
+          />
+          <small class="helper-text">El correo debe ser único en el sistema.</small>
+        </div>
+
+        <div class="form-group">
+          <label for="rol">Rol</label>
+          <select
+            id="rol"
+            name="rol"
+            [(ngModel)]="rol"
+            (change)="onRolChange()"
+            required
+          >
+            <option value="OPERADOR">Operador</option>
+            <option value="CONDUCTOR">Conductor</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Fila Condicional para OPERADOR (Visily pág 10) -->
+      @if (rol === 'OPERADOR') {
+        <div class="form-group full-width">
+          <label for="sede">Sede</label>
+          <select
+            id="sede"
+            name="id_sede"
+            [(ngModel)]="id_sede"
+            required
+          >
+            @for (sede of sedes; track sede.id) {
+              <option [value]="sede.id">
+                {{ sede.nombre }}
+              </option>
+            }
+          </select>
+        </div>
+      }
+
+      <!-- Fila Condicional para CONDUCTOR (Visily pág 11) -->
+      @if (rol === 'CONDUCTOR') {
+        <div class="form-row">
+          <div class="form-group">
+            <label for="vehiculo">Tipo de Vehículo</label>
+            <select
+              id="vehiculo"
+              name="id_tipo_vehiculo"
+              [(ngModel)]="id_tipo_vehiculo"
+              required
+            >
+              @for (tipo of vehicleTypes; track tipo.id) {
+                <option [value]="tipo.id">
+                  {{ tipo.nombre }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="placa">Placa</label>
+            <input
+              id="placa"
+              name="placa"
+              type="text"
+              placeholder="Ej. ABC-1234"
+              [(ngModel)]="placa"
+              required
+            />
+          </div>
+        </div>
+      }
+
+      <!-- Acciones de pie de formulario -->
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="irALista()" [disabled]="guardando">
+          CANCELAR
+        </button>
+
+        <button type="submit" class="btn-submit" [disabled]="guardando">
+          @if (guardando) {
+            <span>Registrando...</span>
+          } @else {
+            <span>Registrar usuario</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          }
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+<!-- Modal Flotante de Éxito con Credencial Temporal (Visily 11.5) -->
+@if (usuarioCreado) {
+  <div class="modal-backdrop">
+    <div class="modal-card">
+
+      <div class="modal-header-row">
+        <div class="modal-icon-badge">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#5c67f2" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <h2 class="modal-title">Usuario Creado</h2>
+      </div>
+
+      <div class="modal-info-table">
+        <div class="info-row">
+          <span class="info-label">Correo</span>
+          <span class="info-val">{{ usuarioCreado.correo }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Contraseña</span>
+          <div class="pass-val-wrap">
+            <code class="temp-pwd">{{ usuarioCreado.password_temporal }}</code>
+            <button type="button" class="btn-copy-bracket" (click)="copiarContrasena()">
+              [{{ copiado ? 'Copiado' : 'Copiar' }}]
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-btn-wrap">
+        <button type="button" class="btn-ir-usuarios" (click)="irALista()">
+          ir a usuarios
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

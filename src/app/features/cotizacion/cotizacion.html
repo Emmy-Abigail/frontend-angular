@@ -1,0 +1,163 @@
+<section class="cotizacion">
+
+  <div class="cotizacion-container">
+
+    <div class="cotizacion-header">
+
+      <h2>Cotiza tu envío</h2>
+
+      <p>
+        Ingresa los datos de tu envío y obtén una cotización.
+      </p>
+
+    </div>
+
+
+    <form
+      class="cotizacion-form"
+      (ngSubmit)="calcularCotizacion()"
+    >
+
+      <div class="form-group">
+
+        <label for="origen">
+          Origen
+        </label>
+
+        <input
+          id="origen"
+          name="origen"
+          type="text"
+          placeholder="Ingresa el lugar de origen"
+          [(ngModel)]="origen"
+        />
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="destino">
+          Destino
+        </label>
+
+        <input
+          id="destino"
+          name="destino"
+          type="text"
+          placeholder="Ingresa el lugar de destino"
+          [(ngModel)]="destino"
+        />
+
+      </div>
+
+
+      <div class="form-row">
+
+        <div class="form-group">
+
+          <label for="peso">
+            Peso (kg)
+          </label>
+
+          <input
+            id="peso"
+            name="peso"
+            type="number"
+            min="0.1"
+            step="0.1"
+            placeholder="Ej. 2.5"
+            [(ngModel)]="peso"
+          />
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="tipo">
+            Tipo de envío
+          </label>
+
+          <select
+            id="tipo"
+            name="tipo"
+            [(ngModel)]="tipo"
+          >
+
+            <option value="">
+              Selecciona una opción
+            </option>
+
+            <option value="documento">
+              Documento
+            </option>
+
+            <option value="paquete">
+              Paquete
+            </option>
+
+            <option value="fragil">
+              Paquete frágil
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      @if (error) {
+
+        <p class="error-message">
+          {{ error }}
+        </p>
+
+      }
+
+
+      <button type="submit">
+        Calcular cotización
+      </button>
+
+    </form>
+
+
+    @if (mostrarResultado) {
+
+      <div class="resultado">
+
+        <span>
+          Cotización estimada
+        </span>
+
+        <strong>
+          S/ {{ cotizacion.toFixed(2) }}
+        </strong>
+
+        <p>
+          Esta cotización es referencial y corresponde a una demostración
+          del sistema.
+        </p>
+
+      </div>
+
+    }
+
+
+    <div class="navigation-links">
+
+      <p>
+        ¿Ya tienes un envío?
+      </p>
+
+      <a routerLink="/seguimiento">
+        Rastrear envío
+      </a>
+
+    </div>
+
+  </div>
+
+</section>
