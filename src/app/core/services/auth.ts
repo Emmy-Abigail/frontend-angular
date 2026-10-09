@@ -53,8 +53,17 @@ export class AuthService {
 
           this.tokenSignal.set(response.token);
           this.currentUserSignal.set(response.user);
+          sessionStorage.setItem('temp_password', credentials.password);
         })
       );
+  }
+
+  getTempPassword(): string {
+    return sessionStorage.getItem('temp_password') || '';
+  }
+
+  clearTempPassword(): void {
+    sessionStorage.removeItem('temp_password');
   }
 
   me(): Observable<{ user: UserProfile }> {
@@ -86,6 +95,7 @@ export class AuthService {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('sesion');
+    sessionStorage.removeItem('temp_password');
     this.tokenSignal.set(null);
     this.currentUserSignal.set(null);
     this.router.navigate(['/login/admin']);
