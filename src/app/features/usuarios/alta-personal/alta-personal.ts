@@ -145,6 +145,12 @@ export class AltaPersonal implements OnInit {
       return;
     }
 
+    if (this.rol === 'CONDUCTOR' && !this.placa.trim()) {
+      this.errorMsg = 'La placa es obligatoria para el conductor.';
+      this.cdr.markForCheck();
+      return;
+    }
+
     this.guardando = true;
     this.cdr.markForCheck();
 
@@ -158,6 +164,7 @@ export class AltaPersonal implements OnInit {
         id_sede: this.rol === 'OPERADOR' ? Number(this.id_sede) : null,
         id_tipo_vehiculo:
           this.rol === 'CONDUCTOR' ? Number(this.id_tipo_vehiculo) : null,
+        placa: this.rol === 'CONDUCTOR' ? this.placa.trim() : null,
       })
       .subscribe({
         next: (res) => {
