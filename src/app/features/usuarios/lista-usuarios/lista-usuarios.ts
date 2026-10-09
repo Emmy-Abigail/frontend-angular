@@ -28,8 +28,8 @@ export class ListaUsuarios implements OnInit {
   filtroRol: string = 'Todos';
   filtroEstado: string = 'Todos';
 
-  // Modal de confirmación para desactivar usuario (Visily Pantalla 13)
-  usuarioADesactivar: UserListItem | null = null;
+  // Modal de confirmación para activar o desactivar usuario (Visily Pantalla 13)
+  usuarioConfirmarEstado: { user: UserListItem; accion: 'activar' | 'desactivar' } | null = null;
 
   ngOnInit(): void {
     this.cargarSedes();
@@ -88,26 +88,23 @@ export class ListaUsuarios implements OnInit {
   }
 
   solicitarCambioEstado(user: UserListItem): void {
-    if (user.activo) {
-      // Si está activo, abrir el modal de confirmación de desactivar (Pantalla 13)
-      this.usuarioADesactivar = user;
-    } else {
-      // Si está inactivo, activar directamente
-      this.ejecutarCambioEstado(user, true);
-    }
+    this.usuarioConfirmarEstado = {
+      user,
+      accion: user.activo ? 'desactivar' : 'activar',
+    };
     this.cdr.markForCheck();
   }
 
-  cerrarModalDesactivar(): void {
-    this.usuarioADesactivar = null;
+  cerrarModalConfirmacion(): void {
+    this.usuarioConfirmarEstado = null;
     this.cdr.markForCheck();
   }
 
-  confirmarDesactivacion(): void {
-    if (!this.usuarioADesactivar) return;
-    const user = this.usuarioADesactivar;
-    this.usuarioADesactivar = null;
-    this.ejecutarCambioEstado(user, false);
+  confirmarAccionEstado(): void {
+    if (!this.usuarioConfirmarEstado) return;
+    const { user, accion } = this.usuarioConfirmarEstado;
+    this.usuarioConfirmarEstado = null;
+    this.ejecutarCambioEstado(user, accion === 'activar');
     this.cdr.markForCheck();
   }
 

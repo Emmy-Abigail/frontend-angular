@@ -76,6 +76,18 @@ export class AltaPersonal implements OnInit {
     });
   }
 
+  onDniInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    input.value = input.value.replace(/\D/g, '').slice(0, 8);
+    this.dni = input.value;
+  }
+
+  onTelefonoInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    input.value = input.value.replace(/\D/g, '').slice(0, 9);
+    this.telefono = input.value;
+  }
+
   onRolChange(): void {
     this.errorMsg = '';
     if (this.rol === 'OPERADOR') {
@@ -105,6 +117,14 @@ export class AltaPersonal implements OnInit {
       this.errorMsg = 'El DNI debe tener exactamente 8 dígitos numéricos.';
       this.cdr.markForCheck();
       return;
+    }
+
+    if (this.telefono.trim()) {
+      if (!/^\d{9}$/.test(this.telefono.trim())) {
+        this.errorMsg = 'El número de celular debe tener exactamente 9 dígitos numéricos (sin letras ni código +51).';
+        this.cdr.markForCheck();
+        return;
+      }
     }
 
     if (!this.correo.trim()) {

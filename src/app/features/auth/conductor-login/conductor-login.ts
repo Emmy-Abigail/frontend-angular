@@ -61,14 +61,19 @@ export class ConductorLogin implements OnInit {
         next: (response) => {
           this.cargando = false;
           this.cdr.markForCheck();
+
+          // Restringir estrictamente al rol CONDUCTOR
+          if (response.user.rol !== 'CONDUCTOR') {
+            this.authService.cerrarSesion();
+            this.error = 'Acceso denegado: este portal es exclusivo para conductores. Administradores y operadores deben ingresar por el portal administrativo (/login/admin).';
+            this.cdr.markForCheck();
+            return;
+          }
+
           if (response.user.debe_cambiar_password) {
             this.router.navigate(['/cambiar-contrasena']);
-          } else if (response.user.rol === 'CONDUCTOR') {
-            this.router.navigate(['/conductor/mis-lotes']);
-          } else if (response.user.rol === 'ADMINISTRADOR') {
-            this.router.navigate(['/admin/usuarios']);
           } else {
-            this.router.navigate(['/operador']);
+            this.router.navigate(['/conductor/mis-lotes']);
           }
         },
         error: (err) => {

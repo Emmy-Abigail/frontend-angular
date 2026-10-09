@@ -64,6 +64,15 @@ export class AdminLogin implements OnInit {
         next: (response) => {
           this.cargando = false;
           this.cdr.markForCheck();
+
+          // Restringir: conductores no deben ingresar por el portal administrativo
+          if (response.user.rol === 'CONDUCTOR') {
+            this.authService.cerrarSesion();
+            this.error = 'Acceso denegado: los conductores deben iniciar sesión desde el Portal Conductor (/login/conductor).';
+            this.cdr.markForCheck();
+            return;
+          }
+
           if (response.user.debe_cambiar_password) {
             this.router.navigate(['/cambiar-contrasena']);
           } else {
