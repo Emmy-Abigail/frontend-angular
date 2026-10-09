@@ -8,6 +8,7 @@ export interface CreateUserRequest {
   rol: 'OPERADOR' | 'CONDUCTOR';
   id_sede?: number | null;
   id_tipo_vehiculo?: number | null;
+  placa?: string | null;
 }
 
 export interface CreateUserResponse {
