@@ -91,7 +91,7 @@
               </svg>
               CONTRASEÑA
             </label>
-            <a routerLink="/recuperar" class="link-forgot">¿Olvidaste tu clave?</a>
+            <a routerLink="/recuperar" [queryParams]="{ origen: 'conductor' }" class="link-forgot">¿Olvidaste tu clave?</a>
           </div>
 
           <div class="input-with-eye">
