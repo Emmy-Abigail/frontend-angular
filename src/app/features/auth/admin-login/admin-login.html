@@ -31,6 +31,16 @@
     }
 
     <!-- Alerta de Sesión Expirada (Visily pág 35) -->
+    @if (cuentaDesactivada) {
+      <div class="visily-alert alert-warning">
+        <button type="button" class="alert-dismiss" (click)="cuentaDesactivada = false" aria-label="Cerrar">×</button>
+        <div class="alert-content">
+          <span class="alert-heading">CUENTA DESACTIVADA</span>
+          <p class="alert-message">Tu cuenta ha sido desactivada por un administrador. Tu sesión ha finalizado.</p>
+        </div>
+      </div>
+    }
+
     @if (sessionExpired) {
       <div class="visily-alert alert-warning">
         <button type="button" class="alert-dismiss" (click)="sessionExpired = false" aria-label="Cerrar">×</button>

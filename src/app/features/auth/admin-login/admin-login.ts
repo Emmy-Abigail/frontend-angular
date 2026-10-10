@@ -22,15 +22,18 @@ export class AdminLogin implements OnInit {
   contrasena = '';
   error = '';
   sessionExpired = false;
+  cuentaDesactivada = false;
   cargando = false;
   mostrarContrasena = false;
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
-      if (params['sessionExpired'] === 'true') {
+      if (params['desactivado'] === 'true') {
+        this.cuentaDesactivada = true;
+      } else if (params['sessionExpired'] === 'true') {
         this.sessionExpired = true;
-        this.cdr.markForCheck();
       }
+      this.cdr.markForCheck();
     });
 
     // Si ya está autenticado, redirigir según rol

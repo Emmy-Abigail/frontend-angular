@@ -50,6 +50,16 @@
         </div>
       }
 
+      @if (cuentaDesactivada) {
+        <div class="dark-alert">
+          <button type="button" class="dark-alert-close" (click)="cuentaDesactivada = false">×</button>
+          <div class="dark-alert-body">
+            <span class="dark-alert-title">CUENTA DESACTIVADA</span>
+            <p>Tu cuenta ha sido desactivada por un administrador. Tu sesión ha finalizado.</p>
+          </div>
+        </div>
+      }
+
       @if (sessionExpired) {
         <div class="dark-alert">
           <button type="button" class="dark-alert-close" (click)="sessionExpired = false">×</button>
