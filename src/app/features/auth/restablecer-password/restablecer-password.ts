@@ -38,24 +38,28 @@ export class RestablecerPassword implements OnInit {
   }
 
   ngOnInit(): void {
-    const origenParam = this.route.snapshot.queryParamMap.get('origen');
-    const ultimoLogin = sessionStorage.getItem('ultimo_login');
-    const origen = origenParam || ultimoLogin;
+    this.route.queryParamMap.subscribe((queryParams) => {
+      this.token =
+        queryParams.get('token') ||
+        this.route.snapshot.paramMap.get('token') ||
+        '';
 
-    if (origen === 'conductor' || origen === 'operador' || origen === 'admin') {
-      this.origenRol = origen as 'admin' | 'conductor' | 'operador';
-    }
+      const origenParam = queryParams.get('origen');
+      const ultimoLogin = sessionStorage.getItem('ultimo_login');
+      const origen = origenParam || ultimoLogin;
 
-    // Tomar token desde queryParams (?token=...) o param (:token)
-    this.token =
-      this.route.snapshot.queryParamMap.get('token') ||
-      this.route.snapshot.paramMap.get('token') ||
-      '';
+      if (origen === 'conductor' || origen === 'operador' || origen === 'admin') {
+        this.origenRol = origen as 'admin' | 'conductor' | 'operador';
+      }
 
-    // Si viene explícitamente el parámetro invalid=true para probar Screen 8
-    if (this.route.snapshot.queryParamMap.get('estado') === 'invalido') {
-      this.estado = 'INVALIDO';
-    }
+      if (queryParams.get('estado') === 'invalido') {
+        this.estado = 'INVALIDO';
+      } else {
+        this.estado = 'FORMULARIO';
+        this.errorMsg = '';
+      }
+      this.cdr.markForCheck();
+    });
   }
 
   // Validación de los 4 requisitos de seguridad mostrados en Pantalla 6
@@ -72,7 +76,7 @@ export class RestablecerPassword implements OnInit {
   }
 
   get tieneSimbolo(): boolean {
-    return /[@#$%&*!_\-]/.test(this.passwordNueva);
+    return /[@#$%&]/.test(this.passwordNueva);
   }
 
   get formularioValido(): boolean {
@@ -90,7 +94,7 @@ export class RestablecerPassword implements OnInit {
       if (this.passwordNueva !== this.passwordConfirm) {
         this.errorMsg = 'Las contraseñas no coinciden.';
       } else {
-        this.errorMsg = 'La contraseña debe cumplir con todos los requisitos de seguridad.';
+        this.errorMsg = 'La contraseña debe cumplir con todos los requisitos de seguridad (mínimo 8 caracteres, mayúscula, número y símbolo @#$%&).';
       }
       return;
     }
@@ -113,10 +117,11 @@ export class RestablecerPassword implements OnInit {
       },
       error: (err) => {
         this.cargando = false;
-        if (err.status === 400 || err.status === 422) {
+        if (err.status === 400 && (err.error?.error === 'token_invalido' || !err.error?.error)) {
           // Token vencido o inválido (Pantalla 8)
           this.estado = 'INVALIDO';
         } else {
+          // Error 422 de política de contraseña, campos vacíos o contraseñas iguales
           this.errorMsg = err.error?.message || 'Error al restablecer la contraseña. Intente nuevamente.';
         }
         this.cdr.markForCheck();
