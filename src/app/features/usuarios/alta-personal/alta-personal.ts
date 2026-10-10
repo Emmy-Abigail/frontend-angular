@@ -38,6 +38,40 @@ export class AltaPersonal implements OnInit {
   usuarioCreado: CreateUserResponse | null = null;
   copiado = false;
 
+  private get tipoVehiculoSeleccionado(): VehicleType | undefined {
+    // El <select> nativo entrega el id como string aunque [value] venga de un number;
+    // hay que forzar la conversión antes de comparar, igual que ya se hace en guardar().
+    return this.vehicleTypes.find((t) => t.id === Number(this.id_tipo_vehiculo));
+  }
+
+  get placaFormatoAyuda(): string {
+    const codigo = this.tipoVehiculoSeleccionado?.codigo;
+    if (codigo === 'MOTORIZADO') {
+      return 'Formato moto: 2 letras y 4 números (ej. AB-1234)';
+    }
+    if (codigo === 'AUTO' || codigo === 'CAMION') {
+      return 'Formato auto/camión: 3 letras y 3 números (ej. ABC-123)';
+    }
+    return 'Seleccione un tipo de vehículo para ver el formato esperado';
+  }
+
+  get placaPlaceholder(): string {
+    return this.tipoVehiculoSeleccionado?.codigo === 'MOTORIZADO' ? 'Ej. AB-1234' : 'Ej. ABC-123';
+  }
+
+  get placaMaxLength(): number {
+    // Las 3 placas válidas (moto, auto, camión) tienen 6 caracteres;
+    // se permite 1 extra por si escriben un guion (ej. AB-1234).
+    return 7;
+  }
+
+  get telefonoAdvertencia(): string | null {
+    if (!this.telefono) {
+      return null;
+    }
+    return this.telefono.startsWith('9') ? null : 'El número debe comenzar con 9.';
+  }
+
   ngOnInit(): void {
     this.cargarCatalogos();
   }
@@ -86,6 +120,40 @@ export class AltaPersonal implements OnInit {
     const input = event.target as HTMLInputElement;
     input.value = input.value.replace(/\D/g, '').slice(0, 9);
     this.telefono = input.value;
+  }
+
+  onPlacaInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    const codigo = this.tipoVehiculoSeleccionado?.codigo;
+    const letterCount = codigo === 'MOTORIZADO' ? 2 : 3;
+    const digitCount = codigo === 'MOTORIZADO' ? 4 : 3;
+
+    const raw = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+    let letters = '';
+    let digits = '';
+    for (const char of raw) {
+      if (letters.length < letterCount) {
+        if (/[A-Z]/.test(char)) {
+          letters += char;
+        }
+        // los números escritos antes de completar las letras se ignoran
+      } else if (digits.length < digitCount && /[0-9]/.test(char)) {
+        digits += char;
+      }
+    }
+
+    const formatted = digits.length > 0 ? `${letters}-${digits}` : letters;
+    input.value = formatted;
+    this.placa = formatted;
+  }
+
+  onTipoVehiculoChange(): void {
+    // Cada tipo de vehiculo tiene un formato de placa distinto; si ya habia
+    // algo escrito con el formato anterior, se limpia para evitar una placa
+    // que ya no corresponde al tipo seleccionado.
+    this.placa = '';
   }
 
   onRolChange(): void {
