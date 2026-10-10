@@ -27,11 +27,21 @@
       <div class="profile-specs">
         <div class="spec-row">
           <span class="spec-label">Vehículo</span>
-          <span class="spec-val">Motorizado</span>
+          <span class="spec-val">{{ currentUser()?.vehiculo?.nombre || '—' }}</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-label">Placa</span>
+          <span class="spec-val">{{ currentUser()?.placa || '—' }}</span>
         </div>
         <div class="spec-row">
           <span class="spec-label">Capacidad</span>
-          <span class="spec-val">20 kg · 40 cm</span>
+          <span class="spec-val">
+            @if (currentUser()?.vehiculo; as vehiculo) {
+              {{ vehiculo.peso_max_total_kg }} kg · {{ vehiculo.lado_max_cm }} cm
+            } @else {
+              —
+            }
+          </span>
         </div>
       </div>
 
