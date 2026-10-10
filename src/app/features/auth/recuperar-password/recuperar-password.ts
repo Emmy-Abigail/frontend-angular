@@ -22,19 +22,24 @@ export class RecuperarPassword implements OnInit {
   cargando = false;
   errorMsg = '';
 
-  // De qué login vino (admin o conductor), para poder regresar al correcto.
-  // 'admin' como valor por defecto si alguien entra directo sin el parámetro.
-  origenRol: 'admin' | 'conductor' = 'admin';
+  // De qué login vino (admin, conductor u operador), para poder regresar al correcto.
+  origenRol: 'admin' | 'conductor' | 'operador' = 'admin';
 
   get loginOrigenPath(): string {
-    return `/login/${this.origenRol}`;
+    if (this.origenRol === 'conductor') return '/login/conductor';
+    if (this.origenRol === 'operador') return '/login/operador';
+    return '/login/admin';
   }
 
   ngOnInit(): void {
-    const origen = this.route.snapshot.queryParamMap.get('origen');
-    if (origen === 'conductor') {
-      this.origenRol = 'conductor';
+    const origenParam = this.route.snapshot.queryParamMap.get('origen');
+    const ultimoLogin = sessionStorage.getItem('ultimo_login');
+    const origen = origenParam || ultimoLogin;
+
+    if (origen === 'conductor' || origen === 'operador' || origen === 'admin') {
+      this.origenRol = origen as 'admin' | 'conductor' | 'operador';
     }
+    sessionStorage.setItem('ultimo_login', this.origenRol);
   }
 
   solicitarRecuperacion(): void {

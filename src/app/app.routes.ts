@@ -59,6 +59,10 @@ export const routes: Routes = [
     component: AdminLogin,
   },
   {
+    path: 'login/operador',
+    component: AdminLogin,
+  },
+  {
     path: 'login/conductor',
     component: ConductorLogin,
   },

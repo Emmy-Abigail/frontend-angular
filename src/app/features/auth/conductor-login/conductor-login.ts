@@ -26,6 +26,8 @@ export class ConductorLogin implements OnInit {
   mostrarContrasena = false;
 
   ngOnInit(): void {
+    sessionStorage.setItem('ultimo_login', 'conductor');
+
     this.route.queryParams.subscribe((params) => {
       if (params['desactivado'] === 'true') {
         this.cuentaDesactivada = true;

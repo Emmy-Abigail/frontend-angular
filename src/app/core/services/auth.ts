@@ -131,7 +131,22 @@ export class AuthService {
   }
 
   private cerrarSesionPorDesactivacion(): void {
-    const isConductor = this.userRole() === 'CONDUCTOR';
+    const rawRole = (this.userRole() || '').toUpperCase();
+    const currentUrl = this.router.url;
+    const ultimoLogin = sessionStorage.getItem('ultimo_login');
+
+    const isConductor =
+      rawRole === 'CONDUCTOR' ||
+      rawRole === 'CHOFER' ||
+      currentUrl.includes('/conductor') ||
+      ultimoLogin === 'conductor';
+
+    const isOperador =
+      rawRole === 'OPERADOR' ||
+      rawRole === 'ORGANIZADOR' ||
+      currentUrl.includes('/operador') ||
+      ultimoLogin === 'operador';
+
     this.stopSessionPolling();
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -140,7 +155,13 @@ export class AuthService {
     this.tokenSignal.set(null);
     this.currentUserSignal.set(null);
 
-    const targetRoute = isConductor ? '/login/conductor' : '/login/admin';
+    let targetRoute = '/login/admin';
+    if (isConductor) {
+      targetRoute = '/login/conductor';
+    } else if (isOperador) {
+      targetRoute = '/login/operador';
+    }
+
     this.router.navigate([targetRoute], {
       queryParams: { sessionExpired: 'true', desactivado: 'true' },
     });
@@ -191,7 +212,22 @@ export class AuthService {
   }
 
   cerrarSesion(): void {
-    const isConductor = this.userRole() === 'CONDUCTOR';
+    const rawRole = (this.userRole() || '').toUpperCase();
+    const currentUrl = this.router.url;
+    const ultimoLogin = sessionStorage.getItem('ultimo_login');
+
+    const isConductor =
+      rawRole === 'CONDUCTOR' ||
+      rawRole === 'CHOFER' ||
+      currentUrl.includes('/conductor') ||
+      ultimoLogin === 'conductor';
+
+    const isOperador =
+      rawRole === 'OPERADOR' ||
+      rawRole === 'ORGANIZADOR' ||
+      currentUrl.includes('/operador') ||
+      ultimoLogin === 'operador';
+
     this.stopSessionPolling();
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -199,6 +235,14 @@ export class AuthService {
     sessionStorage.removeItem('temp_password');
     this.tokenSignal.set(null);
     this.currentUserSignal.set(null);
-    this.router.navigate([isConductor ? '/login/conductor' : '/login/admin']);
+
+    let targetRoute = '/login/admin';
+    if (isConductor) {
+      targetRoute = '/login/conductor';
+    } else if (isOperador) {
+      targetRoute = '/login/operador';
+    }
+
+    this.router.navigate([targetRoute]);
   }
 }

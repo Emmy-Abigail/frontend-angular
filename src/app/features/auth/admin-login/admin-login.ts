@@ -26,7 +26,17 @@ export class AdminLogin implements OnInit {
   cargando = false;
   mostrarContrasena = false;
 
+  get isOperadorLogin(): boolean {
+    return this.router.url.includes('/operador');
+  }
+
   ngOnInit(): void {
+    if (this.isOperadorLogin) {
+      sessionStorage.setItem('ultimo_login', 'operador');
+    } else {
+      sessionStorage.setItem('ultimo_login', 'admin');
+    }
+
     this.route.queryParams.subscribe((params) => {
       if (params['desactivado'] === 'true') {
         this.cuentaDesactivada = true;

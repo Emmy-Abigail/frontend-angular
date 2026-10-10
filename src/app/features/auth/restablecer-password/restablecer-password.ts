@@ -29,8 +29,23 @@ export class RestablecerPassword implements OnInit {
   cargando = false;
   errorMsg = '';
   estado: RestablecerEstado = 'FORMULARIO';
+  origenRol: 'admin' | 'conductor' | 'operador' = 'admin';
+
+  get loginOrigenPath(): string {
+    if (this.origenRol === 'conductor') return '/login/conductor';
+    if (this.origenRol === 'operador') return '/login/operador';
+    return '/login/admin';
+  }
 
   ngOnInit(): void {
+    const origenParam = this.route.snapshot.queryParamMap.get('origen');
+    const ultimoLogin = sessionStorage.getItem('ultimo_login');
+    const origen = origenParam || ultimoLogin;
+
+    if (origen === 'conductor' || origen === 'operador' || origen === 'admin') {
+      this.origenRol = origen as 'admin' | 'conductor' | 'operador';
+    }
+
     // Tomar token desde queryParams (?token=...) o param (:token)
     this.token =
       this.route.snapshot.queryParamMap.get('token') ||
@@ -109,8 +124,12 @@ export class RestablecerPassword implements OnInit {
     });
   }
 
+  volverAlLogin(): void {
+    this.router.navigate([this.loginOrigenPath]);
+  }
+
   irALoginPersonal(): void {
-    this.router.navigate(['/login/admin']);
+    this.router.navigate([this.loginOrigenPath]);
   }
 
   irALoginConductor(): void {

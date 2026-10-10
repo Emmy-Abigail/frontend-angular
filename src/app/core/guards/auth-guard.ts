@@ -14,6 +14,9 @@ export const authGuard: CanActivateFn = (route) => {
     if (requiredRol === 'conductor' || requiredRol === 'CONDUCTOR') {
       return router.parseUrl('/login/conductor');
     }
+    if (requiredRol === 'operador' || requiredRol === 'OPERADOR') {
+      return router.parseUrl('/login/operador');
+    }
     return router.parseUrl('/login/admin');
   }
 
