@@ -69,6 +69,9 @@
             [(ngModel)]="telefono"
             (input)="onTelefonoInput($event)"
           />
+          @if (telefonoAdvertencia) {
+            <small class="helper-text helper-text-warning">{{ telefonoAdvertencia }}</small>
+          }
         </div>
       </div>
 
@@ -130,6 +133,7 @@
               id="vehiculo"
               name="id_tipo_vehiculo"
               [(ngModel)]="id_tipo_vehiculo"
+              (change)="onTipoVehiculoChange()"
               required
             >
               @for (tipo of vehicleTypes; track tipo.id) {
@@ -146,10 +150,13 @@
               id="placa"
               name="placa"
               type="text"
-              placeholder="Ej. ABC-1234"
+              [placeholder]="placaPlaceholder"
+              [maxlength]="placaMaxLength"
               [(ngModel)]="placa"
+              (input)="onPlacaInput($event)"
               required
             />
+            <small class="helper-text">{{ placaFormatoAyuda }}</small>
           </div>
         </div>
       }

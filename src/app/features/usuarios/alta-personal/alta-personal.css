@@ -122,6 +122,11 @@
   color: #64748b;
 }
 
+.helper-text-warning {
+  color: #dc2626;
+  font-weight: 600;
+}
+
 .form-actions {
   display: flex;
   align-items: center;

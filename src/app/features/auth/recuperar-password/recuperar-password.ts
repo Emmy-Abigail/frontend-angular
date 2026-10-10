@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth';
 
 @Component({
@@ -11,15 +11,31 @@ import { AuthService } from '../../../core/services/auth';
   styleUrl: './recuperar-password.css',
   templateUrl: './recuperar-password.html',
 })
-export class RecuperarPassword {
+export class RecuperarPassword implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
 
   correo = '';
   enviado = false;
   cargando = false;
   errorMsg = '';
+
+  // De qué login vino (admin o conductor), para poder regresar al correcto.
+  // 'admin' como valor por defecto si alguien entra directo sin el parámetro.
+  origenRol: 'admin' | 'conductor' = 'admin';
+
+  get loginOrigenPath(): string {
+    return `/login/${this.origenRol}`;
+  }
+
+  ngOnInit(): void {
+    const origen = this.route.snapshot.queryParamMap.get('origen');
+    if (origen === 'conductor') {
+      this.origenRol = 'conductor';
+    }
+  }
 
   solicitarRecuperacion(): void {
     if (!this.correo.trim() || !this.correo.includes('@')) {
@@ -51,6 +67,6 @@ export class RecuperarPassword {
   }
 
   volverAlLogin(): void {
-    this.router.navigate(['/login/admin']);
+    this.router.navigate([this.loginOrigenPath]);
   }
 }

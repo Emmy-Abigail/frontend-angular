@@ -71,7 +71,7 @@
             </svg>
             Contraseña
           </label>
-          <a class="forgot-link" routerLink="/recuperar">
+          <a class="forgot-link" routerLink="/recuperar" [queryParams]="{ origen: 'admin' }">
             ¿Olvidó su contraseña?
           </a>
         </div>
