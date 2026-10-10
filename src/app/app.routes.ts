@@ -76,6 +76,14 @@ export const routes: Routes = [
     path: 'restablecer/:token',
     component: RestablecerPassword,
   },
+  {
+    path: 'reset-password',
+    component: RestablecerPassword,
+  },
+  {
+    path: 'reset-password/:token',
+    component: RestablecerPassword,
+  },
 
   // Flujo F1: Primer cambio de contraseña tras alta de personal (Visily 9)
   {

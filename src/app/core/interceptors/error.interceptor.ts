@@ -24,9 +24,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         localStorage.removeItem('user');
         sessionStorage.removeItem('temp_password');
 
+        const errMsg = ((error.error?.message || '') as string).toLowerCase();
+        const isDeactivated = errMsg.includes('inactiv');
+
         const loginPath = isConductor ? '/login/conductor' : '/login/admin';
         router.navigate([loginPath], {
-          queryParams: { sessionExpired: 'true' },
+          queryParams: isDeactivated
+            ? { sessionExpired: 'true', desactivado: 'true' }
+            : { sessionExpired: 'true' },
         });
       }
       return throwError(() => error);

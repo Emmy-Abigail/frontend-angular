@@ -66,12 +66,39 @@ export class AuthService {
       );
   }
 
+  checkSessionNow(): void {
+    if (!this.isAuthenticated()) return;
+    this.http
+      .get<void>(`${environment.apiUrl}/auth/session`)
+      .pipe(
+        catchError((err) => {
+          if (err.status === 401) {
+            this.cerrarSesionPorDesactivacion();
+          }
+          return of(null);
+        })
+      )
+      .subscribe();
+  }
+
+  private onWindowFocus = (): void => {
+    if (this.isAuthenticated()) {
+      this.checkSessionNow();
+    }
+  };
+
+  private onVisibilityChange = (): void => {
+    if (document.visibilityState === 'visible' && this.isAuthenticated()) {
+      this.checkSessionNow();
+    }
+  };
+
   startSessionPolling(): void {
     this.stopSessionPolling();
     if (!this.isAuthenticated()) return;
 
-    // Polling cada 30 segundos según requerimiento del backend
-    this.sessionPollSub = timer(30000, 30000)
+    // Polling rápido cada 10 segundos para respuesta ágil ante desactivación
+    this.sessionPollSub = timer(3000, 10000)
       .pipe(
         switchMap(() =>
           this.http.get<void>(`${environment.apiUrl}/auth/session`).pipe(
@@ -85,12 +112,21 @@ export class AuthService {
         )
       )
       .subscribe();
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', this.onWindowFocus);
+      document.addEventListener('visibilitychange', this.onVisibilityChange);
+    }
   }
 
   stopSessionPolling(): void {
     if (this.sessionPollSub) {
       this.sessionPollSub.unsubscribe();
       this.sessionPollSub = undefined;
+    }
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('focus', this.onWindowFocus);
+      document.removeEventListener('visibilitychange', this.onVisibilityChange);
     }
   }
 
