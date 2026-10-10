@@ -17,6 +17,13 @@ export const authGuard: CanActivateFn = (route) => {
     return router.parseUrl('/login/admin');
   }
 
+  // Mismo criterio que el backend (MustChangePasswordMiddleware): bloquea
+  // cualquier pantalla protegida hasta que complete el cambio obligatorio.
+  // /cambiar-contrasena no tiene este guard, así que no hay riesgo de bucle.
+  if (user.debe_cambiar_password) {
+    return router.parseUrl('/cambiar-contrasena');
+  }
+
   if (requiredRol) {
     const userRol = (user.rol || '').toUpperCase();
     const targetRol = (requiredRol || '').toUpperCase();
