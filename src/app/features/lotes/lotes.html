@@ -1,0 +1,638 @@
+
+<div class="lotes-page" *ngIf="!detalleLoteAbierto">
+  <header class="page-heading">
+    <div class="heading-copy">
+      <h1>Gestión de Lotes</h1>
+      <p>
+        Los paquetes se agrupan solos al registrarse. Despacha cada lote cuando esté listo
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="refresh-button"
+      (click)="actualizar()"
+    >
+      <span aria-hidden="true">⟳</span>
+      Actualizar
+    </button>
+  </header>
+
+  <section class="lotes-section">
+    <div class="tabs" role="tablist" aria-label="Estado de los lotes">
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="estadoSeleccionado === 'PREPARACION'"
+        [class.active]="estadoSeleccionado === 'PREPARACION'"
+        (click)="seleccionarEstado('PREPARACION')"
+      >
+        En Preparación
+        <span class="tab-count">{{ lotesPreparacion.length }}</span>
+      </button>
+
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="estadoSeleccionado === 'DESPACHADOS'"
+        [class.active]="estadoSeleccionado === 'DESPACHADOS'"
+        (click)="seleccionarEstado('DESPACHADOS')"
+      >
+        Despachados
+        <span class="tab-count">{{ lotesDespachados.length }}</span>
+      </button>
+    </div>
+
+    <!-- LOTES EN PREPARACIÓN -->
+    <div
+      class="lotes-list"
+      *ngIf="estadoSeleccionado === 'PREPARACION'"
+    >
+      <article
+        class="lote-row"
+        *ngFor="let lote of lotesPreparacion"
+        [class.lote-completo]="lote.completo"
+      >
+        <div class="lote-identity">
+          <div class="lote-icon" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="m12 3 9 5-9 5-9-5 9-5Z"></path>
+              <path d="m3 8 9 5 9-5"></path>
+              <path d="M12 13v9"></path>
+              <path d="M3 8v10l9 5 9-5V8"></path>
+            </svg>
+          </div>
+
+          <div class="lote-description">
+            <div class="lote-title-line">
+              <h2>{{ lote.codigo }}</h2>
+
+              <span *ngIf="lote.completo" class="lote-status">
+                COMPLETO
+              </span>
+            </div>
+
+            <p>{{ lote.zona }} · {{ lote.vehiculo }}</p>
+          </div>
+        </div>
+
+        <div class="metric">
+          <div class="metric-label">
+            <span>Paquetes</span>
+            <strong>
+              {{ lote.paquetes }} / {{ lote.capacidadPaquetes }}
+            </strong>
+          </div>
+
+          <div
+            class="progress-track"
+            role="progressbar"
+            aria-label="Progreso de paquetes"
+            [attr.aria-valuenow]="lote.paquetes"
+            aria-valuemin="0"
+            [attr.aria-valuemax]="lote.capacidadPaquetes"
+          >
+            <div
+              class="progress-fill"
+              [style.width.%]="lote.capacidadPaquetes
+                ? Math.min(100, lote.paquetes / lote.capacidadPaquetes * 100)
+                : 0"
+            ></div>
+          </div>
+        </div>
+
+        <div class="metric">
+          <div class="metric-label">
+            <span>Peso</span>
+            <strong>
+              {{ lote.peso }} / {{ lote.capacidadPeso }} kg
+            </strong>
+          </div>
+
+          <div
+            class="progress-track"
+            role="progressbar"
+            aria-label="Progreso de peso"
+            [attr.aria-valuenow]="lote.peso"
+            aria-valuemin="0"
+            [attr.aria-valuemax]="lote.capacidadPeso"
+          >
+            <div
+              class="progress-fill"
+              [style.width.%]="lote.capacidadPeso
+                ? Math.min(100, lote.peso / lote.capacidadPeso * 100)
+                : 0"
+            ></div>
+          </div>
+        </div>
+
+        <div class="lote-time">
+          <span>desde</span>
+          <strong>{{ lote.horaInicio }}</strong>
+        </div>
+
+        <div class="lote-actions">
+          <button
+            type="button"
+            class="button-link"
+            (click)="verPaquetes(lote)"
+          >
+            Ver paquetes
+          </button>
+
+          <button
+            type="button"
+            class="button-primary"
+            (click)="abrirModalDespacho(lote)"
+          >
+            Despachar
+          </button>
+        </div>
+      </article>
+    </div>
+
+    <!-- LOTES DESPACHADOS -->
+    <div
+      class="dispatched-list"
+      *ngIf="estadoSeleccionado === 'DESPACHADOS'"
+    >
+      <article
+        class="dispatched-row"
+        *ngFor="let lote of lotesDespachados"
+      >
+        <div class="lote-identity">
+          <div class="lote-icon" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="m12 3 9 5-9 5-9-5 9-5Z"></path>
+              <path d="m3 8 9 5 9-5"></path>
+              <path d="M12 13v9"></path>
+              <path d="M3 8v10l9 5 9-5V8"></path>
+            </svg>
+          </div>
+
+          <div class="lote-description">
+            <h2>{{ lote.codigo }}</h2>
+            <p>
+              {{ lote.zona }} · {{ lote.vehiculo }} ·
+              {{ lote.paquetes }} paquetes
+            </p>
+          </div>
+        </div>
+
+        <div class="dispatch-status-cell">
+          <span
+            class="dispatch-status"
+            [ngClass]="{
+              'status-en-ruta': lote.estadoDespacho === 'EN RUTA',
+              'status-asignado': lote.estadoDespacho === 'ASIGNADO',
+              'status-cerrado': lote.estadoDespacho === 'CERRADO'
+            }"
+          >
+            {{ lote.estadoDespacho }}
+          </span>
+        </div>
+
+        <div class="driver-info">
+          <strong>{{ lote.responsable }}</strong>
+          <span>Placa {{ lote.placa }}</span>
+        </div>
+
+        <div class="dispatch-time">
+          <span>Despachado</span>
+          <strong>{{ lote.horaDespacho }}</strong>
+        </div>
+
+        <div class="dispatch-actions">
+          <button
+            type="button"
+            class="button-view-lot"
+            (click)="verLote(lote)"
+          >
+            Ver Lote
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
+      </article>
+    </div>
+
+    <div
+      class="empty-state"
+      *ngIf="lotesVisibles.length === 0"
+    >
+      <strong>No hay lotes en esta sección</strong>
+      <p>Cuando existan lotes registrados, aparecerán aquí.</p>
+    </div>
+  </section>
+
+  <footer
+    class="page-footer"
+    *ngIf="estadoSeleccionado === 'PREPARACION'"
+  >
+    Ordenados por el paquete más antiguo de cada lote: El primero de la lista es el primero que conviene despachar.
+  </footer>
+</div>
+
+
+<!-- ========================================= -->
+<!-- DETALLE DE LOTE                            -->
+<!-- ========================================= -->
+
+<div
+  class="lote-detail-page"
+  *ngIf="detalleLoteAbierto && loteSeleccionado as lote"
+>
+  <header class="detail-heading">
+    <div>
+      <h1>Lote {{ lote.codigo }}</h1>
+      <p>
+        {{ lote.zona }} · {{ lote.vehiculo }} ·
+        {{ paquetesLote.length }} paquetes
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="refresh-button"
+      (click)="actualizar()"
+    >
+      <span aria-hidden="true">⟳</span>
+      Actualizar
+    </button>
+  </header>
+
+  <div class="detail-divider"></div>
+
+  <div class="detail-layout">
+    <!-- TABLA DE PAQUETES -->
+    <section class="packages-table-container">
+      <table class="packages-table">
+        <thead>
+          <tr>
+            <th>PARADA</th>
+            <th>TRACKING</th>
+            <th>DESTINATARIO</th>
+            <th>DESTINATARIO</th>
+            <th>DIRECCIÓN</th>
+            <th>ESTADO</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr
+            *ngFor="let paquete of paquetesLote; let i = index"
+            [class.package-selected]="paqueteSeleccionadoId === paquete.id"
+            (click)="seleccionarPaquete(paquete.id)"
+          >
+            <td class="stop-cell">
+              <label class="stop-selector">
+                <input
+                  type="radio"
+                  name="paqueteSeleccionado"
+                  [checked]="paqueteSeleccionadoId === paquete.id"
+                  (click)="$event.stopPropagation()"
+                  (change)="seleccionarPaquete(paquete.id)"
+                  [attr.aria-label]="'Seleccionar parada ' + (i + 1)"
+                />
+                <span>{{ i + 1 }}</span>
+              </label>
+            </td>
+
+            <td>
+              <span class="tracking-code">
+                {{ paquete.tracking }}
+              </span>
+            </td>
+
+            <td>{{ paquete.destinatario }}</td>
+
+            <td>{{ paquete.receptor }}</td>
+
+            <td>{{ paquete.direccion }}</td>
+
+            <td>
+              <span
+                class="package-status"
+                [ngClass]="{
+                  'package-in-route': paquete.estado === 'EN RUTA',
+                  'package-delivered': paquete.estado === 'ENTREGADO',
+                  'package-failed': paquete.estado === 'FALLIDO'
+                }"
+              >
+                {{ paquete.estado }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div
+        class="packages-empty"
+        *ngIf="paquetesLote.length === 0"
+      >
+        No hay paquetes registrados en este lote.
+      </div>
+    </section>
+
+    <!-- PANEL LATERAL DE DESPACHO -->
+    <aside class="dispatch-detail-card">
+      <h2>Despacho</h2>
+      <div class="dispatch-card-divider"></div>
+
+      <div class="dispatch-detail-line">
+        <span>Conductor</span>
+        <strong>{{ lote.responsable || 'Sin asignar' }}</strong>
+      </div>
+
+      <div class="dispatch-detail-line">
+        <span>Placa</span>
+        <strong>{{ lote.placa || 'Sin placa' }}</strong>
+      </div>
+
+      <div class="dispatch-detail-line dispatch-weight">
+        <span>Peso</span>
+        <strong>{{ lote.peso }} kg</strong>
+      </div>
+
+      <div class="package-state-actions">
+        <button
+          type="button"
+          class="state-action-button"
+          [class.state-action-active]="paqueteSeleccionado?.estado === 'ENTREGADO'"
+          [disabled]="!paqueteSeleccionado"
+          (click)="actualizarEstadoPaquete('ENTREGADO')"
+        >
+          Entregados
+        </button>
+
+        <button
+          type="button"
+          class="state-action-button"
+          [class.state-action-active]="paqueteSeleccionado?.estado === 'FALLIDO'"
+          [disabled]="!paqueteSeleccionado"
+          (click)="actualizarEstadoPaquete('FALLIDO')"
+        >
+          Fallidos
+        </button>
+
+        <button
+          type="button"
+          class="state-action-button"
+          [class.state-action-active]="paqueteSeleccionado?.estado === 'EN RUTA'"
+          [disabled]="!paqueteSeleccionado"
+          (click)="actualizarEstadoPaquete('EN RUTA')"
+        >
+          En ruta
+        </button>
+      </div>
+
+      <p
+        class="selected-package-hint"
+        *ngIf="!paqueteSeleccionado"
+      >
+        Selecciona una parada de la tabla para actualizar su estado.
+      </p>
+
+      <p
+        class="selected-package-hint"
+        *ngIf="paqueteSeleccionado"
+      >
+        Actualizando: parada
+        {{ paquetesLote.indexOf(paqueteSeleccionado) + 1 }}
+        · {{ paqueteSeleccionado.tracking }}
+      </p>
+
+      <p class="dispatch-closing-note">
+        El lote se cierra cuando todos sus paquetes quedan Entregado o Fallido.
+      </p>
+
+      <div
+        class="lot-closed-notice"
+        *ngIf="lote.estadoDespacho === 'CERRADO'"
+      >
+        Todos los paquetes están finalizados. El lote está cerrado.
+      </div>
+
+      <button
+        type="button"
+        class="button-back-to-lotes"
+        (click)="volverAListaLotes()"
+      >
+        ← Volver a lotes
+      </button>
+    </aside>
+  </div>
+</div>
+
+
+<!-- ========================================= -->
+<!-- MODAL: SELECCIÓN DE CONDUCTOR              -->
+<!-- ========================================= -->
+
+<div
+  class="modal-backdrop"
+  *ngIf="modalDespachoAbierto && loteSeleccionado as lote"
+  (click)="cerrarModalDespacho()"
+>
+  <section
+    class="dispatch-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="dispatch-modal-title"
+    (click)="$event.stopPropagation()"
+  >
+    <button
+      type="button"
+      class="modal-close"
+      aria-label="Cerrar ventana"
+      (click)="cerrarModalDespacho()"
+    >
+      ×
+    </button>
+
+    <h2 id="dispatch-modal-title">
+      Despachar lote {{ lote.codigo }}
+    </h2>
+
+    <p class="modal-subtitle">
+      {{ lote.zona }} · {{ lote.vehiculo }} ·
+      {{ lote.paquetes }} paquetes · {{ lote.peso }} kg
+    </p>
+
+    <h3 class="modal-section-title">
+      ELIGE UN CONDUCTOR DISPONIBLE
+    </h3>
+
+    <div class="drivers-list">
+      <label
+        class="driver-option"
+        *ngFor="let conductor of conductoresDisponibles"
+        [class.driver-selected]="conductorSeleccionadoId === conductor.id"
+      >
+        <input
+          type="radio"
+          name="conductor"
+          [value]="conductor.id"
+          [checked]="conductorSeleccionadoId === conductor.id"
+          (change)="seleccionarConductor(conductor.id)"
+        />
+
+        <span class="driver-main">
+          <strong>{{ conductor.nombre }}</strong>
+          <span>Placa {{ conductor.placa }}</span>
+        </span>
+
+        <span
+          class="driver-status"
+          [class.driver-free]="conductor.estado === 'LIBRE'"
+          [class.driver-busy]="conductor.estado === 'EN RUTA'"
+        >
+          <strong>{{ conductor.estado }}</strong>
+
+          <span *ngIf="conductor.lotesPendientes > 0">
+            · {{ conductor.lotesPendientes }}
+            {{ conductor.lotesPendientes === 1
+              ? 'lote pendiente'
+              : 'lotes pendientes' }}
+          </span>
+        </span>
+      </label>
+    </div>
+
+    <p class="driver-hint">
+      Solo se muestran conductores de motorizados, activos y con menos de 3 lotes pendientes.
+    </p>
+
+    <div
+      class="dispatch-conflict-alert"
+      *ngIf="conflictoDespacho"
+      role="alert"
+    >
+      <strong>Este lote ya fue despachado</strong>
+      <p>
+        Otro operador de tu sede lo despachó primero.
+        La lista se actualizará.
+      </p>
+    </div>
+
+    <p
+      class="validation-message"
+      *ngIf="mensajeValidacion && !conflictoDespacho"
+    >
+      {{ mensajeValidacion }}
+    </p>
+
+    <div class="modal-actions" *ngIf="!conflictoDespacho">
+      <button
+        type="button"
+        class="button-primary modal-confirm"
+        (click)="abrirConfirmacionDespacho()"
+      >
+        Despachar
+      </button>
+    </div>
+
+    <div class="conflict-actions" *ngIf="conflictoDespacho">
+      <button
+        type="button"
+        class="button-primary"
+        (click)="volverListaTrasConflicto()"
+      >
+        Volver a la lista
+      </button>
+    </div>
+  </section>
+</div>
+
+
+<!-- ========================================= -->
+<!-- MODAL: CONFIRMACIÓN DEL DESPACHO           -->
+<!-- ========================================= -->
+
+<div
+  class="modal-backdrop confirmation-backdrop"
+  *ngIf="modalConfirmacionAbierta && loteSeleccionado as lote"
+  (click)="cancelarConfirmacionDespacho()"
+>
+  <section
+    class="confirmation-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="confirmation-title"
+    (click)="$event.stopPropagation()"
+  >
+    <button
+      type="button"
+      class="modal-close"
+      aria-label="Cerrar confirmación"
+      (click)="cancelarConfirmacionDespacho()"
+    >
+      ×
+    </button>
+
+    <div class="confirmation-illustration" aria-hidden="true">
+      <span>⟳</span>
+    </div>
+
+    <h2 id="confirmation-title">Confirmar despacho</h2>
+
+    <p class="confirmation-description">
+      ¿Deseas despachar el lote {{ lote.codigo }} a
+      {{ conductorSeleccionado?.nombre }}?
+      <br />
+      Sus paquetes cambiarán a ASIGNADO.
+    </p>
+
+    <div class="confirmation-summary">
+      <h3>Resumen</h3>
+      <div class="summary-divider"></div>
+
+      <div class="summary-line">
+        <span>Conductor</span>
+        <strong>{{ conductorSeleccionado?.nombre }}</strong>
+      </div>
+
+      <div class="summary-line">
+        <span>Paquetes</span>
+        <strong>{{ lote.paquetes }}</strong>
+      </div>
+
+      <div class="summary-line">
+        <span>Peso</span>
+        <strong>{{ lote.peso }} kg</strong>
+      </div>
+    </div>
+
+    <div class="confirmation-actions">
+      <button
+        type="button"
+        class="button-cancel"
+        (click)="cancelarConfirmacionDespacho()"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="button-primary button-confirm-final"
+        (click)="confirmarDespacho()"
+      >
+        Confirmar
+        <span aria-hidden="true">→</span>
+      </button>
+    </div>
+  </section>
+</div>

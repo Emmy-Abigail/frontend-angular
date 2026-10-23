@@ -1,0 +1,313 @@
+
+<div class="detail-page">
+  <ng-container *ngIf="paquete as p; else paqueteNoEncontrado">
+    <header class="detail-heading">
+      <h1>{{ p.tracking }}</h1>
+
+      <span
+        class="status-badge"
+        [ngClass]="{
+          'status-route': p.estado === 'EN RUTA',
+          'status-warehouse': p.estado === 'EN ALMACEN',
+          'status-assigned': p.estado === 'ASIGNADO',
+          'status-delivered': p.estado === 'ENTREGADO',
+          'status-failed': p.estado === 'FALLIDO'
+        }"
+      >
+        {{ p.estado }}
+      </span>
+    </header>
+
+    <div
+      class="detail-grid"
+      [ngClass]="{
+        'delivered-layout': p.estado === 'ENTREGADO',
+        'failed-layout': p.estado === 'FALLIDO'
+      }"
+    >
+      <!-- Entrega registrada -->
+      <article
+        class="information-card delivery-card"
+        *ngIf="p.estado === 'ENTREGADO'"
+      >
+        <h2>Entrega Registrada</h2>
+
+        <div class="delivery-content">
+          <div
+            class="evidence-preview"
+            role="img"
+            aria-label="Espacio reservado para la evidencia de entrega"
+          >
+            <svg viewBox="0 0 100 70" aria-hidden="true" focusable="false">
+              <circle cx="65" cy="21" r="8" />
+              <path d="M12 57 L35 29 L49 44 L61 32 L88 57 Z" />
+            </svg>
+          </div>
+
+          <div class="delivery-comment">
+            <span>Comentario</span>
+            <p>{{ p.comentarioEntrega || 'Sin comentario registrado' }}</p>
+          </div>
+
+          <button type="button" class="evidence-button" disabled>
+            Ver evidencia
+          </button>
+        </div>
+      </article>
+
+      <!-- Entrega fallida -->
+      <article
+        class="information-card delivery-card failed-card"
+        *ngIf="p.estado === 'FALLIDO'"
+      >
+        <h2>Entrega Fallida</h2>
+
+        <div class="failed-content">
+          <div class="information-row">
+            <span>Motivo</span>
+            <strong>{{ p.motivoFallo || 'No registrado' }}</strong>
+          </div>
+
+          <div class="failed-observation">
+            <span>Observación del conductor</span>
+            <p>
+              {{ p.observacionConductor || 'Sin observaciones registradas' }}
+            </p>
+          </div>
+        </div>
+      </article>
+
+      <!-- Remitente -->
+      <article class="information-card sender-card">
+        <h2>Remitente</h2>
+        <div class="information-row">
+          <span>Nombre</span>
+          <strong>{{ p.remitente }}</strong>
+        </div>
+        <div class="information-row">
+          <span>Documento</span>
+          <strong>{{ p.documentoRemitente || 'No registrado' }}</strong>
+        </div>
+        <div class="information-row">
+          <span>Celular</span>
+          <strong>{{ p.celularRemitente || 'No registrado' }}</strong>
+        </div>
+      </article>
+
+      <!-- Destinatario -->
+      <article class="information-card recipient-card">
+        <h2>Destinatario</h2>
+        <div class="information-row">
+          <span>Nombre</span>
+          <strong>{{ p.destinatario }}</strong>
+        </div>
+        <div class="information-row">
+          <span>DNI</span>
+          <strong>{{ p.documentoDestinatario || 'No registrado' }}</strong>
+        </div>
+        <div class="information-row">
+          <span>Celular</span>
+          <strong>{{ p.celularDestinatario || 'No registrado' }}</strong>
+        </div>
+      </article>
+
+      <!-- Lote y conductor -->
+      <article class="information-card logistics-card">
+        <h2>Lote y conductor</h2>
+        <div class="information-row">
+          <span>Lote</span>
+          <strong>
+            {{ p.lote || 'No asignado' }}
+            <small *ngIf="p.zonaLote">{{ p.zonaLote }}</small>
+          </strong>
+        </div>
+        <div class="information-row">
+          <span>Vehículo</span>
+          <strong>{{ p.vehiculo || 'No registrado' }}</strong>
+        </div>
+        <div class="information-row">
+          <span>Conductor</span>
+          <strong>{{ p.conductor || 'No asignado' }}</strong>
+        </div>
+        <div class="information-row">
+          <span>Placa</span>
+          <strong>{{ p.placa || 'No registrada' }}</strong>
+        </div>
+      </article>
+
+      <!-- Dirección -->
+      <article class="information-card address-card">
+        <h2>Dirección de entrega</h2>
+        <div class="information-row">
+          <span>Dirección</span>
+          <strong>{{ p.direccionEntrega || 'No registrada' }}</strong>
+        </div>
+        <div class="information-row">
+          <span>Referencia</span>
+          <strong>{{ p.referenciaEntrega || 'No registrada' }}</strong>
+        </div>
+      </article>
+
+      <!-- Paquete y costo -->
+      <article class="information-card package-card">
+        <h2>Paquete y costo</h2>
+        <div class="package-fields">
+          <div class="information-row">
+            <span>Peso real</span>
+            <strong>{{ p.pesoReal || 'No registrado' }}</strong>
+          </div>
+          <div class="information-row">
+            <span>Peso facturable</span>
+            <strong>{{ p.pesoFacturable || 'No registrado' }}</strong>
+          </div>
+          <div class="information-row">
+            <span>Medidas</span>
+            <strong>{{ p.medidas || 'No registradas' }}</strong>
+          </div>
+          <div class="information-row">
+            <span>Factor zona</span>
+            <strong>{{ p.factorZona || 'No registrado' }}</strong>
+          </div>
+          <div class="information-row">
+            <span>Peso volumétrico</span>
+            <strong>{{ p.pesoVolumetrico || 'No registrado' }}</strong>
+          </div>
+          <div class="information-row">
+            <span>Costo</span>
+            <strong>{{ p.costo || 'No registrado' }}</strong>
+          </div>
+        </div>
+      </article>
+
+      <!-- Historial -->
+      <article class="information-card history-card">
+        <h2>Historial</h2>
+
+        <div class="timeline">
+          <div
+            class="timeline-item"
+            [ngClass]="{
+              'timeline-current': p.estado === 'ENTREGADO' || p.estado === 'FALLIDO'
+            }"
+          >
+            <span class="timeline-marker"><span></span></span>
+            <div class="timeline-content">
+              <h3>{{ p.estado === 'FALLIDO' ? 'FALLIDO' : 'ENTREGADO' }}</h3>
+
+              <p *ngIf="p.estado === 'ENTREGADO'">
+                {{ p.fechaEntrega || 'Fecha no registrada' }}
+                con evidencia
+              </p>
+
+              <p *ngIf="p.estado === 'FALLIDO'">
+                {{ p.fechaRuta || p.fechaIngreso }}
+                &nbsp; Motivo: {{ p.motivoFallo || 'No registrado' }}
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="timeline-item"
+            [ngClass]="{
+              'timeline-current': p.estado === 'EN RUTA',
+              'timeline-complete':
+                p.estado === 'ENTREGADO' || p.estado === 'FALLIDO'
+            }"
+          >
+            <span class="timeline-marker"><span></span></span>
+            <div class="timeline-content">
+              <h3>EN RUTA</h3>
+              <p
+                *ngIf="
+                  p.estado === 'EN RUTA' ||
+                  p.estado === 'ENTREGADO' ||
+                  p.estado === 'FALLIDO'
+                "
+              >
+                {{ p.fechaRuta || p.fechaIngreso }}
+                &nbsp; {{ p.horaRuta || p.horaIngreso }}
+                &nbsp;°&nbsp; {{ p.conductor || 'Conductor no asignado' }}
+                <span *ngIf="p.conductor">(conductor)</span>
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="timeline-item"
+            [ngClass]="{
+              'timeline-current': p.estado === 'ASIGNADO',
+              'timeline-complete':
+                p.estado === 'EN RUTA' ||
+                p.estado === 'ENTREGADO' ||
+                p.estado === 'FALLIDO'
+            }"
+          >
+            <span class="timeline-marker"><span></span></span>
+            <div class="timeline-content">
+              <h3>ASIGNADO</h3>
+              <p
+                *ngIf="
+                  p.estado === 'ASIGNADO' ||
+                  p.estado === 'EN RUTA' ||
+                  p.estado === 'ENTREGADO' ||
+                  p.estado === 'FALLIDO'
+                "
+              >
+                {{ p.fechaAsignacion || p.fechaIngreso }}
+                &nbsp; {{ p.horaAsignacion || p.horaIngreso }}
+                &nbsp;°&nbsp; {{ p.operador || 'Operador no asignado' }}
+                <span *ngIf="p.operador">(operadora)</span>
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="timeline-item"
+            [ngClass]="{
+              'timeline-current': p.estado === 'EN ALMACEN',
+              'timeline-complete':
+                p.estado === 'ASIGNADO' ||
+                p.estado === 'EN RUTA' ||
+                p.estado === 'ENTREGADO' ||
+                p.estado === 'FALLIDO'
+            }"
+          >
+            <span class="timeline-marker"><span></span></span>
+            <div class="timeline-content">
+              <h3>EN ALMACÉN</h3>
+              <p>Paquete recibido en agencia principal</p>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <section class="state-note route-note" *ngIf="estadoEsEnRuta">
+      <strong>EN RUTA</strong>
+      <span>El paquete se encuentra en tránsito hacia su destino.</span>
+    </section>
+
+    <section class="state-note delivered-note" *ngIf="estadoEsEntregado">
+      <strong>ENTREGADO</strong>
+      <span>El paquete figura como entregado en el sistema.</span>
+    </section>
+
+    <section class="state-note failed-note" *ngIf="estadoEsFallido">
+      <strong>FALLIDO</strong>
+      <span>
+        La entrega no pudo completarse. El motivo se muestra en la tarjeta
+        superior.
+      </span>
+    </section>
+  </ng-container>
+
+  <ng-template #paqueteNoEncontrado>
+    <section class="not-found-card">
+      <h2>Paquete no encontrado</h2>
+      <p>No encontramos un paquete con ese código de seguimiento.</p>
+      <button type="button" (click)="volverAConsulta()">
+        Volver a la consulta
+      </button>
+    </section>
+  </ng-template>
+</div>

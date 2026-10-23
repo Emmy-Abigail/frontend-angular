@@ -1,0 +1,287 @@
+
+<!-- ENCABEZADO DE LA PÁGINA -->
+<div class="page-heading consulta-heading">
+  <div>
+    <h1>Consulta de Paquetes</h1>
+    <p>
+      Paquetes registrados en tu sede, del más reciente al más antiguo.
+    </p>
+  </div>
+
+  <button
+    type="button"
+    class="refresh-button"
+    (click)="actualizar()"
+  >
+    <span aria-hidden="true">⟳</span>
+    Actualizar
+  </button>
+</div>
+
+<!-- FILTROS -->
+<section class="filters" aria-label="Filtros de paquetes">
+  <div class="filter-field search-field">
+    <label for="busqueda">Buscar</label>
+
+    <input
+      id="busqueda"
+      type="search"
+      name="busqueda"
+      [(ngModel)]="busqueda"
+      (ngModelChange)="cambiarFiltro()"
+      placeholder="Código, remitente o destinatario"
+    />
+  </div>
+
+  <div class="filter-field status-field">
+    <label for="estado">Estado</label>
+
+    <select
+      id="estado"
+      name="estado"
+      [(ngModel)]="estadoSeleccionado"
+      (ngModelChange)="cambiarFiltro()"
+    >
+      <option value="TODOS">Todos</option>
+      <option value="EN RUTA">En ruta</option>
+      <option value="EN ALMACEN">En almacén</option>
+      <option value="ENTREGADO">Entregado</option>
+      <option value="ASIGNADO">Asignado</option>
+      <option value="FALLIDO">Fallido</option>
+    </select>
+  </div>
+
+  <div class="filter-field date-field">
+    <label for="fechaDesde">Desde</label>
+
+    <input
+      id="fechaDesde"
+      type="date"
+      name="fechaDesde"
+      [(ngModel)]="fechaDesde"
+      (ngModelChange)="cambiarFiltro()"
+    />
+  </div>
+
+  <div class="filter-field date-field">
+    <label for="fechaHasta">Hasta</label>
+
+    <input
+      id="fechaHasta"
+      type="date"
+      name="fechaHasta"
+      [(ngModel)]="fechaHasta"
+      (ngModelChange)="cambiarFiltro()"
+    />
+  </div>
+</section>
+
+<!-- TABLA DE PAQUETES -->
+<section
+  class="table-container"
+  aria-label="Resultados de paquetes"
+>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>TRACKING</th>
+          <th>REMITENTE</th>
+          <th>DESTINATARIO</th>
+          <th>DESTINO</th>
+          <th>ESTADO</th>
+          <th>LOTE</th>
+          <th>INGRESO</th>
+          <th aria-label="Acciones"></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let paquete of paquetesVisibles">
+          <td class="tracking-cell">
+            {{ paquete.tracking }}
+          </td>
+
+          <td>{{ paquete.remitente }}</td>
+          <td>{{ paquete.destinatario }}</td>
+          <td>{{ paquete.destino }}</td>
+
+          <td>
+            <span
+              class="status-badge"
+              [ngClass]="{
+                'status-route': paquete.estado === 'EN RUTA',
+                'status-warehouse': paquete.estado === 'EN ALMACEN',
+                'status-delivered': paquete.estado === 'ENTREGADO',
+                'status-assigned': paquete.estado === 'ASIGNADO',
+                'status-failed': paquete.estado === 'FALLIDO'
+              }"
+            >
+              {{ paquete.estado }}
+            </span>
+          </td>
+
+          <td class="lot-cell">
+            {{ paquete.lote }}
+          </td>
+
+          <td class="date-cell">
+            <span>{{ formatearFecha(paquete.fechaIngreso) }}</span>
+            <span>{{ paquete.horaIngreso }}</span>
+          </td>
+
+          <td>
+            <button
+              type="button"
+              class="detail-link"
+              (click)="verDetalle(paquete)"
+            >
+              Ver detalle
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="paquetesVisibles.length === 0">
+          <td colspan="8" class="empty-state">
+            <span class="empty-icon" aria-hidden="true">⌕</span>
+            <strong>No se encontraron paquetes</strong>
+            <span>
+              Prueba modificando los filtros de búsqueda.
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- PAGINACIÓN -->
+<footer class="table-footer">
+  <p>
+    Mostrando
+    <strong>{{ paquetesVisibles.length }}</strong>
+    de
+    <strong>{{ totalRegistros }}</strong>
+    paquetes
+  </p>
+
+  <nav class="pagination" aria-label="Paginación">
+    <button
+      type="button"
+      class="page-button arrow-button"
+      aria-label="Página anterior"
+      [disabled]="paginaActual === 1"
+      (click)="cambiarPagina(paginaActual - 1)"
+    >
+      ‹
+    </button>
+
+    <button
+      type="button"
+      class="page-button"
+      *ngFor="let pagina of paginas"
+      [class.current-page]="paginaActual === pagina"
+      [attr.aria-current]="paginaActual === pagina ? 'page' : null"
+      (click)="cambiarPagina(pagina)"
+    >
+      {{ pagina }}
+    </button>
+
+    <button
+      type="button"
+      class="page-button arrow-button"
+      aria-label="Página siguiente"
+      [disabled]="paginaActual === totalPaginas"
+      (click)="cambiarPagina(paginaActual + 1)"
+    >
+      ›
+    </button>
+  </nav>
+</footer>
+
+<!-- MODAL DE DETALLE -->
+<div
+  class="detail-overlay"
+  *ngIf="paqueteSeleccionado as paquete"
+  (click)="cerrarDetalle()"
+>
+  <section
+    class="detail-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="detail-title"
+    (click)="$event.stopPropagation()"
+  >
+    <button
+      type="button"
+      class="detail-close"
+      aria-label="Cerrar detalle"
+      (click)="cerrarDetalle()"
+    >
+      ×
+    </button>
+
+    <span class="detail-eyebrow">DETALLE DEL ENVÍO</span>
+
+    <h2 id="detail-title">Información del paquete</h2>
+
+    <p class="detail-tracking">
+      {{ paquete.tracking }}
+    </p>
+
+    <div class="detail-status-row">
+      <span>Estado actual</span>
+
+      <span
+        class="status-badge"
+        [ngClass]="{
+          'status-route': paquete.estado === 'EN RUTA',
+          'status-warehouse': paquete.estado === 'EN ALMACEN',
+          'status-delivered': paquete.estado === 'ENTREGADO',
+          'status-assigned': paquete.estado === 'ASIGNADO',
+          'status-failed': paquete.estado === 'FALLIDO'
+        }"
+      >
+        {{ paquete.estado }}
+      </span>
+    </div>
+
+    <div class="detail-grid">
+      <div>
+        <span>Remitente</span>
+        <strong>{{ paquete.remitente }}</strong>
+      </div>
+
+      <div>
+        <span>Destinatario</span>
+        <strong>{{ paquete.destinatario }}</strong>
+      </div>
+
+      <div>
+        <span>Destino</span>
+        <strong>{{ paquete.destino }}</strong>
+      </div>
+
+      <div>
+        <span>Lote asignado</span>
+        <strong>{{ paquete.lote }}</strong>
+      </div>
+
+      <div>
+        <span>Fecha de ingreso</span>
+        <strong>
+          {{ formatearFecha(paquete.fechaIngreso) }}
+          · {{ paquete.horaIngreso }}
+        </strong>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="detail-confirm-button"
+      (click)="cerrarDetalle()"
+    >
+      Cerrar
+    </button>
+  </section>
+</div>

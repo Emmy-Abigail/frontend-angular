@@ -1,347 +1,436 @@
-<section class="detalle-lote">
 
-  <div class="detalle-header">
-
-    <div>
-
-      <h2>
-        Detalle de lote
-      </h2>
-
-      <p>
-        Consulta los paquetes incluidos en el lote asignado.
-      </p>
-
-    </div>
-
-    <span class="estado-lote">
-      {{ lote.estado }}
-    </span>
-
-  </div>
-
-
-  <div class="lote-resumen">
-
-    <div class="resumen-item">
-
-      <span>
-        Lote
-      </span>
-
-      <strong>
-        {{ lote.id }}
-      </strong>
-
-    </div>
-
-
-    <div class="resumen-item">
-
-      <span>
-        Zona
-      </span>
-
-      <strong>
-        {{ lote.zona }}
-      </strong>
-
-    </div>
-
-
-    <div class="resumen-item">
-
-      <span>
-        Total de paquetes
-      </span>
-
-      <strong>
-        {{ lote.totalPaquetes }}
-      </strong>
-
-    </div>
-
-  </div>
-
-
-  <div class="paquetes-section">
-
-    <h3>
-      Paquetes del lote
-    </h3>
-
-
-    <div class="paquetes-list">
-
-
-      @if (lote.id === 'LOTE-2026-001') {
-
-        <article class="paquete-card">
-
-          <div>
-
-            <span class="paquete-label">
-              Tracking
-            </span>
-
-            <strong>
-              ENV-2026-00118
-            </strong>
-
-          </div>
-
-
-          <div>
-
-            <span class="paquete-label">
-              Destino
-            </span>
-
-            <span>
-              Miraflores
-            </span>
-
-          </div>
-
-
-          <div>
-
-            <span class="paquete-label">
-              Estado
-            </span>
-
-            <span>
-              Asignado
-            </span>
-
-          </div>
-
-        </article>
-
-
-        <article class="paquete-card">
-
-          <div>
-
-            <span class="paquete-label">
-              Tracking
-            </span>
-
-            <strong>
-              ENV-2026-00119
-            </strong>
-
-          </div>
-
-
-          <div>
-
-            <span class="paquete-label">
-              Destino
-            </span>
-
-            <span>
-              Miraflores
-            </span>
-
-          </div>
-
-
-          <div>
-
-            <span class="paquete-label">
-              Estado
-            </span>
-
-            <span>
-              Asignado
-            </span>
-
-          </div>
-
-        </article>
-
-
-        <article class="paquete-card">
-
-          <div>
-
-            <span class="paquete-label">
-              Tracking
-            </span>
-
-            <strong>
-              ENV-2026-00120
-            </strong>
-
-          </div>
-
-
-          <div>
-
-            <span class="paquete-label">
-              Destino
-            </span>
-
-            <span>
-              Miraflores
-            </span>
-
-          </div>
-
-
-          <div>
-
-            <span class="paquete-label">
-              Estado
-            </span>
-
-            <span>
-              Asignado
-            </span>
-
-          </div>
-
-        </article>
-
+@if (lote.estado === 'Asignado') {
+  <section class="detalle-lote">
+
+    <!-- Encabezado del lote asignado -->
+    <header class="detalle-header">
+      <button
+        class="btn-volver"
+        type="button"
+        aria-label="Volver a mis lotes"
+        (click)="volver()"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m15 18-6-6 6-6" />
+        </svg>
+      </button>
+
+      <div class="header-info">
+        <span class="header-etiqueta">LOTE ASIGNADO</span>
+        <h1>{{ lote.id }}</h1>
+      </div>
+
+      <button
+        class="btn-vehiculo"
+        type="button"
+        aria-label="Información del transporte"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 6h11v12H3z" />
+          <path d="M14 10h4l3 4v4h-7z" />
+          <circle cx="7.5" cy="18" r="2" />
+          <circle cx="17.5" cy="18" r="2" />
+        </svg>
+      </button>
+    </header>
+
+    <!-- Estado y fecha -->
+    <section class="lote-informacion">
+      <div class="estado-fecha">
+        <span class="estado-lote">ASIGNADO</span>
+
+        <span class="fecha-asignacion">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="16" rx="2" />
+            <path d="M16 3v4M8 3v4M3 11h18" />
+          </svg>
+          {{ lote.fechaAsignacion }}
+        </span>
+      </div>
+
+      <div class="lote-resumen">
+        <div class="resumen-item resumen-paradas">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z" />
+            <path d="m4 7.5 8 4.5 8-4.5M12 12v9M8 5.2l8 4.5" />
+          </svg>
+          <span>paradas</span>
+          <strong>{{ lote.paradas.length.toString().padStart(2, '0') }}</strong>
+        </div>
+
+        <div class="resumen-item">
+          <span>origen</span>
+          <strong>{{ lote.origen }}</strong>
+        </div>
+
+        <div class="resumen-item">
+          <span>destino</span>
+          <strong>{{ lote.destino }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- Secuencia de paradas -->
+    <section class="secuencia-section">
+      <div class="secuencia-header">
+        <h2>SECUENCIA DE PARADAS</h2>
+
+        <button
+          class="btn-mapa"
+          type="button"
+          (click)="abrirMapa()"
+        >
+          MAPA
+        </button>
+      </div>
+
+      @if (lote.paradas.length > 0) {
+        <div class="paradas-lista">
+          @for (parada of lote.paradas; track parada.numero) {
+            <article class="parada-item">
+              <div class="parada-indicador">
+                <span class="parada-numero">{{ parada.numero }}</span>
+
+                @if (!$last) {
+                  <span class="parada-conector"></span>
+                }
+              </div>
+
+              <button
+                class="parada-contenido"
+                type="button"
+                (click)="abrirParada(parada)"
+                [attr.aria-label]="'Ver parada de ' + parada.destinatario"
+              >
+                <div class="parada-titulo">
+                  <h3>{{ parada.destinatario }}</h3>
+
+                  <svg
+                    class="parada-flecha"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </div>
+
+                <div class="parada-direccion">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
+                    <circle cx="12" cy="10" r="2.5" />
+                  </svg>
+
+                  <span>{{ parada.direccion }}</span>
+                </div>
+
+                <span class="codigo-seguimiento">
+                  {{ parada.codigoSeguimiento }}
+                </span>
+              </button>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="sin-paradas">
+          <h3>Sin paradas registradas</h3>
+          <p>Este lote todavía no tiene entregas asociadas.</p>
+        </div>
       }
+    </section>
 
-
-      @if (lote.id === 'LOTE-2026-002') {
-
-        <article class="paquete-card">
-
-          <div>
-
-            <span class="paquete-label">
-              Tracking
-            </span>
-
-            <strong>
-              ENV-2026-00121
-            </strong>
-
-          </div>
-
-
-          <div>
-
-            <span class="paquete-label">
-              Destino
-            </span>
-
-            <span>
-              San Isidro
-            </span>
-
-          </div>
-
-
-          <div>
-
-            <span class="paquete-label">
-              Estado
-            </span>
-
-            <span>
-              En ruta
-            </span>
-
-          </div>
-
-        </article>
-
-
-        <article class="paquete-card">
-
-          <div>
-
-            <span class="paquete-label">
-              Tracking
-            </span>
-
-            <strong>
-              ENV-2026-00122
-            </strong>
-
-          </div>
-
-
-          <div>
-
-            <span class="paquete-label">
-              Destino
-            </span>
-
-            <span>
-              San Isidro
-            </span>
-
-          </div>
-
-
-          <div>
-
-            <span class="paquete-label">
-              Estado
-            </span>
-
-            <span>
-              En ruta
-            </span>
-
-          </div>
-
-        </article>
-
-
-        <article class="paquete-card">
-
-          <div>
-
-            <span class="paquete-label">
-              Tracking
-            </span>
-
-            <strong>
-              ENV-2026-00123
-            </strong>
-
-          </div>
-
-
-          <div>
-
-            <span class="paquete-label">
-              Destino
-            </span>
-
-            <span>
-              San Isidro
-            </span>
-
-          </div>
-
-
-          <div>
-
-            <span class="paquete-label">
-              Estado
-            </span>
-
-            <span>
-              Entregado
-            </span>
-
-          </div>
-
-        </article>
-
-      }
-
-
+    <!-- Acción para iniciar ruta -->
+    <div class="acciones-lote">
+      <button
+        class="btn-iniciar-ruta"
+        type="button"
+        (click)="iniciarRuta()"
+        [disabled]="lote.paradas.length === 0"
+      >
+        Iniciar ruta
+      </button>
     </div>
+  </section>
 
-  </div>
+  <!-- Confirmación normal para iniciar ruta -->
+  @if (mostrarConfirmacionRuta) {
+    <div
+      class="confirmacion-overlay"
+      (click)="cerrarConfirmacionRuta()"
+    >
+      <section
+        class="confirmacion-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-confirmacion"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="confirmacion-indicador">
+          <span></span>
+        </div>
 
-</section>
+        <header class="confirmacion-header">
+          <h2 id="titulo-confirmacion">Confirmar iniciar ruta</h2>
+
+          <button
+            class="btn-cerrar-confirmacion"
+            type="button"
+            aria-label="Cerrar confirmación"
+            (click)="cerrarConfirmacionRuta()"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m6 6 12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </header>
+
+        <p class="confirmacion-descripcion">
+          Estás a punto de iniciar el recorrido para el lote
+          <strong>{{ lote.id }}.</strong>
+        </p>
+
+        <div class="confirmacion-resumen">
+          <div class="confirmacion-dato">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 6h11v12H3z" />
+              <path d="M14 10h4l3 4v4h-7z" />
+              <circle cx="7.5" cy="18" r="2" />
+              <circle cx="17.5" cy="18" r="2" />
+            </svg>
+
+            <span>
+              Lote: <strong>{{ lote.id }}</strong>
+            </span>
+          </div>
+
+          <div class="confirmacion-dato">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m21 3-7.5 18-3.5-7-7-3.5z" />
+              <path d="M10 14 21 3" />
+            </svg>
+
+            <span>
+              Ruta: <strong>Lima Centro - Sur</strong>
+            </span>
+          </div>
+        </div>
+
+        <div class="confirmacion-acciones">
+          <button
+            class="btn-confirmar"
+            type="button"
+            (click)="confirmarInicioRuta()"
+          >
+            Confirmar
+          </button>
+
+          <button
+            class="btn-cancelar"
+            type="button"
+            (click)="cerrarConfirmacionRuta()"
+          >
+            Cancelar
+          </button>
+        </div>
+      </section>
+    </div>
+  }
+
+  <!-- Aviso: ya existe otro lote en ruta -->
+  @if (mostrarAvisoRutaActiva) {
+    <div
+      class="confirmacion-overlay aviso-ruta-overlay"
+      (click)="cerrarAvisoRutaActiva()"
+    >
+      <section
+        class="aviso-ruta-panel"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="titulo-aviso-ruta"
+        (click)="$event.stopPropagation()"
+      >
+        <!-- Icono de advertencia -->
+        <div class="aviso-ruta-icono">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v6" />
+            <circle cx="12" cy="16.5" r=".7" />
+          </svg>
+        </div>
+
+        <!-- Título y lote que se intenta iniciar -->
+        <h2 id="titulo-aviso-ruta">
+          Acción no permitida
+        </h2>
+
+        <p class="aviso-ruta-descripcion">
+          No se puede iniciar el lote
+          <strong>{{ lote.id }}</strong>
+        </p>
+
+        <!-- Lote que ya está activo -->
+        <div class="aviso-ruta-detalle">
+          <p>Ya tienes un lote en ruta activo:</p>
+
+          <div class="aviso-ruta-lote">
+            <span class="aviso-ruta-etiqueta">
+              {{ loteEnRutaId }}
+            </span>
+
+            <span class="aviso-ruta-estado">
+              EN RUTA
+            </span>
+          </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="aviso-ruta-acciones">
+          <button
+            class="aviso-ruta-ir"
+            type="button"
+            (click)="irARutaActual()"
+          >
+            <span>IR A RUTA ACTUAL</span>
+
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </button>
+
+          <button
+            class="aviso-ruta-entendido"
+            type="button"
+            (click)="cerrarAvisoRutaActiva()"
+          >
+            ENTENDIDO
+          </button>
+        </div>
+
+        <!-- Nota inferior -->
+        <p class="aviso-ruta-pie">
+          FINALIZA EL LOTE ACTUAL ANTES DE INICIAR UNO
+          NUEVO CONFORME A LOS PROTOCOLOS DE RUTA.
+        </p>
+      </section>
+    </div>
+  }
+} @else {
+  <!-- Pantalla del lote activo -->
+  <section class="lote-activo">
+
+    <header class="activo-header">
+      <button
+        class="activo-volver"
+        type="button"
+        aria-label="Volver a mis lotes"
+        (click)="volver()"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m15 18-6-6 6-6" />
+        </svg>
+      </button>
+
+      <div class="activo-titulo">
+        <span>LOTE ACTIVO</span>
+        <h1>{{ lote.id }}</h1>
+      </div>
+
+      <button
+        class="activo-menu"
+        type="button"
+        aria-label="Opciones del lote"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="5" r="1.5" />
+          <circle cx="12" cy="12" r="1.5" />
+          <circle cx="12" cy="19" r="1.5" />
+        </svg>
+      </button>
+    </header>
+
+    <!-- Progreso del lote -->
+    <section class="progreso-lote">
+      <div class="progreso-titulo">
+        <div class="progreso-etiqueta">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 6h11v12H3z" />
+            <path d="M14 10h4l3 4v4h-7z" />
+            <circle cx="7.5" cy="18" r="2" />
+            <circle cx="17.5" cy="18" r="2" />
+          </svg>
+
+          <span>Progreso del Lote</span>
+        </div>
+
+        <strong class="progreso-contador">
+          {{ paradasCompletadas }} / {{ cantidadTotalParadas }} PARADAS
+        </strong>
+      </div>
+
+      <div
+        class="progreso-barra"
+        role="progressbar"
+        aria-label="Progreso del lote"
+        [attr.aria-valuenow]="porcentajeCompletado"
+        aria-valuemin="0"
+        aria-valuemax="100"
+      >
+        <span [style.width.%]="porcentajeCompletado"></span>
+      </div>
+
+      <span class="progreso-porcentaje">
+        {{ porcentajeCompletado }}% COMPLETADO
+      </span>
+    </section>
+
+    <!-- Hoja de ruta -->
+    <section class="hoja-ruta">
+      <h2>Hoja de Ruta</h2>
+
+      <div class="paradas-lista paradas-activas">
+        @for (parada of lote.paradas; track parada.numero) {
+          <article class="parada-item">
+            <div class="parada-indicador">
+              <span class="parada-numero">{{ parada.numero }}</span>
+
+              @if (!$last) {
+                <span class="parada-conector"></span>
+              }
+            </div>
+
+            <button
+              class="parada-contenido"
+              type="button"
+              (click)="abrirParada(parada)"
+              [attr.aria-label]="'Ver parada de ' + parada.destinatario"
+            >
+              <div class="parada-titulo">
+                <h3>{{ parada.destinatario }}</h3>
+
+                <svg
+                  class="parada-flecha"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </div>
+
+              <div class="parada-direccion">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
+                  <circle cx="12" cy="10" r="2.5" />
+                </svg>
+
+                <span>{{ parada.direccion }}</span>
+              </div>
+
+              <span class="codigo-seguimiento">
+                {{ parada.codigoSeguimiento }}
+              </span>
+            </button>
+          </article>
+        }
+      </div>
+    </section>
+  </section>
+}

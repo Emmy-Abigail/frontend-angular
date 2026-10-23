@@ -1,95 +1,422 @@
-.mis-lotes-view {
+
+/* =========================================
+   CONTENEDOR PRINCIPAL
+   ========================================= */
+
+:host {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  height: 100%;
+  min-height: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #1e293b;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+button {
+  font: inherit;
+}
+
+.mis-lotes-view {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 100%;
+  background: #f8fafc;
+}
+
+/* =========================================
+   ENCABEZADO
+   ========================================= */
+
 .view-header {
-  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 57px;
+  padding: 16px 18px;
   border-bottom: 1px solid #e2e8f0;
+  background: #fff;
   text-align: center;
-  background-color: #ffffff;
 }
 
 .view-header h1 {
   margin: 0;
+  color: #1e293b;
   font-size: 15px;
   font-weight: 700;
-  color: #1e293b;
   letter-spacing: 0.5px;
 }
 
+/* =========================================
+   CONTENIDO
+   ========================================= */
+
 .view-content {
-  padding: 16px 16px 24px;
   display: flex;
-  flex-direction: column;
-  gap: 16px;
   flex: 1;
+  flex-direction: column;
+  gap: 17px;
+  padding: 18px 15px 24px;
 }
 
-.search-box {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background-color: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 0 12px;
-  height: 40px;
-}
-
-.search-box input {
-  border: none;
-  background: none;
-  outline: none;
-  font-size: 13px;
-  color: #1e293b;
-  width: 100%;
-}
-
-.search-box input::placeholder {
-  color: #94a3b8;
-}
+/* =========================================
+   PESTAÑAS Y FILTROS
+   ========================================= */
 
 .tabs-segment {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
+  grid-template-columns: 0.8fr 1.15fr 1.05fr;
+  width: 100%;
+  min-height: 43px;
   overflow: hidden;
-  background-color: #ffffff;
+  border: 1px solid #d7dee8;
+  border-radius: 7px;
+  background: #fff;
 }
 
 .tab-btn {
-  border: none;
-  background: none;
-  padding: 10px 4px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 9px 4px;
+  border: 0;
+  border-right: 1px solid #d7dee8;
+  background: #fff;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
   cursor: pointer;
-  transition: all 0.15s ease;
-  border-right: 1px solid #cbd5e1;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .tab-btn:last-child {
-  border-right: none;
+  border-right: 0;
+}
+
+.tab-btn:hover:not(.active) {
+  background: #f1f7ff;
+  color: #2878c8;
 }
 
 .tab-btn.active {
-  background-color: #3b82f6;
-  color: #ffffff;
+  background: #3488e8;
+  color: #fff;
 }
 
-.empty-state-card {
-  margin-top: 60px;
-  padding: 30px 20px;
+/* =========================================
+   LISTA DE LOTES
+   ========================================= */
+
+.lotes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  width: 100%;
+}
+
+/* =========================================
+   TARJETA DE LOTE
+   ========================================= */
+
+.lote-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  padding: 15px 12px;
+  border: 1px solid #91c5ff;
+  border-radius: 10px;
+  background: #eaf4ff;
+  color: #334155;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgb(30 64 175 / 3%);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.lote-card:hover {
+  border-color: #60a5fa;
+  background: #e3f0ff;
+  box-shadow: 0 3px 9px rgb(59 130 246 / 8%);
+}
+
+.lote-card:active {
+  transform: scale(0.99);
+}
+
+.lote-card:focus-visible {
+  outline: 2px solid #2588ef;
+  outline-offset: 2px;
+}
+
+/* Icono */
+
+.lote-icon {
+  display: flex;
+  flex: 0 0 40px;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-top: 1px;
+  border: 1px solid #d1e6ff;
+  border-radius: 8px;
+  background: #f7fbff;
+  color: #3787e6;
+}
+
+.lote-icon svg {
+  display: block;
+  width: 25px;
+  height: 25px;
+}
+
+/* Información */
+
+.lote-information {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.lote-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 7px;
+  min-width: 0;
+}
+
+.lote-code {
+  overflow-wrap: anywhere;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+/* =========================================
+   ESTADOS DEL LOTE
+   ========================================= */
+
+.lote-status {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 7px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.status-assigned {
+  border-color: #b8dbff;
+  background: #d8ebff;
+  color: #2775ca;
+}
+
+.status-route {
+  border-color: #d9caff;
+  background: #eee6ff;
+  color: #7751c9;
+}
+
+/* =========================================
+   RUTA, PAQUETES Y HORA
+   ========================================= */
+
+.lote-route {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  color: #53657c;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.lote-route svg {
+  flex: 0 0 12px;
+  margin-top: 1px;
+  color: #6d94c5;
+}
+
+.lote-route > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.lote-summary {
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.lote-time {
+  align-self: flex-end;
+  color: #718096;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+/* Flecha de navegación */
+
+.lote-chevron {
+  display: flex;
+  flex: 0 0 13px;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  color: #6d9ed8;
+  font-size: 25px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+/* =========================================
+   ESTADO VACÍO
+   ========================================= */
+
+.empty-state {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 30px 12px 45px;
   text-align: center;
 }
 
-.empty-text {
+.empty-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.empty-title svg {
+  display: block;
+  color: #94a3b8;
+}
+
+.empty-title h2 {
   margin: 0;
-  font-size: 13.5px;
-  color: #64748b;
-  line-height: 1.6;
+  color: #334155;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.empty-state > p {
+  max-width: 280px;
+  margin: 14px 0 22px;
+  color: #718096;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* =========================================
+   BOTÓN ACTUALIZAR LISTA
+   ========================================= */
+
+.refresh-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 10px 18px;
+  border: 1px solid #3187e7;
+  border-radius: 7px;
+  background: #3789e9;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.refresh-button:hover {
+  background: #2678d7;
+  box-shadow: 0 2px 6px rgb(37 99 235 / 18%);
+}
+
+.refresh-button:active {
+  background: #1d68c2;
+}
+
+.refresh-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.refresh-button svg {
+  flex: 0 0 19px;
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 360px) {
+  .view-content {
+    gap: 14px;
+    padding: 14px 10px 20px;
+  }
+
+  .tabs-segment {
+    grid-template-columns: 0.7fr 1.2fr 1.1fr;
+  }
+
+  .tab-btn {
+    padding: 8px 2px;
+    font-size: 10px;
+  }
+
+  .lote-card {
+    gap: 8px;
+    padding: 12px 9px;
+  }
+
+  .lote-icon {
+    flex-basis: 34px;
+    width: 34px;
+    height: 34px;
+  }
+
+  .lote-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .lote-status {
+    padding: 4px 5px;
+    font-size: 8px;
+  }
+
+  .lote-code {
+    font-size: 12px;
+  }
 }

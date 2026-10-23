@@ -1,0 +1,1235 @@
+
+/* =========================================
+   ESTILOS GENERALES
+   ========================================= */
+
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  color: #414650;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.lotes-page,
+.lote-detail-page {
+  width: 100%;
+  min-height: 100%;
+  padding: 12px;
+  background: #f5f6f8;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* =========================================
+   ENCABEZADOS
+   ========================================= */
+
+.page-heading,
+.detail-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 0 10px;
+}
+
+.heading-copy,
+.detail-heading > div {
+  min-width: 0;
+}
+
+.page-heading h1,
+.detail-heading h1 {
+  margin: 0;
+  color: #252930;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: normal;
+  line-height: 1.35;
+}
+
+.page-heading p,
+.detail-heading p {
+  margin: 5px 0 0;
+  color: #737780;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.refresh-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 39px;
+  padding: 9px 16px;
+  border: 1px solid #3999ff;
+  border-radius: 6px;
+  background: #fff;
+  color: #2688ed;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.15s ease;
+}
+
+.refresh-button:hover {
+  background: #edf6ff;
+}
+
+.refresh-button span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.detail-divider {
+  height: 1px;
+  margin-bottom: 0;
+  background: #d9dce2;
+}
+
+/* =========================================
+   PESTAÑAS DE LOTES
+   ========================================= */
+
+.lotes-section {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 34px;
+  min-height: 39px;
+  padding: 0 14px;
+  border-bottom: 1px solid #c4c9d1;
+}
+
+.tabs > button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 2px;
+  border: 0;
+  background: transparent;
+  color: #858b96;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.tabs > button.active {
+  color: #2997ff;
+}
+
+.tabs > button.active::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: #359cff;
+  content: "";
+}
+
+.tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 21px;
+  height: 19px;
+  padding: 0 6px;
+  border-radius: 20px;
+  background: #e5e7eb;
+  color: #4d535c;
+  font-size: 12px;
+}
+
+.tabs > button.active .tab-count {
+  background: #cde7fb;
+  color: #39424d;
+}
+
+/* =========================================
+   LISTA DE LOTES EN PREPARACIÓN
+   ========================================= */
+
+.lotes-list,
+.dispatched-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 20px;
+}
+
+.lote-row {
+  display: grid;
+  grid-template-columns:
+    minmax(220px, 1.7fr)
+    minmax(125px, 1fr)
+    minmax(145px, 1fr)
+    58px
+    auto;
+  align-items: center;
+  gap: 20px;
+  min-height: 100px;
+  padding: 16px;
+  border: 1px solid #eceef1;
+  border-radius: 11px;
+  background: #fff;
+  transition: border-color 0.15s ease;
+}
+
+.lote-row.lote-completo {
+  border-color: #3c9cff;
+}
+
+.lote-identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.lote-icon {
+  display: flex;
+  flex: 0 0 62px;
+  align-items: center;
+  justify-content: center;
+  width: 62px;
+  height: 60px;
+  border-radius: 13px;
+  background: #e1e5ea;
+  color: #39414a;
+}
+
+.lote-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+.lote-description {
+  min-width: 0;
+}
+
+.lote-title-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.lote-description h2 {
+  overflow: hidden;
+  margin: 0;
+  color: #414650;
+  font-size: 14px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lote-description p {
+  margin: 5px 0 0;
+  color: #747982;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.lote-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border-radius: 5px;
+  background: #c9f2d7;
+  color: #168b46;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* =========================================
+   BARRAS DE PROGRESO
+   ========================================= */
+
+.metric {
+  min-width: 0;
+}
+
+.metric-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 11px;
+  font-size: 12px;
+}
+
+.metric-label > span {
+  color: #747982;
+  white-space: nowrap;
+}
+
+.metric-label strong {
+  color: #424750;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.progress-track {
+  overflow: hidden;
+  width: 100%;
+  height: 5px;
+  border-radius: 10px;
+  background: #d0ccfb;
+}
+
+.progress-fill {
+  height: 100%;
+  min-width: 0;
+  border-radius: inherit;
+  background: #17a653;
+  transition: width 0.2s ease;
+}
+
+.lote-time {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #737780;
+  font-size: 12px;
+}
+
+.lote-time strong {
+  color: #3d424a;
+  font-size: 12px;
+}
+
+/* =========================================
+   BOTONES DE LOTES
+   ========================================= */
+
+.lote-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.button-link {
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: #268eea;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.button-link:hover {
+  color: #1474c7;
+  text-decoration: underline;
+}
+
+.button-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 9px 13px;
+  border: 1px solid #3599ed;
+  border-radius: 6px;
+  background: #3999e8;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.button-primary:hover:not(:disabled) {
+  background: #2587d8;
+}
+
+/* =========================================
+   LOTES DESPACHADOS
+   ========================================= */
+
+.dispatched-row {
+  display: grid;
+  grid-template-columns:
+    minmax(250px, 1.5fr)
+    minmax(95px, 0.55fr)
+    minmax(150px, 1fr)
+    minmax(90px, 0.55fr)
+    auto;
+  align-items: center;
+  gap: 20px;
+  min-height: 104px;
+  padding: 17px;
+  border: 1px solid #e9ebef;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.dispatch-status-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dispatch-status,
+.package-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 22px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-en-ruta,
+.package-in-route {
+  border-color: #f0e7ff;
+  background: #f4edff;
+  color: #8553ff;
+}
+
+.status-asignado {
+  border-color: #e1f0ff;
+  background: #eef7ff;
+  color: #3695f8;
+}
+
+.status-cerrado {
+  border-color: #ffe1e1;
+  background: #fff1f1;
+  color: #ff4b55;
+}
+
+.driver-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.driver-info strong {
+  overflow: hidden;
+  color: #454951;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.driver-info span {
+  color: #777c84;
+  font-size: 13px;
+}
+
+.dispatch-time {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #777c84;
+  font-size: 13px;
+}
+
+.dispatch-time strong {
+  color: #454951;
+  font-size: 14px;
+}
+
+.dispatch-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.button-view-lot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid #3999ff;
+  border-radius: 6px;
+  background: #fff;
+  color: #268ce9;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.button-view-lot:hover {
+  background: #eff7ff;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 42px 16px;
+  color: #747982;
+  text-align: center;
+}
+
+.empty-state strong {
+  color: #444a54;
+  font-size: 15px;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.page-footer {
+  margin: 18px 4px 0;
+  color: #747982;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* =========================================
+   DETALLE DEL LOTE
+   ========================================= */
+
+.lote-detail-page {
+  padding: 12px 4px;
+}
+
+.detail-heading {
+  padding: 0 8px 10px;
+}
+
+.detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.5fr) minmax(260px, 0.95fr);
+  align-items: start;
+  gap: 14px;
+  margin-top: 90px;
+}
+
+.packages-table-container {
+  overflow-x: auto;
+  min-width: 0;
+  border: 1px solid #dfe3e9;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.packages-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: #424750;
+  font-size: 13px;
+  text-align: left;
+}
+
+.packages-table th,
+.packages-table td {
+  height: 54px;
+  padding: 12px 14px;
+  border-right: 1px solid #dfe3e9;
+  border-bottom: 1px solid #dfe3e9;
+  white-space: nowrap;
+}
+
+.packages-table th:last-child,
+.packages-table td:last-child {
+  border-right: 0;
+}
+
+.packages-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.packages-table th {
+  height: 43px;
+  background: #fafafd;
+  color: #606979;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.packages-table tbody tr {
+  background: #fff;
+  transition: background 0.12s ease;
+}
+
+.packages-table tbody tr:hover {
+  background: #f6faff;
+  cursor: pointer;
+}
+
+.packages-table tbody tr.package-selected {
+  background: #edf6ff;
+}
+
+.stop-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.stop-selector input {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  accent-color: #3299ff;
+  cursor: pointer;
+}
+
+.tracking-code {
+  color: #3298ff;
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.package-status {
+  padding: 6px 9px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.package-delivered {
+  border-color: #f6edda;
+  background: #fff8eb;
+  color: #b27a16;
+}
+
+.package-failed {
+  border-color: #ffe5ef;
+  background: #fff0f6;
+  color: #f14d89;
+}
+
+.packages-empty {
+  padding: 30px 16px;
+  color: #747982;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* =========================================
+   PANEL LATERAL DE DESPACHO
+   ========================================= */
+
+.dispatch-detail-card {
+  min-width: 0;
+  padding: 14px 16px 16px;
+  border: 1px solid #eceef1;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.dispatch-detail-card > h2 {
+  margin: 0;
+  color: #454951;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.dispatch-card-divider {
+  height: 1px;
+  margin: 9px 0 10px;
+  background: #bfc5ce;
+}
+
+.dispatch-detail-line {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 6px;
+  font-size: 13px;
+}
+
+.dispatch-detail-line > span {
+  color: #777c84;
+}
+
+.dispatch-detail-line strong {
+  color: #444951;
+  font-weight: 500;
+  text-align: right;
+}
+
+.dispatch-weight {
+  margin-top: 16px;
+  margin-bottom: 26px;
+}
+
+.package-state-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.state-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 58px;
+  padding: 8px 4px;
+  border: 1px solid #dfe2e7;
+  border-radius: 5px;
+  background: #e0e3e8;
+  color: #414650;
+  font-size: 11px;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.state-action-button:hover:not(:disabled) {
+  border-color: #83bdff;
+  background: #eaf4ff;
+}
+
+.state-action-button.state-action-active {
+  border-color: #3999ff;
+  background: #dceeff;
+  color: #187bd3;
+  font-weight: 700;
+}
+
+.selected-package-hint {
+  margin: 14px 0 0;
+  color: #777c84;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.dispatch-closing-note {
+  margin: 16px 0 0;
+  color: #777c84;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.lot-closed-notice {
+  margin-top: 14px;
+  padding: 10px;
+  border: 1px solid #b9e7c9;
+  border-radius: 6px;
+  background: #edfbf1;
+  color: #188343;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.button-back-to-lotes {
+  display: block;
+  width: 100%;
+  margin-top: 18px;
+  padding: 9px 12px;
+  border: 1px solid #3999ff;
+  border-radius: 6px;
+  background: #fff;
+  color: #2589e9;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.button-back-to-lotes:hover {
+  background: #eff7ff;
+}
+
+/* =========================================
+   FONDO DE MODALES
+   ========================================= */
+
+.modal-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 24px 16px;
+  background: rgba(35, 39, 46, 0.42);
+}
+
+.dispatch-modal,
+.confirmation-modal {
+  position: relative;
+  width: min(100%, 620px);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding: 28px;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 16px 48px rgba(20, 25, 35, 0.15);
+}
+
+.modal-close {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #242830;
+  font-size: 29px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.dispatch-modal > h2 {
+  margin: 8px 35px 5px 0;
+  color: #272b32;
+  font-family: "Courier New", monospace;
+  font-size: 23px;
+  font-weight: 500;
+}
+
+.modal-subtitle {
+  margin: 0;
+  color: #737780;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.modal-section-title {
+  margin: 25px 0 16px;
+  color: #696f78;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* =========================================
+   SELECCIÓN DE CONDUCTOR
+   ========================================= */
+
+.drivers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.driver-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 78px;
+  padding: 14px 16px;
+  border: 1px solid #dfe3e9;
+  border-radius: 11px;
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.driver-option:hover {
+  background: #f6faff;
+}
+
+.driver-option.driver-selected {
+  border-color: #389bff;
+  background: #dceeff;
+}
+
+.driver-option input {
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  accent-color: #328ff0;
+}
+
+.driver-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.driver-main strong {
+  color: #444951;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.driver-main > span {
+  color: #747982;
+  font-size: 13px;
+}
+
+.driver-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 8px 10px;
+  border-radius: 22px;
+  font-size: 11px;
+  text-align: center;
+}
+
+.driver-status strong {
+  font-size: 11px;
+}
+
+.driver-free {
+  background: #edfbf2;
+  color: #138644;
+}
+
+.driver-busy {
+  background: #f2efff;
+  color: #7562fa;
+}
+
+.driver-hint {
+  margin: 14px 0 0;
+  color: #777c84;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 26px;
+}
+
+.modal-confirm {
+  min-width: 100px;
+}
+
+/* =========================================
+   AVISO DE CONFLICTO
+   ========================================= */
+
+.dispatch-conflict-alert {
+  margin-top: 30px;
+  padding: 18px;
+  border: 1px solid #ff4d55;
+  border-radius: 10px;
+  background: #f5c5c8;
+}
+
+.dispatch-conflict-alert strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #d9252d;
+  font-size: 13px;
+}
+
+.dispatch-conflict-alert p {
+  margin: 0;
+  color: #777c84;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.conflict-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.validation-message {
+  margin: 14px 0 0;
+  color: #d9252d;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* =========================================
+   CONFIRMACIÓN DEL DESPACHO
+   ========================================= */
+
+.confirmation-backdrop {
+  z-index: 1010;
+}
+
+.confirmation-modal {
+  width: min(100%, 558px);
+  padding: 30px 28px 27px;
+  border-radius: 5px;
+  background: #f3f2ff;
+  text-align: center;
+}
+
+.confirmation-illustration {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 14px;
+  background: #fff;
+  color: #8dc9ff;
+}
+
+.confirmation-illustration span {
+  font-size: 38px;
+}
+
+.confirmation-modal > h2 {
+  margin: 0;
+  color: #30343c;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.confirmation-description {
+  margin: 12px 0 28px;
+  color: #777c84;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.confirmation-summary {
+  width: min(100%, 310px);
+  margin: 0 auto;
+  padding: 13px 12px;
+  border: 1px solid #ebeaf5;
+  border-radius: 6px;
+  background: #fff;
+  text-align: left;
+}
+
+.confirmation-summary h3 {
+  margin: 0;
+  color: #424750;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.summary-divider {
+  height: 1px;
+  margin: 9px 0 11px;
+  background: #bfc5ce;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.summary-line > span {
+  color: #777c84;
+}
+
+.summary-line strong {
+  color: #424750;
+  font-weight: 500;
+  text-align: right;
+}
+
+.confirmation-actions {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  margin-top: 32px;
+}
+
+.button-cancel {
+  min-width: 146px;
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 1px solid #d8dbe2;
+  background: #f7f7f8;
+  color: #686d76;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.button-cancel:hover {
+  background: #fff;
+}
+
+.button-confirm-final {
+  min-width: 137px;
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 1250px) {
+  .lote-row {
+    grid-template-columns:
+      minmax(200px, 1.4fr)
+      minmax(115px, 1fr)
+      minmax(130px, 1fr);
+    gap: 16px;
+  }
+
+  .lote-time {
+    align-items: flex-start;
+  }
+
+  .lote-actions {
+    justify-content: flex-start;
+  }
+
+  .dispatched-row {
+    grid-template-columns:
+      minmax(220px, 1.4fr)
+      minmax(90px, 0.6fr)
+      minmax(130px, 1fr);
+    gap: 16px;
+  }
+
+  .dispatch-time {
+    align-items: flex-start;
+  }
+
+  .dispatch-actions {
+    justify-content: flex-start;
+  }
+
+  .detail-layout {
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 45px;
+  }
+
+  .dispatch-detail-card {
+    width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .lotes-page,
+  .lote-detail-page {
+    padding: 10px 6px;
+  }
+
+  .page-heading,
+  .detail-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .page-heading h1,
+  .detail-heading h1 {
+    font-size: 21px;
+  }
+
+  .refresh-button {
+    align-self: flex-start;
+  }
+
+  .tabs {
+    gap: 20px;
+    padding: 0 6px;
+  }
+
+  .lote-row,
+  .dispatched-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    padding: 15px;
+  }
+
+  .lote-time {
+    align-items: flex-start;
+  }
+
+  .lote-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .dispatched-row .dispatch-status-cell {
+    justify-content: flex-start;
+  }
+
+  .dispatch-time {
+    align-items: flex-start;
+  }
+
+  .dispatch-actions {
+    justify-content: flex-start;
+  }
+
+  .detail-layout {
+    gap: 16px;
+    margin-top: 25px;
+  }
+
+  .packages-table-container {
+    max-width: 100%;
+  }
+
+  .packages-table {
+    min-width: 760px;
+  }
+
+  .dispatch-modal,
+  .confirmation-modal {
+    padding: 24px 17px;
+    border-radius: 10px;
+  }
+
+  .dispatch-modal > h2 {
+    font-size: 20px;
+  }
+
+  .driver-option {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding: 12px;
+  }
+
+  .driver-status {
+    margin-left: 27px;
+  }
+
+  .confirmation-actions {
+    gap: 10px;
+  }
+
+  .button-cancel,
+  .button-confirm-final {
+    flex: 1;
+    min-width: 0;
+  }
+}

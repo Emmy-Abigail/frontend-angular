@@ -1,0 +1,430 @@
+
+<div class="pagina-detalle">
+  <header class="encabezado">
+    <button
+      class="boton-volver"
+      type="button"
+      (click)="volver()"
+      aria-label="Volver"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M15 18l-6-6 6-6" />
+      </svg>
+    </button>
+
+    <h1>
+      {{
+        mostrarRegistroEntrega
+          ? 'Registrar entrega'
+          : mostrarRegistroFallo
+            ? 'Registro de fallo'
+            : 'Detalle del paquete'
+      }}
+    </h1>
+  </header>
+
+  <!-- DETALLE DEL PAQUETE -->
+  @if (
+    !mostrarRegistroEntrega &&
+    !mostrarRegistroFallo &&
+    !mostrarEntregaExitosa
+  ) {
+    <main class="contenido">
+      <section class="tracking">
+        <div>
+          <span class="etiqueta">Código de seguimiento</span>
+          <h2>{{ paquete.tracking }}</h2>
+        </div>
+
+        <span
+          class="estado"
+          [class.asignado]="estadoLote === 'ASIGNADO'"
+          [class.en-ruta]="estadoLote === 'EN RUTA'"
+        >
+          {{ estadoLote }}
+        </span>
+      </section>
+
+      <section class="tarjeta">
+        <h3>Información del destinatario</h3>
+
+        <div class="campo">
+          <span class="etiqueta">Nombre completo</span>
+          <p>{{ paquete.destinatario }}</p>
+        </div>
+
+        <div class="campo">
+          <span class="etiqueta">Teléfono</span>
+          <div class="telefono">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M22 16.92v3a2 2 0 0 1-2.18 2A19.8 19.8 0 0 1 11.19 18a19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.09 3.18 2 2 0 0 1 4.08 1h3a2 2 0 0 1 2 1.72c.12.96.35 1.9.69 2.8a2 2 0 0 1-.45 2.11L8.05 8.9a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.84.57 2.8.69A2 2 0 0 1 22 16.92z"
+              />
+            </svg>
+            <a [href]="'tel:' + paquete.telefono">
+              {{ paquete.telefono }}
+            </a>
+          </div>
+        </div>
+
+        <div class="campo">
+          <span class="etiqueta">Dirección de entrega</span>
+          <div class="direccion">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0z" />
+              <circle cx="12" cy="10" r="2.5" />
+            </svg>
+            <p>{{ paquete.direccion }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="tarjeta">
+        <h3>Detalles del paquete</h3>
+        <div class="fila-detalles">
+          <div class="campo">
+            <span class="etiqueta">Peso</span>
+            <p>{{ paquete.peso }}</p>
+          </div>
+          <div class="campo">
+            <span class="etiqueta">Dimensiones</span>
+            <p>{{ paquete.dimensiones }}</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    @if (estadoLote === 'EN RUTA') {
+      <footer class="acciones">
+        <button
+          class="boton boton-fallido"
+          type="button"
+          (click)="registrarFallido()"
+        >
+          Registrar fallido
+        </button>
+
+        <button
+          class="boton boton-principal"
+          type="button"
+          (click)="registrarEntrega()"
+        >
+          Confirmar entrega
+        </button>
+      </footer>
+    }
+  }
+
+  <!-- REGISTRO DE ENTREGA -->
+  @if (mostrarRegistroEntrega) {
+    <main class="contenido contenido-registro">
+      <section class="instruccion">
+        <h2>Registrar entrega</h2>
+        <p>
+          Toma una fotografía como evidencia de que el paquete fue
+          entregado al destinatario.
+        </p>
+      </section>
+
+      <section class="tarjeta tarjeta-foto">
+        <h3>
+          Evidencia fotográfica
+          <span class="obligatorio">*</span>
+        </h3>
+
+        <p class="ayuda">
+          La fotografía es obligatoria para confirmar la entrega.
+        </p>
+
+        <input
+          #inputFoto
+          type="file"
+          accept="image/*"
+          capture="environment"
+          hidden
+          (change)="seleccionarFoto($event)"
+        />
+
+        @if (vistaPreviaFoto) {
+          <div class="vista-foto">
+            <img
+              [src]="vistaPreviaFoto"
+              alt="Fotografía de evidencia de entrega"
+            />
+            <button
+              class="quitar-foto"
+              type="button"
+              (click)="quitarFoto()"
+            >
+              Quitar fotografía
+            </button>
+          </div>
+        } @else {
+          <button
+            class="zona-foto"
+            type="button"
+            (click)="abrirSelectorFoto()"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M14 4h-4l-2 3H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-4z"
+              />
+              <circle cx="12" cy="13" r="3.5" />
+            </svg>
+            <strong>Tomar fotografía</strong>
+            <span>o selecciona una imagen de tu dispositivo</span>
+          </button>
+        }
+
+        @if (mostrarErrorFoto) {
+          <div class="error-foto" role="alert">
+            <span>
+              Debes tomar o adjuntar una fotografía válida antes de continuar.
+            </span>
+          </div>
+        }
+      </section>
+
+      <section class="tarjeta">
+        <label for="comentario">Comentario (opcional)</label>
+        <textarea
+          id="comentario"
+          [(ngModel)]="comentario"
+          placeholder="Agrega alguna observación sobre la entrega..."
+          rows="4"
+        ></textarea>
+      </section>
+    </main>
+
+    <footer class="acciones acciones-registro">
+      <button
+        class="boton boton-secundario"
+        type="button"
+        (click)="mostrarRegistroEntrega = false"
+      >
+        Cancelar
+      </button>
+
+      <button
+        class="boton boton-principal"
+        type="button"
+        (click)="solicitarConfirmacionEntrega()"
+      >
+        Confirmar entrega
+      </button>
+    </footer>
+  }
+
+  <!-- CONFIRMAR ENTREGA -->
+  @if (mostrarConfirmacionEntrega) {
+    <div class="fondo-modal" role="presentation">
+      <section
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-confirmacion-entrega"
+      >
+        <h2 id="titulo-confirmacion-entrega">
+          ¿Confirmar la entrega?
+        </h2>
+
+        <p>
+          <strong>{{ paquete.tracking }}</strong> quedará como
+          Entregado con la foto. Es un estado final y no se puede cambiar.
+        </p>
+
+        <div class="acciones-modal">
+          <button
+            class="boton boton-secundario"
+            type="button"
+            (click)="cerrarConfirmacionEntrega()"
+          >
+            Revisar
+          </button>
+
+          <button
+            class="boton boton-principal"
+            type="button"
+            (click)="confirmarEntregaDefinitiva()"
+          >
+            Sí, confirmar
+          </button>
+        </div>
+      </section>
+    </div>
+  }
+
+  <!-- REGISTRO DE FALLO -->
+  @if (mostrarRegistroFallo) {
+    <main class="contenido contenido-registro-fallo">
+      <section class="resumen-paquete-fallo">
+        <span class="etiqueta">Paquete seleccionado</span>
+
+        <div class="resumen-fallo-fila">
+          <div class="icono-paquete-fallo">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m12 3 9 5-9 5-9-5 9-5z" />
+              <path d="M3 8v9l9 5 9-5V8" />
+              <path d="M12 13v9" />
+              <path d="m7.5 5.5 9 5" />
+            </svg>
+          </div>
+
+          <div class="resumen-fallo-datos">
+            <strong>{{ paquete.tracking }}</strong>
+            <span>{{ paquete.destinatario }}</span>
+            <p>{{ paquete.direccion }}</p>
+          </div>
+
+          <span class="referencia-fallo">
+            PARADA {{ numeroParada }}
+          </span>
+        </div>
+      </section>
+
+      <section class="seccion-fallo">
+        <h2 class="titulo-seccion-fallo">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="5" y="4" width="14" height="17" rx="2" />
+            <path d="M9 4V2h6v2M8 10h8M8 14h8" />
+          </svg>
+          MOTIVO <span>*</span>
+        </h2>
+
+        <div class="opciones-fallo">
+          @for (motivo of motivosFallo; track motivo) {
+            <button
+              class="opcion-fallo"
+              [class.seleccionado]="motivoFallo === motivo"
+              type="button"
+              [attr.aria-pressed]="motivoFallo === motivo"
+              (click)="seleccionarMotivoFallo(motivo)"
+            >
+              <span class="casilla-fallo">
+                @if (motivoFallo === motivo) {
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m5 12 4 4L19 6" />
+                  </svg>
+                }
+              </span>
+              <span>{{ motivo }}</span>
+            </button>
+          }
+        </div>
+      </section>
+
+      <section class="seccion-fallo seccion-observacion-fallo">
+        <label class="titulo-seccion-fallo" for="observacion-fallo">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <path d="M14 2v6h6M8 13h8M8 17h8" />
+          </svg>
+          OBSERVACIÓN <span>*</span>
+        </label>
+
+        <textarea
+          id="observacion-fallo"
+          class="textarea-fallo"
+          [(ngModel)]="observacionFallo"
+          placeholder="Ingrese detalles sobre la recepción, punto de entrega específico."
+          rows="3"
+          (input)="mostrarErrorFallo = false"
+        ></textarea>
+      </section>
+
+      @if (mostrarErrorFallo) {
+        <div class="error-fallo" role="alert">
+          Selecciona un motivo y escribe una observación para continuar.
+        </div>
+      }
+    </main>
+
+    <footer class="acciones acciones-fallo">
+      <button
+        class="boton boton-confirmar-fallo"
+        type="button"
+        (click)="solicitarConfirmacionFallo()"
+      >
+        Confirmar fallo
+      </button>
+    </footer>
+  }
+
+  <!-- CONFIRMACIÓN DE FALLO: HOJA INFERIOR -->
+  @if (mostrarConfirmacionFallo) {
+    <div
+      class="fondo-modal fondo-modal-inferior"
+      role="presentation"
+      (click)="cerrarConfirmacionFallo()"
+    >
+      <section
+        class="modal modal-fallo"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-confirmacion-fallo"
+        (click)="$event.stopPropagation()"
+      >
+        <h2 id="titulo-confirmacion-fallo">
+          ¿Registrar como fallido?
+        </h2>
+
+        <p>
+          El paquete quedará registrado como fallido. Este estado no se
+          puede cambiar.
+        </p>
+
+        <div class="acciones-modal">
+          <button
+            class="boton boton-revisar-fallo"
+            type="button"
+            (click)="volverARegistroFallo()"
+          >
+            Revisar
+          </button>
+
+          <button
+            class="boton boton-confirmar-fallo"
+            type="button"
+            (click)="confirmarFalloDefinitivo()"
+          >
+            Sí, registrar
+          </button>
+        </div>
+      </section>
+    </div>
+  }
+
+  <!-- ENTREGA EXITOSA -->
+  @if (mostrarEntregaExitosa) {
+    <div class="fondo-modal" role="presentation">
+      <section
+        class="modal modal-exito"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-exito"
+      >
+        <div class="icono-modal icono-exito">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m5 12 4 4L19 6" />
+          </svg>
+        </div>
+
+        <h2 id="titulo-exito">¡Entrega confirmada!</h2>
+        <p>El paquete se ha registrado como entregado correctamente.</p>
+
+        <div class="codigo-modal">
+          <span>Código de seguimiento</span>
+          <strong>{{ paquete.tracking }}</strong>
+        </div>
+
+        <button
+          class="boton boton-principal boton-completo"
+          type="button"
+          (click)="cerrarEntregaExitosa()"
+        >
+          Volver al lote
+        </button>
+      </section>
+    </div>
+  }
+</div>

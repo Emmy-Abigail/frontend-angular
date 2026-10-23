@@ -1,8 +1,10 @@
+
 import { Routes } from '@angular/router';
 
 import { PublicLayout } from './layout/public-layout/public-layout';
 import { AdminLayout } from './layout/admin-layout/admin-layout';
 import { ConductorLayout } from './layout/conductor-layout/conductor-layout';
+import { OperadorLayout } from './layout/operador-layout/operador-layout';
 
 import { Inicio } from './features/inicio/inicio';
 import { Cotizacion } from './features/cotizacion/cotizacion';
@@ -20,10 +22,15 @@ import { ListaUsuarios } from './features/usuarios/lista-usuarios/lista-usuarios
 import { AltaPersonal } from './features/usuarios/alta-personal/alta-personal';
 
 import { Operador } from './features/operador/operador';
+import { ConsultaPaquetes } from './features/consulta-paquetes/consulta-paquetes';
+import { DetallePaquete } from './features/detalle-paquete/detalle-paquete';
+import { Lotes } from './features/lotes/lotes';
+
 import { MisLotes } from './features/conductor/mis-lotes/mis-lotes';
 import { PerfilConductor } from './features/conductor/perfil/perfil';
 import { RutasConductor } from './features/rutas-conductor/rutas-conductor';
 import { Entregas } from './features/entregas/entregas';
+import { DetallePaqueteConductor } from './features/detalle-paquete-conductor/detalle-paquete-conductor';
 
 import { authGuard } from './core/guards/auth-guard';
 
@@ -48,7 +55,7 @@ export const routes: Routes = [
     ],
   },
 
-  // Flujo de Autenticación (Visily 1, 2, 3, 15)
+  // Flujo de autenticación
   {
     path: 'login',
     redirectTo: 'login/admin',
@@ -67,7 +74,7 @@ export const routes: Routes = [
     component: ConductorLogin,
   },
 
-  // Flujo F3: Recuperación y Restablecimiento de Contraseña (Visily 4, 5, 6, 7, 8)
+  // Recuperación y restablecimiento de contraseña
   {
     path: 'recuperar',
     component: RecuperarPassword,
@@ -89,7 +96,7 @@ export const routes: Routes = [
     component: RestablecerPassword,
   },
 
-  // Flujo F1: Primer cambio de contraseña tras alta de personal (Visily 9)
+  // Primer cambio de contraseña
   {
     path: 'cambiar-contrasena',
     component: PrimerCambioPassword,
@@ -99,17 +106,35 @@ export const routes: Routes = [
     component: PrimerCambioPassword,
   },
 
-  // Portal Operador (Visily 14)
+  // Portal Operador
   {
     path: 'operador',
-    component: Operador,
+    component: OperadorLayout,
     canActivate: [authGuard],
     data: {
       rol: 'OPERADOR',
     },
+    children: [
+      {
+        path: '',
+        component: Operador,
+      },
+      {
+        path: 'consulta-paquetes',
+        component: ConsultaPaquetes,
+      },
+      {
+        path: 'consulta-paquetes/:tracking',
+        component: DetallePaquete,
+      },
+      {
+        path: 'lotes',
+        component: Lotes,
+      },
+    ],
   },
 
-  // Portal Administrador (Visily 10, 11, 11.5, 12, 13)
+  // Portal Administrador
   {
     path: 'admin',
     component: AdminLayout,
@@ -142,7 +167,7 @@ export const routes: Routes = [
     ],
   },
 
-  // Portal Conductor Móvil (Visily 16, 17)
+  // Portal Conductor móvil
   {
     path: 'conductor',
     component: ConductorLayout,
@@ -168,13 +193,22 @@ export const routes: Routes = [
         path: 'asignaciones',
         component: RutasConductor,
       },
+
+      // Detalle del lote
       {
         path: 'lote/:id',
         component: Entregas,
       },
+
+      // Detalle de un paquete dentro del lote
+      {
+        path: 'lote/:id/paquete/:numero',
+        component: DetallePaqueteConductor,
+      },
     ],
   },
 
+  // Ruta para páginas inexistentes
   {
     path: '**',
     redirectTo: '',

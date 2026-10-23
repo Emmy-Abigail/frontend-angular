@@ -1,0 +1,124 @@
+
+<div class="operador-layout-container">
+  <aside class="operador-sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="28"
+          height="28"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="m12 3 9 5-9 5-9-5 9-5Z" />
+          <path d="m3 12 9 5 9-5" />
+          <path d="m3 16 9 5 9-5" />
+        </svg>
+      </div>
+
+      <div class="brand-text">
+        <span class="brand-name">RIVA</span>
+        <span class="brand-version">Pro v1.0</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a
+        class="nav-item"
+        routerLink="/operador"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <span class="nav-icon">＋</span>
+        <span>Registro de Paquete</span>
+      </a>
+
+      <a
+        class="nav-item"
+        routerLink="/operador/consulta-paquetes"
+        routerLinkActive="active"
+      >
+        <span class="nav-icon">⌕</span>
+        <span>Consulta de Paquetes</span>
+      </a>
+
+      <a
+        class="nav-item"
+        routerLink="/operador/lotes"
+        routerLinkActive="active"
+      >
+        <span class="nav-icon">▤</span>
+        <span>Gestión de Lotes</span>
+      </a>
+
+      <a class="nav-item nav-item-disabled">
+        <span class="nav-icon">▦</span>
+        <span>Dashboard</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-avatar">
+        {{ currentUser()?.nombres?.charAt(0) || 'O' }}
+      </div>
+
+      <div class="sidebar-user-info">
+        <span class="sidebar-user-name">
+          {{ currentUser()?.nombres || 'Operador' }}
+        </span>
+        <span class="sidebar-user-email">
+          {{ currentUser()?.correo || '' }}
+        </span>
+      </div>
+
+      <button
+        type="button"
+        class="logout-icon"
+        (click)="cerrarSesion()"
+        title="Cerrar sesión"
+        aria-label="Cerrar sesión"
+      >
+        ↪
+      </button>
+    </div>
+  </aside>
+
+  <div class="operador-main">
+    <header class="operador-topbar">
+      <div class="breadcrumb">
+        {{ breadcrumb }}
+      </div>
+
+      <div class="topbar-user">
+        <div class="topbar-user-info">
+          <span class="topbar-user-name">
+            {{ currentUser()?.nombres || 'Operador' }}
+          </span>
+          <span class="topbar-user-role">
+            {{ currentUser()?.sede?.nombre || 'Operador' }}
+          </span>
+        </div>
+
+        <div class="topbar-avatar">
+          {{ currentUser()?.nombres?.charAt(0) || 'O' }}
+        </div>
+
+        <button
+          type="button"
+          class="logout-button"
+          (click)="cerrarSesion()"
+        >
+          Cerrar sesión
+        </button>
+      </div>
+    </header>
+
+    <main class="operador-page-body">
+      <router-outlet />
+    </main>
+  </div>
+</div>

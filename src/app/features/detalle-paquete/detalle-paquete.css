@@ -1,0 +1,580 @@
+
+:host {
+  display: block;
+  min-width: 0;
+  color: #30343b;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.detail-page {
+  width: 100%;
+  min-width: 0;
+  padding: 28px;
+  background: #f5f6f8;
+}
+
+.detail-heading {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin: 0 2px 22px;
+}
+
+.detail-heading h1 {
+  margin: 0;
+  color: #292d34;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border-radius: 20px;
+  background: #f4efff;
+  color: #8b5cf6;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-route {
+  background: #f4efff;
+  color: #8b5cf6;
+}
+
+.status-warehouse {
+  background: #fff7df;
+  color: #a87910;
+}
+
+.status-assigned {
+  background: #f4efff;
+  color: #805ad5;
+}
+
+.status-delivered {
+  background: #fff8e9;
+  color: #b7790b;
+}
+
+.status-failed {
+  background: #fff0f0;
+  color: #c43838;
+}
+
+/* Distribución general */
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas:
+    "sender recipient logistics"
+    "address address history"
+    "package package history";
+  align-items: start;
+  gap: 14px 46px;
+}
+
+/* Distribución específica para ENTREGADO */
+
+.detail-grid.delivered-layout {
+  grid-template-areas:
+    "delivery delivery logistics"
+    "sender recipient history"
+    "address address history"
+    "package package history";
+}
+
+.information-card {
+  min-width: 0;
+  padding: 14px 16px 12px;
+  border: 1px solid #e8e9ed;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(20 30 50 / 2%);
+}
+
+.sender-card {
+  grid-area: sender;
+}
+
+.recipient-card {
+  grid-area: recipient;
+}
+
+.logistics-card {
+  grid-area: logistics;
+}
+
+.address-card {
+  grid-area: address;
+}
+
+.package-card {
+  grid-area: package;
+}
+
+.history-card {
+  grid-area: history;
+  padding-bottom: 5px;
+}
+
+/* Tarjeta de entrega registrada */
+
+.delivery-card {
+  grid-area: delivery;
+  border: 1px solid #a78bfa;
+  padding: 11px 15px;
+}
+
+.delivery-card h2 {
+  margin-bottom: 9px;
+}
+
+.delivery-content {
+  display: grid;
+  grid-template-columns: 174px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 80px;
+}
+
+.evidence-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 80px;
+  background: #f0f1f3;
+}
+
+.evidence-preview svg {
+  width: 65px;
+  height: 52px;
+  fill: #d5d7db;
+}
+
+.delivery-comment {
+  min-width: 0;
+  align-self: center;
+}
+
+.delivery-comment > span {
+  color: #343840;
+  font-size: 12px;
+}
+
+.delivery-comment p {
+  margin: 10px 0 0;
+  color: #343840;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.evidence-button {
+  min-height: 40px;
+  margin: 0 48px 0 8px;
+  padding: 0 12px;
+  border: 1px solid #aeb5c1;
+  border-radius: 7px;
+  background: #fff;
+  color: #8c94a3;
+  font-family: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+/* Encabezados y filas */
+
+.information-card h2 {
+  margin: 0 0 7px;
+  padding: 0 5px 8px;
+  border-bottom: 1px solid #c4c9d1;
+  color: #343840;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.information-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 5px 0;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.information-row > span {
+  flex: 0 0 auto;
+  color: #777d86;
+}
+
+.information-row > strong {
+  min-width: 0;
+  color: #343840;
+  font-size: 12px;
+  font-weight: 400;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.information-row small {
+  margin-left: 6px;
+  color: #343840;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+/* Peso y costo */
+
+.package-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 34px;
+}
+
+/* Historial de seguimiento */
+
+.timeline {
+  padding: 7px 0 0 3px;
+}
+
+.timeline-item {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  min-height: 73px;
+}
+
+.timeline-item:not(:last-child)::before {
+  position: absolute;
+  top: 16px;
+  bottom: -1px;
+  left: 7px;
+  width: 2px;
+  background: #e0e3e8;
+  content: "";
+}
+
+.timeline-marker {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 0 0 16px;
+  justify-content: center;
+  padding-top: 3px;
+}
+
+.timeline-marker > span {
+  width: 15px;
+  height: 15px;
+  border: 2px solid #c7cbd2;
+  border-radius: 50%;
+  background: #f5f6f8;
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+.timeline-content {
+  min-width: 0;
+  padding-bottom: 13px;
+}
+
+.timeline-content h3 {
+  margin: 2px 0 0;
+  color: #9ba1ab;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.timeline-content p {
+  margin: 6px 0 0;
+  color: #7d838d;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.timeline-item.timeline-current .timeline-marker > span {
+  border-color: #3b9de7;
+  background: #3b9de7;
+  box-shadow: inset 0 0 0 3px #fff, 0 0 0 2px #d9efff;
+}
+
+.timeline-item.timeline-current .timeline-content h3 {
+  color: #17649e;
+}
+
+.timeline-item.timeline-complete .timeline-marker > span {
+  border-color: #9da5b1;
+  background: #9da5b1;
+  box-shadow: inset 0 0 0 3px #e9ebef;
+}
+
+.timeline-item.timeline-complete .timeline-content h3 {
+  color: #8e95a0;
+}
+
+/* Mensajes específicos de estado */
+
+.state-note {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 12px 15px;
+  border: 1px solid #d8e9fa;
+  border-radius: 6px;
+  background: #f0f7ff;
+  color: #315c7d;
+  font-size: 12px;
+}
+
+.state-note strong {
+  font-size: 11px;
+}
+
+.delivered-note {
+  border-color: #d6efde;
+  background: #f1fbf4;
+  color: #277443;
+}
+
+.failed-note {
+  border-color: #f3d7d7;
+  background: #fff5f5;
+  color: #a33a3a;
+}
+
+/* Paquete no encontrado */
+
+.not-found-card {
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 32px;
+  border: 1px solid #e8e9ed;
+  border-radius: 8px;
+  background: #fff;
+  text-align: center;
+}
+
+.not-found-card h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.not-found-card p {
+  color: #747b85;
+  font-size: 13px;
+}
+
+.not-found-card button {
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 5px;
+  background: #328ed1;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Pantallas medianas */
+
+@media (max-width: 1050px) {
+  .detail-page {
+    padding: 22px;
+  }
+
+  .detail-grid,
+  .detail-grid.delivered-layout {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "delivery delivery"
+      "sender recipient"
+      "logistics logistics"
+      "address address"
+      "package package"
+      "history history";
+    gap: 14px;
+  }
+
+  .detail-grid:not(.delivered-layout) {
+    grid-template-areas:
+      "sender recipient"
+      "logistics logistics"
+      "address address"
+      "package package"
+      "history history";
+  }
+
+  .delivery-content {
+    grid-template-columns: 140px minmax(0, 1fr) auto;
+  }
+
+  .evidence-button {
+    margin-right: 8px;
+  }
+}
+
+/* Móviles */
+
+@media (max-width: 650px) {
+  .detail-page {
+    padding: 16px 12px;
+  }
+
+  .detail-heading {
+    margin-bottom: 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .detail-heading h1 {
+    font-size: 16px;
+  }
+
+  .detail-grid,
+  .detail-grid.delivered-layout,
+  .detail-grid:not(.delivered-layout) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "delivery"
+      "sender"
+      "recipient"
+      "logistics"
+      "address"
+      "package"
+      "history";
+    gap: 14px;
+  }
+
+  .detail-grid:not(.delivered-layout) {
+    grid-template-areas:
+      "sender"
+      "recipient"
+      "logistics"
+      "address"
+      "package"
+      "history";
+  }
+
+  .delivery-content {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .evidence-preview {
+    height: 120px;
+  }
+
+  .evidence-button {
+    justify-self: start;
+    margin: 0;
+  }
+
+  .package-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .information-row {
+    gap: 8px;
+  }
+
+  .information-row > span {
+    max-width: 45%;
+    white-space: normal;
+  }
+
+  .state-note {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+
+
+/* Distribución específica para el estado FALLIDO */
+.detail-grid.failed-layout {
+  grid-template-areas:
+    "delivery delivery logistics"
+    "sender recipient history"
+    "address address history"
+    "package package history";
+}
+
+/* Tarjeta de entrega fallida */
+.failed-card {
+  border-color: #ff4545;
+}
+
+.failed-card h2 {
+  border-bottom-color: #c4c9d1;
+}
+
+.failed-content {
+  padding: 2px 20px 7px;
+}
+
+.failed-content .information-row {
+  padding: 12px 0 2px;
+}
+
+.failed-observation {
+  margin-top: 5px;
+}
+
+.failed-observation > span {
+  color: #777d86;
+  font-size: 12px;
+}
+
+.failed-observation p {
+  margin: 8px 0 0;
+  color: #343840;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Mantener la distribución en pantallas medianas */
+@media (max-width: 1050px) {
+  .detail-grid.failed-layout {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "delivery delivery"
+      "sender recipient"
+      "logistics logistics"
+      "address address"
+      "package package"
+      "history history";
+    gap: 14px;
+  }
+}
+
+/* Adaptación a móviles */
+@media (max-width: 650px) {
+  .detail-grid.failed-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "delivery"
+      "sender"
+      "recipient"
+      "logistics"
+      "address"
+      "package"
+      "history";
+    gap: 14px;
+  }
+
+  .failed-content {
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+}
