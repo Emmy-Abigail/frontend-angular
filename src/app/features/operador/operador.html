@@ -1,11 +1,16 @@
+<form
+  class="package-layout"
+  autocomplete="off"
+  (ngSubmit)="registrarPaquete()">
 
-<div class="page-heading">
-  <h1>Registro de Paquete</h1>
-  <p>Ingrese los detalles del envío. El sistema calcula el precio y lo asigna a un lote.</p>
-</div>
-
-<form #formPaquete="ngForm" (ngSubmit)="registrarPaquete()" class="package-layout">
   <div class="form-column">
+    <header class="page-heading">
+      <h1>Registro de Paquete</h1>
+      <p>
+        Ingrese los detalles del envío. El sistema calcula el precio y lo
+        asigna a un lote.
+      </p>
+    </header>
 
     <!-- 1. Remitente y destinatario -->
     <section class="form-card">
@@ -14,6 +19,7 @@
       </div>
 
       <div class="people-grid">
+        <!-- SECCIÓN REMITENTE -->
         <div class="person-section">
           <h3>REMITENTE</h3>
 
@@ -21,7 +27,7 @@
             <div class="field">
               <label>Tipo de documento</label>
 
-              <div class="document-toggle">
+              <div class="document-toggle" role="radiogroup">
                 <button
                   type="button"
                   [class.selected]="tipoDocumentoRemitente === 'DNI'"
@@ -47,13 +53,14 @@
                 id="documentoRemitente"
                 name="documentoRemitente"
                 [(ngModel)]="remitente.documento"
+                (input)="onDocumentoRemitenteInput($event)"
                 [attr.maxlength]="tipoDocumentoRemitente === 'DNI' ? 8 : 11"
                 inputmode="numeric"
                 [placeholder]="tipoDocumentoRemitente === 'DNI' ? '8 dígitos' : '11 dígitos'"
                 (blur)="marcarTocado('remitenteDocumento')" />
 
               <small class="error-message" *ngIf="mostrarError('remitenteDocumento')">
-                Ingresa un {{ tipoDocumentoRemitente }} válido.
+                Ingresa un {{ tipoDocumentoRemitente }} válido (solo números, {{ tipoDocumentoRemitente === 'DNI' ? '8' : '11' }} dígitos).
               </small>
             </div>
           </div>
@@ -67,11 +74,12 @@
               id="nombreRemitente"
               name="nombreRemitente"
               [(ngModel)]="remitente.nombre"
+              (input)="onNombreRemitenteInput($event)"
               [placeholder]="tipoDocumentoRemitente === 'DNI' ? 'Ej. Juan Pérez' : 'Nombre de la empresa'"
               (blur)="marcarTocado('remitenteNombre')" />
 
             <small class="error-message" *ngIf="mostrarError('remitenteNombre')">
-              Este campo es obligatorio.
+              Este campo es obligatorio (solo letras y espacios).
             </small>
           </div>
 
@@ -82,17 +90,37 @@
               id="celularRemitente"
               name="celularRemitente"
               [(ngModel)]="remitente.celular"
+              (input)="onCelularRemitenteInput($event)"
               maxlength="9"
               inputmode="numeric"
               placeholder="9XXXXXXXX"
               (blur)="marcarTocado('remitenteCelular')" />
 
             <small class="error-message" *ngIf="mostrarError('remitenteCelular')">
-              Celular inválido. Debe tener 9 dígitos y comenzar con 9.
+              Celular inválido. Debe tener exactamente 9 dígitos y comenzar con 9.
+            </small>
+          </div>
+
+          <!-- Correo Remitente -->
+          <div class="field">
+            <label for="correoRemitente">Correo electrónico</label>
+
+            <input
+              id="correoRemitente"
+              name="correoRemitente"
+              type="email"
+              [(ngModel)]="remitente.correo"
+              (input)="onCorreoRemitenteInput($event)"
+              placeholder="Ej. remitente@ejemplo.com"
+              (blur)="marcarTocado('remitenteCorreo')" />
+
+            <small class="error-message" *ngIf="mostrarError('remitenteCorreo')">
+              Ingresa un correo electrónico válido.
             </small>
           </div>
         </div>
 
+        <!-- SECCIÓN DESTINATARIO -->
         <div class="person-section">
           <h3>DESTINATARIO</h3>
 
@@ -103,11 +131,12 @@
               id="nombreDestinatario"
               name="nombreDestinatario"
               [(ngModel)]="destinatario.nombre"
+              (input)="onNombreDestinatarioInput($event)"
               placeholder="Ej. Juan Pérez"
               (blur)="marcarTocado('destinatarioNombre')" />
 
             <small class="error-message" *ngIf="mostrarError('destinatarioNombre')">
-              Este campo es obligatorio.
+              Este campo es obligatorio (solo letras y espacios).
             </small>
           </div>
 
@@ -118,13 +147,14 @@
               id="dniDestinatario"
               name="dniDestinatario"
               [(ngModel)]="destinatario.dni"
+              (input)="onDniDestinatarioInput($event)"
               maxlength="8"
               inputmode="numeric"
               placeholder="8 dígitos"
               (blur)="marcarTocado('destinatarioDni')" />
 
             <small class="error-message" *ngIf="mostrarError('destinatarioDni')">
-              El DNI debe tener 8 dígitos.
+              El DNI debe tener exactamente 8 dígitos numéricos.
             </small>
           </div>
 
@@ -135,13 +165,32 @@
               id="celularDestinatario"
               name="celularDestinatario"
               [(ngModel)]="destinatario.celular"
+              (input)="onCelularDestinatarioInput($event)"
               maxlength="9"
               inputmode="numeric"
               placeholder="9XXXXXXXX"
               (blur)="marcarTocado('destinatarioCelular')" />
 
             <small class="error-message" *ngIf="mostrarError('destinatarioCelular')">
-              Celular inválido. Debe tener 9 dígitos y comenzar con 9.
+              Celular inválido. Debe tener exactamente 9 dígitos y comenzar con 9.
+            </small>
+          </div>
+
+          <!-- Correo Destinatario -->
+          <div class="field">
+            <label for="correoDestinatario">Correo electrónico</label>
+
+            <input
+              id="correoDestinatario"
+              name="correoDestinatario"
+              type="email"
+              [(ngModel)]="destinatario.correo"
+              (input)="onCorreoDestinatarioInput($event)"
+              placeholder="Ej. destinatario@ejemplo.com"
+              (blur)="marcarTocado('destinatarioCorreo')" />
+
+            <small class="error-message" *ngIf="mostrarError('destinatarioCorreo')">
+              Ingresa un correo electrónico válido.
             </small>
           </div>
         </div>
@@ -162,6 +211,7 @@
             id="distrito"
             name="distrito"
             [(ngModel)]="direccion.distrito"
+            (change)="actualizarCotizacion()"
             (blur)="marcarTocado('distrito')">
             <option value="">Seleccionar distrito</option>
 
@@ -186,10 +236,10 @@
             [(ngModel)]="direccion.tipoVia"
             (blur)="marcarTocado('tipoVia')">
             <option value="">Seleccionar</option>
-            <option value="Avenida">Av.</option>
+            <option value="Av.">Av.</option>
             <option value="Calle">Calle</option>
-            <option value="Jirón">Jr.</option>
-            <option value="Pasaje">Psje.</option>
+            <option value="Jr.">Jr.</option>
+            <option value="Psje.">Psje.</option>
             <option value="Carretera">Carretera</option>
             <option value="Otro">Otro</option>
           </select>
@@ -224,8 +274,8 @@
             placeholder="Ej. 123"
             (blur)="marcarTocado('numero')" />
 
-          <small class="error-message" *ngIf="mostrarError('numero')">
-            Este campo es obligatorio.
+          <small class="error-message" *ngIf="mostrarError('numero') && !direccion.numero.trim() && !direccion.manzana.trim()">
+            Ingrese número o manzana.
           </small>
         </div>
 
@@ -239,8 +289,8 @@
             placeholder="Ej. B"
             (blur)="marcarTocado('manzana')" />
 
-          <small class="error-message" *ngIf="mostrarError('manzana')">
-            Este campo es obligatorio.
+          <small class="error-message" *ngIf="mostrarError('manzana') && !direccion.numero.trim() && !direccion.manzana.trim()">
+            Ingrese número o manzana.
           </small>
         </div>
 
@@ -254,8 +304,8 @@
             placeholder="Ej. 12"
             (blur)="marcarTocado('lote')" />
 
-          <small class="error-message" *ngIf="mostrarError('lote')">
-            Este campo es obligatorio.
+          <small class="error-message" *ngIf="mostrarError('lote') && !direccion.numero.trim() && !direccion.lote.trim()">
+            Ingrese lote si indicó manzana.
           </small>
         </div>
 
@@ -291,6 +341,7 @@
             max="50"
             step="0.1"
             [(ngModel)]="paquete.pesoReal"
+            (input)="actualizarCotizacion()"
             placeholder="Ej. 3.0"
             (blur)="marcarTocado('pesoReal')" />
 
@@ -312,6 +363,7 @@
             max="150"
             step="0.1"
             [(ngModel)]="paquete.largo"
+            (input)="actualizarCotizacion()"
             placeholder="30"
             (blur)="marcarTocado('largo')" />
 
@@ -331,6 +383,7 @@
             max="150"
             step="0.1"
             [(ngModel)]="paquete.ancho"
+            (input)="actualizarCotizacion()"
             placeholder="22"
             (blur)="marcarTocado('ancho')" />
 
@@ -350,6 +403,7 @@
             max="150"
             step="0.1"
             [(ngModel)]="paquete.alto"
+            (input)="actualizarCotizacion()"
             placeholder="10"
             (blur)="marcarTocado('alto')" />
 
@@ -359,18 +413,17 @@
         </div>
       </div>
 
-      <p class="package-note">
-        El peso volumétrico es (largo × ancho × alto) / 5000.
-        Se cobra el mayor entre el peso real y el volumétrico.
+      <p class="formula-notice">
+        El peso volumétrico es (largo x ancho x alto) / 5000. Se cobra el mayor entre el real y el volumétrico.
       </p>
     </section>
   </div>
 
-  <!-- Cotización y botones a la derecha -->
+  <!-- Panel lateral de cotización (Visily Página 1) -->
   <aside class="quote-column">
     <section class="quote-card">
       <div class="quote-header">
-        <span class="quote-symbol" aria-hidden="true">▤</span>
+        <span class="quote-symbol" aria-hidden="true">📋</span>
         <h2>Cotización</h2>
       </div>
 
@@ -382,24 +435,24 @@
 
         <div class="quote-route-row">
           <span>Destino</span>
-          <strong>{{ nombreDistritoSeleccionado || 'Sin seleccionar' }}</strong>
+          <strong>{{ nombreDistritoSeleccionado || 'Selecciona un distrito' }}</strong>
         </div>
 
         <div class="quote-divider"></div>
 
         <div class="quote-metric">
           <span>Peso real</span>
-          <strong>{{ paquete.pesoReal ?? 0 | number:'1.2-2' }} <small>kg</small></strong>
+          <strong class="quote-number">{{ (paquete.pesoReal ?? 0) | number:'1.2-2' }} kg</strong>
         </div>
 
         <div class="quote-metric">
           <span>Peso volumétrico</span>
-          <strong>{{ pesoVolumetrico | number:'1.2-2' }} <small>kg</small></strong>
+          <strong class="quote-number">{{ pesoVolumetrico | number:'1.2-2' }} kg</strong>
         </div>
 
         <div class="quote-metric">
           <span>Peso facturable</span>
-          <strong>{{ pesoFacturable | number:'1.2-2' }} <small>kg</small></strong>
+          <strong class="quote-number">{{ pesoFacturable | number:'1.2-2' }} kg</strong>
         </div>
 
         <div class="quote-divider"></div>
@@ -419,25 +472,17 @@
             <span>TOTAL ESTIMADO</span>
             <strong>S/ {{ totalEstimado | number:'1.2-2' }}</strong>
           </div>
-
           <span class="truck-icon" aria-hidden="true">🚚</span>
         </div>
-
-        <p class="quote-disclaimer">
-          Tarifa y factor provisionales para pruebas.
-        </p>
       </div>
     </section>
 
-    <button type="submit" class="btn-primary">
+    <button type="submit" class="btn-primary" [disabled]="guardando">
       <span aria-hidden="true">💾</span>
-      REGISTRAR PAQUETE
+      {{ guardando ? 'REGISTRANDO...' : 'REGISTRAR PAQUETE' }}
     </button>
 
-    <button
-      type="button"
-      class="btn-secondary"
-      (click)="limpiarFormulario()">
+    <button type="button" class="btn-secondary" (click)="limpiarFormulario()">
       <span aria-hidden="true">🧽</span>
       LIMPIAR FORMULARIO
     </button>
@@ -448,7 +493,7 @@
   </aside>
 </form>
 
-<!-- Modal de confirmación de registro -->
+<!-- Modal de confirmación de registro (Visily Página 2) -->
 <div
   class="registration-modal-overlay"
   *ngIf="modalRegistroAbierto"
@@ -546,7 +591,7 @@
     </div>
 
     <p class="registration-modal-disclaimer">
-      Confirmación de demostración: el registro aún no se guarda en la base de datos.
+      Paquete registrado y asignado automáticamente a su lote.
     </p>
   </section>
 </div>

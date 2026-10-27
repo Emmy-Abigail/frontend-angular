@@ -1,4 +1,3 @@
-
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -46,16 +45,16 @@ export class MisLotes implements OnInit {
       codigo: 'LOT-9922',
       zonaOrigen: 'Sede sur',
       zonaDestino: 'Zona norte',
-      paquetes: 0,
-      paradas: 0,
+      paquetes: 5,
+      paradas: 5,
       horaAsignacion: '08:30',
       estado: 'ASIGNADO',
     },
     {
       id: 'LOT-9923',
       codigo: 'LOT-9923',
-      zonaOrigen: '',
-      zonaDestino: '',
+      zonaOrigen: 'Sede sur',
+      zonaDestino: 'Zona este',
       paquetes: 0,
       paradas: 0,
       horaAsignacion: '08:30',
@@ -70,10 +69,8 @@ export class MisLotes implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Sincroniza los lotes con el estado compartido.
-    this.sincronizarLotes();
+    this.cargarLotes();
 
-    // Permite abrir directamente la pestaña indicada en la URL.
     const filtro = this.route.snapshot.queryParamMap.get('filtro');
 
     if (
@@ -83,6 +80,21 @@ export class MisLotes implements OnInit {
     ) {
       this.filtroActivo = filtro;
     }
+  }
+
+  cargarLotes(): void {
+    this.lotesService.cargarMisLotesApi().subscribe({
+      next: (lotes) => {
+        if (lotes && lotes.length > 0) {
+          this.lotes = lotes;
+        } else {
+          this.sincronizarLotes();
+        }
+      },
+      error: () => {
+        this.sincronizarLotes();
+      },
+    });
   }
 
   private sincronizarLotes(): void {
@@ -119,7 +131,7 @@ export class MisLotes implements OnInit {
   }
 
   actualizarLista(): void {
-    this.sincronizarLotes();
+    this.cargarLotes();
   }
 
   abrirLote(lote: LoteConductor): void {

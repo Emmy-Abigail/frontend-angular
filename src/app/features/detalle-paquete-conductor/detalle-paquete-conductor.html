@@ -1,4 +1,3 @@
-
 <div class="pagina-detalle">
   <header class="encabezado">
     <button
@@ -17,8 +16,8 @@
         mostrarRegistroEntrega
           ? 'Registrar entrega'
           : mostrarRegistroFallo
-            ? 'Registro de fallo'
-            : 'Detalle del paquete'
+            ? 'REGISTRO DE FALLO'
+            : 'DETALLE DEL PAQUETE'
       }}
     </h1>
   </header>
@@ -30,9 +29,10 @@
     !mostrarEntregaExitosa
   ) {
     <main class="contenido">
+      <!-- Banner ID de rastreo y estado -->
       <section class="tracking">
         <div>
-          <span class="etiqueta">Código de seguimiento</span>
+          <span class="etiqueta">ID DE RASTREO</span>
           <h2>{{ paquete.tracking }}</h2>
         </div>
 
@@ -45,50 +45,98 @@
         </span>
       </section>
 
+      <!-- Tarjeta del Destinatario con llamada (tel:) y mapa -->
       <section class="tarjeta">
-        <h3>Información del destinatario</h3>
+        <h3 class="tarjeta-titulo">
+          <svg viewBox="0 0 24 24" class="icono-seccion" aria-hidden="true">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          DESTINATARIO
+        </h3>
 
         <div class="campo">
           <span class="etiqueta">Nombre completo</span>
-          <p>{{ paquete.destinatario }}</p>
+          <p class="nombre-destinatario">{{ paquete.destinatario }}</p>
         </div>
 
-        <div class="campo">
-          <span class="etiqueta">Teléfono</span>
-          <div class="telefono">
+        <!-- Teléfono con botón de llamada directa (tel:) -->
+        <div class="campo campo-accionable">
+          <div class="campo-texto">
+            <span class="etiqueta">Teléfono</span>
+            <a [href]="'tel:' + sanitizePhone(paquete.telefono)" class="telefono-enlace">
+              {{ paquete.telefono }}
+            </a>
+          </div>
+
+          <a
+            class="boton-accion-redondo btn-llamar"
+            [href]="'tel:' + sanitizePhone(paquete.telefono)"
+            aria-label="Llamar al destinatario"
+            title="Llamar al teléfono del destinatario"
+          >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path
                 d="M22 16.92v3a2 2 0 0 1-2.18 2A19.8 19.8 0 0 1 11.19 18a19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.09 3.18 2 2 0 0 1 4.08 1h3a2 2 0 0 1 2 1.72c.12.96.35 1.9.69 2.8a2 2 0 0 1-.45 2.11L8.05 8.9a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.84.57 2.8.69A2 2 0 0 1 22 16.92z"
               />
             </svg>
-            <a [href]="'tel:' + paquete.telefono">
-              {{ paquete.telefono }}
-            </a>
-          </div>
+          </a>
         </div>
 
-        <div class="campo">
-          <span class="etiqueta">Dirección de entrega</span>
-          <div class="direccion">
+        <!-- Dirección con botón de enlace directo a Google Maps -->
+        <div class="campo campo-accionable">
+          <div class="campo-texto">
+            <span class="etiqueta">Dirección de entrega</span>
+            <p class="direccion-texto">{{ paquete.direccion }}</p>
+          </div>
+
+          <a
+            class="boton-accion-redondo btn-mapa"
+            [href]="getGoogleMapsUrl(paquete.direccion)"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Ver dirección en Google Maps"
+            title="Abrir ubicación en Google Maps"
+          >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0z" />
-              <circle cx="12" cy="10" r="2.5" />
+              <circle cx="12" cy="10" r="3" />
             </svg>
-            <p>{{ paquete.direccion }}</p>
-          </div>
+          </a>
         </div>
       </section>
 
+      <!-- Especificaciones técnicas del paquete -->
       <section class="tarjeta">
-        <h3>Detalles del paquete</h3>
+        <h3 class="tarjeta-titulo">
+          <svg viewBox="0 0 24 24" class="icono-seccion" aria-hidden="true">
+            <path d="M12 2.8 21 7.7 12 12.6 3 7.7 12 2.8Z" />
+            <path d="M3 7.7v9l9 5 9-5v-9" />
+            <path d="M12 12.6v9.1" />
+          </svg>
+          ESPECIFICACIONES TÉCNICAS
+        </h3>
+
         <div class="fila-detalles">
           <div class="campo">
-            <span class="etiqueta">Peso</span>
-            <p>{{ paquete.peso }}</p>
+            <span class="etiqueta">
+              <svg viewBox="0 0 24 24" class="icono-mini" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="m12 12 4-4" />
+              </svg>
+              PESO
+            </span>
+            <p class="valor-especificacion">{{ paquete.peso }}</p>
           </div>
+
           <div class="campo">
-            <span class="etiqueta">Dimensiones</span>
-            <p>{{ paquete.dimensiones }}</p>
+            <span class="etiqueta">
+              <svg viewBox="0 0 24 24" class="icono-mini" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+              </svg>
+              DIMENSIONES
+            </span>
+            <p class="valor-especificacion">{{ paquete.dimensiones }}</p>
           </div>
         </div>
       </section>
@@ -101,7 +149,12 @@
           type="button"
           (click)="registrarFallido()"
         >
-          Registrar fallido
+          <svg viewBox="0 0 24 24" class="icono-boton" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+          REGISTRAR FALLIDO
         </button>
 
         <button
@@ -109,32 +162,54 @@
           type="button"
           (click)="registrarEntrega()"
         >
-          Confirmar entrega
+          <svg viewBox="0 0 24 24" class="icono-boton" aria-hidden="true">
+            <path d="m5 12 4 4L19 6" />
+          </svg>
+          REGISTRAR ENTREGA
         </button>
       </footer>
     }
   }
 
-  <!-- REGISTRO DE ENTREGA -->
+  <!-- REGISTRO DE ENTREGA (Visily Páginas 19 y 20) -->
   @if (mostrarRegistroEntrega) {
     <main class="contenido contenido-registro">
+      <!-- Alerta de validación cuando falta la foto (Visily Página 20) -->
+      @if (mostrarErrorFoto) {
+        <div class="alerta-error-foto" role="alert">
+          <div class="alerta-icono">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </div>
+          <div>
+            <strong>ERROR DE VALIDACIÓN</strong>
+            <p>La foto es obligatoria para confirmar la entrega.</p>
+          </div>
+        </div>
+      }
+
       <section class="instruccion">
         <h2>Registrar entrega</h2>
-        <p>
-          Toma una fotografía como evidencia de que el paquete fue
-          entregado al destinatario.
-        </p>
+        <span class="subtitulo-parada">PARADA {{ numeroParada }}</span>
       </section>
 
-      <section class="tarjeta tarjeta-foto">
-        <h3>
-          Evidencia fotográfica
-          <span class="obligatorio">*</span>
-        </h3>
-
-        <p class="ayuda">
-          La fotografía es obligatoria para confirmar la entrega.
-        </p>
+      <!-- Zona de captura de fotografía obligatoria -->
+      <section class="tarjeta tarjeta-foto" [class.borde-error]="mostrarErrorFoto">
+        <div class="cabecera-foto">
+          <h3 class="foto-titulo">
+            <svg viewBox="0 0 24 24" class="icono-seccion" aria-hidden="true">
+              <path
+                d="M14 4h-4l-2 3H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-4z"
+              />
+              <circle cx="12" cy="13" r="3.5" />
+            </svg>
+            Evidencia fotográfica
+          </h3>
+          <span class="tag-obligatorio">* OBLIGATORIO</span>
+        </div>
 
         <input
           #inputFoto
@@ -156,6 +231,10 @@
               type="button"
               (click)="quitarFoto()"
             >
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
               Quitar fotografía
             </button>
           </div>
@@ -165,33 +244,36 @@
             type="button"
             (click)="abrirSelectorFoto()"
           >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                d="M14 4h-4l-2 3H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-4z"
-              />
-              <circle cx="12" cy="13" r="3.5" />
-            </svg>
+            <div class="icono-camara-circulo">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M14 4h-4l-2 3H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-4z"
+                />
+                <circle cx="12" cy="13" r="3.5" />
+              </svg>
+            </div>
             <strong>Tomar fotografía</strong>
-            <span>o selecciona una imagen de tu dispositivo</span>
+            <span>asegúrese de mostrar el paquete y la fachada</span>
           </button>
         }
 
         @if (mostrarErrorFoto) {
-          <div class="error-foto" role="alert">
-            <span>
-              Debes tomar o adjuntar una fotografía válida antes de continuar.
-            </span>
-          </div>
+          <p class="error-foto-texto">
+            Por favor, adjunte una imagen para continuar.
+          </p>
         }
       </section>
 
+      <!-- Comentario opcional -->
       <section class="tarjeta">
-        <label for="comentario">Comentario (opcional)</label>
+        <label for="comentario" class="etiqueta-comentario">
+          COMENTARIO (OPCIONAL)
+        </label>
         <textarea
           id="comentario"
           [(ngModel)]="comentario"
-          placeholder="Agrega alguna observación sobre la entrega..."
-          rows="4"
+          placeholder="Ej. Se dejó el paquete en recepción."
+          rows="3"
         ></textarea>
       </section>
     </main>
@@ -210,25 +292,29 @@
         type="button"
         (click)="solicitarConfirmacionEntrega()"
       >
-        Confirmar entrega
+        <svg viewBox="0 0 24 24" class="icono-boton" aria-hidden="true">
+          <path d="m5 12 4 4L19 6" />
+        </svg>
+        Confirmar Entrega
       </button>
     </footer>
   }
 
-  <!-- CONFIRMAR ENTREGA -->
+  <!-- CONFIRMAR ENTREGA: MODAL BOTTOM SHEET (Visily Página 21) -->
   @if (mostrarConfirmacionEntrega) {
-    <div class="fondo-modal" role="presentation">
+    <div class="fondo-modal fondo-modal-inferior" role="presentation" (click)="cerrarConfirmacionEntrega()">
       <section
-        class="modal"
+        class="modal modal-inferior"
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-confirmacion-entrega"
+        (click)="$event.stopPropagation()"
       >
         <h2 id="titulo-confirmacion-entrega">
           ¿Confirmar la entrega?
         </h2>
 
-        <p>
+        <p class="modal-subtexto">
           <strong>{{ paquete.tracking }}</strong> quedará como
           Entregado con la foto. Es un estado final y no se puede cambiar.
         </p>
@@ -245,46 +331,47 @@
           <button
             class="boton boton-principal"
             type="button"
+            [disabled]="guardandoEntrega"
             (click)="confirmarEntregaDefinitiva()"
           >
-            Sí, confirmar
+            {{ guardandoEntrega ? 'Confirmando...' : 'Sí, confirmar' }}
           </button>
         </div>
       </section>
     </div>
   }
 
-  <!-- REGISTRO DE FALLO -->
+  <!-- REGISTRO DE FALLO (Visily Página 22) -->
   @if (mostrarRegistroFallo) {
     <main class="contenido contenido-registro-fallo">
+      <!-- Tarjeta resumen paquete seleccionado -->
       <section class="resumen-paquete-fallo">
-        <span class="etiqueta">Paquete seleccionado</span>
+        <span class="etiqueta-seccion">PAQUETE SELECCIONADO</span>
 
         <div class="resumen-fallo-fila">
           <div class="icono-paquete-fallo">
             <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="m12 3 9 5-9 5-9-5 9-5z" />
-              <path d="M3 8v9l9 5 9-5V8" />
-              <path d="M12 13v9" />
-              <path d="m7.5 5.5 9 5" />
+              <path d="M12 2.8 21 7.7 12 12.6 3 7.7 12 2.8Z" />
+              <path d="M3 7.7v9l9 5 9-5v-9" />
+              <path d="M12 12.6v9.1" />
             </svg>
           </div>
 
           <div class="resumen-fallo-datos">
-            <strong>{{ paquete.tracking }}</strong>
-            <span>{{ paquete.destinatario }}</span>
-            <p>{{ paquete.direccion }}</p>
+            <div class="fallo-cabecera-linea">
+              <strong>{{ paquete.tracking }}</strong>
+              <span class="referencia-fallo">REF #{{ numeroParada }}</span>
+            </div>
+            <span class="destinatario-fallo">{{ paquete.destinatario }}</span>
+            <p class="direccion-fallo">{{ paquete.direccion }}</p>
           </div>
-
-          <span class="referencia-fallo">
-            PARADA {{ numeroParada }}
-          </span>
         </div>
       </section>
 
+      <!-- Motivo obligatorio (Visily Página 22 con 4 opciones) -->
       <section class="seccion-fallo">
         <h2 class="titulo-seccion-fallo">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
+          <svg viewBox="0 0 24 24" class="icono-mini" aria-hidden="true">
             <rect x="5" y="4" width="14" height="17" rx="2" />
             <path d="M9 4V2h6v2M8 10h8M8 14h8" />
           </svg>
@@ -292,30 +379,31 @@
         </h2>
 
         <div class="opciones-fallo">
-          @for (motivo of motivosFallo; track motivo) {
+          @for (m of motivosFallo; track m.id) {
             <button
               class="opcion-fallo"
-              [class.seleccionado]="motivoFallo === motivo"
+              [class.seleccionado]="motivoFallo === m.label"
               type="button"
-              [attr.aria-pressed]="motivoFallo === motivo"
-              (click)="seleccionarMotivoFallo(motivo)"
+              [attr.aria-pressed]="motivoFallo === m.label"
+              (click)="seleccionarMotivoFallo(m.label)"
             >
               <span class="casilla-fallo">
-                @if (motivoFallo === motivo) {
+                @if (motivoFallo === m.label) {
                   <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="m5 12 4 4L19 6" />
                   </svg>
                 }
               </span>
-              <span>{{ motivo }}</span>
+              <span>{{ m.label }}</span>
             </button>
           }
         </div>
       </section>
 
+      <!-- Observación obligatoria (Visily Página 22) -->
       <section class="seccion-fallo seccion-observacion-fallo">
         <label class="titulo-seccion-fallo" for="observacion-fallo">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
+          <svg viewBox="0 0 24 24" class="icono-mini" aria-hidden="true">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
             <path d="M14 2v6h6M8 13h8M8 17h8" />
           </svg>
@@ -350,7 +438,7 @@
     </footer>
   }
 
-  <!-- CONFIRMACIÓN DE FALLO: HOJA INFERIOR -->
+  <!-- CONFIRMACIÓN DE FALLO: HOJA INFERIOR (Visily Página 23) -->
   @if (mostrarConfirmacionFallo) {
     <div
       class="fondo-modal fondo-modal-inferior"
@@ -358,7 +446,7 @@
       (click)="cerrarConfirmacionFallo()"
     >
       <section
-        class="modal modal-fallo"
+        class="modal modal-fallo modal-inferior"
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-confirmacion-fallo"
@@ -368,9 +456,8 @@
           ¿Registrar como fallido?
         </h2>
 
-        <p>
-          El paquete quedará registrado como fallido. Este estado no se
-          puede cambiar.
+        <p class="modal-subtexto">
+          El paquete quedará registrado como fallido. Este estado no se puede cambiar.
         </p>
 
         <div class="acciones-modal">
@@ -385,16 +472,17 @@
           <button
             class="boton boton-confirmar-fallo"
             type="button"
+            [disabled]="guardandoFallo"
             (click)="confirmarFalloDefinitivo()"
           >
-            Sí, registrar
+            {{ guardandoFallo ? 'Registrando...' : 'Sí, registrar' }}
           </button>
         </div>
       </section>
     </div>
   }
 
-  <!-- ENTREGA EXITOSA -->
+  <!-- ENTREGA EXITOSA (Visily Páginas 21/23) -->
   @if (mostrarEntregaExitosa) {
     <div class="fondo-modal" role="presentation">
       <section

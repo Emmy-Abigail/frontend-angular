@@ -1,14 +1,14 @@
-
 import { CommonModule, Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LotesConductorService } from '../../core/services/lotes-conductor';
+import { LotesConductorService, ParadaLote } from '../../core/services/lotes-conductor';
 
 type EstadoLote = 'Asignado' | 'En ruta';
-type EstadoParada = 'Pendiente' | 'Entregado';
+type EstadoParada = 'Pendiente' | 'Entregado' | 'Fallido';
 
-interface Parada {
+export interface Parada {
   numero: number;
+  paqueteId?: number;
   destinatario: string;
   direccion: string;
   codigoSeguimiento: string;
@@ -41,7 +41,7 @@ export class Entregas implements OnInit {
 
   lote: Lote = {
     id: '',
-    fechaAsignacion: '12 Oct 2023',
+    fechaAsignacion: '12 Oct 2026',
     origen: 'Sede sur',
     destino: 'Zona sur',
     totalPaquetes: 0,
@@ -102,20 +102,41 @@ export class Entregas implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Detecta cambios en el ID de la ruta, incluso si Angular
-    // reutiliza el mismo componente al navegar entre lotes.
     this.route.paramMap.subscribe(params => {
       const id = params.get('id') ?? 'L-098';
-
       this.cargarLote(id);
     });
   }
 
   private cargarLote(id: string): void {
+    this.lotesService.cargarDetalleLoteApi(id).subscribe({
+      next: (detalle) => {
+        if (detalle && detalle.paradas && detalle.paradas.length > 0) {
+          this.lote = {
+            id: detalle.id,
+            fechaAsignacion: detalle.fechaAsignacion || '12 Oct 2026',
+            origen: detalle.origen || 'Sede sur',
+            destino: detalle.destino || 'Zona sur',
+            totalPaquetes: detalle.totalPaquetes || detalle.paradas.length,
+            estado: detalle.estado,
+            paradas: detalle.paradas,
+          };
+          this.sincronizarEstado();
+        } else {
+          this.cargarFallbackLote(id);
+        }
+      },
+      error: () => {
+        this.cargarFallbackLote(id);
+      },
+    });
+  }
+
+  private cargarFallbackLote(id: string): void {
     if (id === 'L-098') {
       this.lote = {
         id: 'L-098',
-        fechaAsignacion: '12 Oct 2023',
+        fechaAsignacion: '12 Oct 2026',
         origen: 'Sede sur',
         destino: 'Zona sur',
         totalPaquetes: 6,
@@ -125,27 +146,17 @@ export class Entregas implements OnInit {
     } else if (id === 'LOT-9922') {
       this.lote = {
         id: 'LOT-9922',
-        fechaAsignacion: '12 Oct 2023',
+        fechaAsignacion: '12 Oct 2026',
         origen: 'Sede sur',
         destino: 'Zona norte',
         totalPaquetes: 5,
         estado: 'Asignado',
         paradas: this.paradasEjemplo.slice(0, 5),
       };
-    } else if (id === 'LOT-9923') {
-      this.lote = {
-        id: 'LOT-9923',
-        fechaAsignacion: '12 Oct 2023',
-        origen: 'Sede sur',
-        destino: 'Zona sur',
-        totalPaquetes: 0,
-        estado: 'Asignado',
-        paradas: [],
-      };
     } else {
       this.lote = {
         id,
-        fechaAsignacion: '12 Oct 2023',
+        fechaAsignacion: '12 Oct 2026',
         origen: 'Sede sur',
         destino: 'Zona sur',
         totalPaquetes: 0,
@@ -153,25 +164,27 @@ export class Entregas implements OnInit {
         paradas: [],
       };
     }
-
     this.sincronizarEstado();
   }
 
   private sincronizarEstado(): void {
-    this.lote.estado =
-      this.lotesService.obtenerEstado(this.lote.id) === 'EN_RUTA'
-        ? 'En ruta'
-        : 'Asignado';
+    const estadoGuardado = this.lotesService.obtenerEstado(this.lote.id);
+    this.lote.estado = estadoGuardado === 'EN_RUTA' ? 'En ruta' : 'Asignado';
 
     const entregadas = new Set(
       this.lotesService.obtenerParadasEntregadas(this.lote.id),
+    );
+    const fallidas = new Set(
+      this.lotesService.obtenerParadasFallidas(this.lote.id),
     );
 
     this.lote.paradas = this.lote.paradas.map(parada => ({
       ...parada,
       estado: entregadas.has(parada.numero)
         ? 'Entregado'
-        : 'Pendiente',
+        : fallidas.has(parada.numero)
+          ? 'Fallido'
+          : 'Pendiente',
     }));
 
     this.paradasCompletadas =
@@ -243,10 +256,8 @@ export class Entregas implements OnInit {
     }
 
     const idRutaActiva = this.loteEnRutaId;
-
     this.mostrarAvisoRutaActiva = false;
 
-    // La ruta configurada en app.routes.ts es /conductor/lote/:id.
     this.router.navigate([
       '/conductor/lote',
       idRutaActiva,
@@ -259,7 +270,6 @@ export class Entregas implements OnInit {
       return;
     }
 
-    // Se vuelve a comprobar para evitar iniciar dos lotes.
     const loteActivo = this.lotesService.obtenerLoteEnRuta(
       this.lote.id,
     );
@@ -271,32 +281,60 @@ export class Entregas implements OnInit {
       return;
     }
 
-    this.lotesService.iniciarRuta(this.lote.id);
+    // Llamada API al backend
+    this.lotesService.iniciarRutaApi(this.lote.id).subscribe({
+      next: (res) => {
+        if (!res.ok && res.error === 'lote_en_ruta_activo') {
+          this.cerrarConfirmacionRuta();
+          this.loteEnRutaId = res.message || 'L-098';
+          this.mostrarAvisoRutaActiva = true;
+          return;
+        }
 
-    this.lote.estado = 'En ruta';
+        this.lotesService.iniciarRuta(this.lote.id);
+        this.lote.estado = 'En ruta';
+        this.paradasCompletadas = this.lotesService.obtenerCantidadParadasCompletadas(this.lote.id);
+        this.cerrarConfirmacionRuta();
 
-    this.paradasCompletadas =
-      this.lotesService.obtenerCantidadParadasCompletadas(
-        this.lote.id,
-      );
-
-    this.cerrarConfirmacionRuta();
-
-    this.router.navigate(['/conductor/mis-lotes'], {
-      queryParams: { filtro: 'EN_RUTA' },
+        this.router.navigate(['/conductor/mis-lotes'], {
+          queryParams: { filtro: 'EN_RUTA' },
+        });
+      },
+      error: () => {
+        // Fallback local
+        this.lotesService.iniciarRuta(this.lote.id);
+        this.lote.estado = 'En ruta';
+        this.cerrarConfirmacionRuta();
+        this.router.navigate(['/conductor/mis-lotes'], {
+          queryParams: { filtro: 'EN_RUTA' },
+        });
+      },
     });
   }
 
+  getGoogleMapsUrl(direccion: string): string {
+    const destino = direccion ? `${direccion}, Lima, Perú` : 'Lima, Perú';
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destino)}`;
+  }
+
   abrirMapa(): void {
-    // La navegación al mapa se implementará más adelante.
+    if (this.lote.paradas.length > 0) {
+      const direccion = this.lote.paradas[0].direccion;
+      window.open(this.getGoogleMapsUrl(direccion), '_blank');
+    } else {
+      window.open('https://www.google.com/maps', '_blank');
+    }
   }
 
   abrirParada(parada: Parada): void {
-    this.router.navigate([
-      '/conductor/lote',
-      this.lote.id,
-      'paquete',
-      parada.numero,
-    ]);
+    this.router.navigate(
+      ['/conductor/lote', this.lote.id, 'paquete', parada.numero],
+      {
+        queryParams: {
+          paqueteId: parada.paqueteId,
+          tracking: parada.codigoSeguimiento,
+        },
+      }
+    );
   }
 }

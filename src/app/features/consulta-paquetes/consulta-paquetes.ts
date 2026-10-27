@@ -1,8 +1,8 @@
-
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { OperadorService } from '../../core/services/operador.service';
 
 type EstadoPaquete =
   | 'EN RUTA'
@@ -30,12 +30,12 @@ interface PaqueteConsulta {
   styleUrl: './consulta-paquetes.css',
 })
 export class ConsultaPaquetes {
+  private readonly router = inject(Router);
+  private readonly operadorService = inject(OperadorService);
   private readonly clavePaquetes = 'riva_paquetes';
 
   busqueda = '';
   estadoSeleccionado = 'TODOS';
-
-  // Sin fechas predeterminadas para mostrar también los registros recientes.
   fechaDesde = '';
   fechaHasta = '';
 
@@ -45,7 +45,6 @@ export class ConsultaPaquetes {
   paqueteSeleccionado: PaqueteConsulta | null = null;
   ultimaActualizacion = new Date();
 
-  // Datos de ejemplo para la demostración.
   private readonly paquetesEjemplo: PaqueteConsulta[] = [
     {
       tracking: 'Q4HN7TZ2KD',
@@ -101,21 +100,63 @@ export class ConsultaPaquetes {
 
   paquetes: PaqueteConsulta[] = [];
 
-  constructor(private readonly router: Router) {
+  constructor() {
     this.cargarPaquetes();
   }
 
-  // Recuperar los paquetes registrados en el navegador.
   private cargarPaquetes(): void {
+    this.operadorService.listarPaquetes({
+      q: this.busqueda || undefined,
+      estado: this.estadoSeleccionado !== 'TODOS' ? this.estadoSeleccionado : undefined,
+      desde: this.fechaDesde || undefined,
+      hasta: this.fechaHasta || undefined,
+      page: 1,
+      per_page: 50,
+    }).subscribe({
+      next: (res) => {
+        const items = res?.items ?? [];
+        if (items.length > 0) {
+          this.paquetes = items.map((pkg: any) => {
+            let fechaStr = '2026-10-20';
+            let horaStr = '09:00';
+            if (pkg.fecha_ingreso) {
+              const partes = pkg.fecha_ingreso.split(' ');
+              fechaStr = partes[0] || fechaStr;
+              horaStr = partes[1]?.slice(0, 5) || horaStr;
+            }
+
+            const estadoCodigo = (pkg.estado?.codigo || pkg.estado || 'EN_ALMACEN')
+              .replace(/_/g, ' ')
+              .toUpperCase() as EstadoPaquete;
+
+            return {
+              tracking: pkg.tracking_id || pkg.tracking,
+              remitente: pkg.remitente?.nombres || 'Cliente Riva',
+              destinatario: pkg.destinatario?.nombres || 'Destinatario',
+              destino: pkg.destino?.distrito || 'Lima',
+              estado: estadoCodigo,
+              lote: pkg.id_lote ? `L-${pkg.id_lote}` : 'L-101',
+              fechaIngreso: fechaStr,
+              horaIngreso: horaStr,
+            };
+          });
+        } else {
+          this.cargarFallbackLocal();
+        }
+      },
+      error: () => {
+        this.cargarFallbackLocal();
+      },
+    });
+  }
+
+  private cargarFallbackLocal(): void {
     try {
       const registrosGuardados = localStorage.getItem(this.clavePaquetes);
-
       const paquetesGuardados: PaqueteConsulta[] = registrosGuardados
         ? JSON.parse(registrosGuardados)
         : [];
 
-      // Los registros recientes aparecen antes que los ejemplos.
-      // No se duplican los códigos que ya existen en localStorage.
       this.paquetes = [
         ...paquetesGuardados,
         ...this.paquetesEjemplo.filter(
@@ -125,8 +166,7 @@ export class ConsultaPaquetes {
             ),
         ),
       ];
-    } catch (error) {
-      console.error('No se pudieron cargar los paquetes guardados.', error);
+    } catch {
       this.paquetes = [...this.paquetesEjemplo];
     }
   }
@@ -190,6 +230,7 @@ export class ConsultaPaquetes {
 
   cambiarFiltro(): void {
     this.paginaActual = 1;
+    this.cargarPaquetes();
   }
 
   actualizar(): void {
@@ -204,7 +245,6 @@ export class ConsultaPaquetes {
     }
   }
 
-  // Abrir el detalle del paquete seleccionado.
   verDetalle(paquete: PaqueteConsulta): void {
     this.router.navigate([
       '/operador/consulta-paquetes',
@@ -218,6 +258,9 @@ export class ConsultaPaquetes {
 
   formatearFecha(fecha: string): string {
     const [anio, mes, dia] = fecha.split('-');
-    return `${dia}/${mes}/${anio}`;
+    if (!anio || !mes || !dia) {
+      return fecha;
+    }
+    return `${dia}/${mes}`;
   }
 }
