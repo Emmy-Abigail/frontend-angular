@@ -5,11 +5,7 @@ import { environment } from '../../../environments/environment';
 
 export type EstadoLoteConductor = 'ASIGNADO' | 'EN_RUTA';
 
-export type MotivoFallo =
-  | 'Cliente ausente'
-  | 'Dirección incorrecta o no encontrada'
-  | 'Paquete rechazado por el cliente'
-  | 'Otros';
+export type MotivoFallo = string;
 
 export interface RegistroFallo {
   motivo: MotivoFallo;
@@ -38,6 +34,7 @@ export interface ParadaLote {
   peso?: string;
   dimensiones?: string;
   estado: 'Pendiente' | 'Entregado' | 'Fallido';
+  coordenadas?: { lat: number; lng: number } | null;
 }
 
 @Injectable({
@@ -71,9 +68,9 @@ export class LotesConductorService {
   cargarMisLotesApi(): Observable<LoteConductorItem[]> {
     return this.http.get<any>(`${this.baseUrl}/batches`).pipe(
       map((res) => {
-        const items = res?.items ?? (Array.isArray(res) ? res : []);
+        const items = res?.data ?? (Array.isArray(res) ? res : []);
         if (!items || items.length === 0) {
-          return this.obtenerLotesMock();
+          return [];
         }
 
         return items.map((lote: any) => {
@@ -81,75 +78,92 @@ export class LotesConductorService {
           const estado: EstadoLoteConductor = lote.estado === 'EN_RUTA' ? 'EN_RUTA' : 'ASIGNADO';
           this.estadosLotes[idStr] = estado;
 
+          let horaStr = '08:30';
+          const fechaRef = lote.despachado_at || lote.created_at;
+          if (fechaRef) {
+            const d = new Date(fechaRef);
+            horaStr = !isNaN(d.getTime()) ? d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : horaStr;
+          }
+
           return {
             id: idStr,
             codigo: lote.codigo || `L-${lote.id}`,
             zonaOrigen: lote.sede?.nombre || 'Sede Sur',
             zonaDestino: lote.zona_destino?.nombre || 'Zona Sur',
-            paquetes: lote.total_paquetes ?? lote.paquetes ?? 0,
-            paradas: lote.total_paquetes ?? lote.paradas ?? 0,
-            horaAsignacion: lote.created_at ? new Date(lote.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '08:30',
+            paquetes: lote.cantidad_paquetes ?? lote.total_paquetes ?? 0,
+            paradas: lote.cantidad_paquetes ?? lote.total_paquetes ?? 0,
+            horaAsignacion: horaStr,
             estado,
           };
         });
       }),
-      catchError(() => of(this.obtenerLotesMock()))
+      catchError(() => of([]))
     );
   }
 
   /**
-   * Obtiene el detalle de un lote con sus paradas/paquetes desde el Backend.
+   * Obtiene el detalle de un lote con sus paradas desde el Backend (res.paradas).
    */
   cargarDetalleLoteApi(id: string): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/batches/${id}`).pipe(
       map((res) => {
-        const summary = res.summary ?? res;
-        const packages = res.packages ?? [];
+        if (!res) return null;
+        const summary = res.data ?? res;
+        const paradasList = res.paradas ?? summary.paradas ?? [];
 
         const idStr = String(summary.id ?? id);
         const estadoLote: EstadoLoteConductor = summary.estado === 'EN_RUTA' ? 'EN_RUTA' : 'ASIGNADO';
         this.estadosLotes[idStr] = estadoLote;
 
-        const paradas: ParadaLote[] = packages.map((pkg: any, index: number) => {
-          const numero = pkg.orden_parada ?? (index + 1);
-          const estadoPkg = pkg.estado === 'ENTREGADO' ? 'Entregado' : pkg.estado === 'FALLIDO' ? 'Fallido' : 'Pendiente';
+        const paradas: ParadaLote[] = paradasList.map((p: any, index: number) => {
+          const numero = p.orden ?? (index + 1);
+          const estadoPkg = p.estado === 'ENTREGADO' ? 'Entregado' : p.estado === 'FALLIDO' ? 'Fallido' : 'Pendiente';
 
           if (estadoPkg === 'Entregado') {
             if (!this.paradasEntregadas[idStr]) this.paradasEntregadas[idStr] = new Set();
             this.paradasEntregadas[idStr].add(numero);
           }
 
-          const dir = pkg.direccion;
+          const dir = p.direccion;
           let dirTexto = '';
           if (typeof dir === 'string') {
             dirTexto = dir;
           } else if (dir) {
             const via = [dir.tipo_via, dir.nombre_via].filter(Boolean).join(' ');
             const num = dir.numero ? `N° ${dir.numero}` : (dir.manzana ? `Mz. ${dir.manzana} Lt. ${dir.lote}` : '');
-            dirTexto = [via, num, dir.distrito].filter(Boolean).join(', ');
+            const dist = p.distrito?.nombre || dir.distrito || '';
+            dirTexto = [via, num, dist].filter(Boolean).join(', ');
           }
 
           return {
             numero,
-            paqueteId: pkg.id,
-            destinatario: pkg.destinatario?.nombres || 'Cliente Riva',
+            paqueteId: p.id_paquete ?? p.id,
+            destinatario: p.destinatario?.nombres || 'Cliente Riva',
             direccion: dirTexto || 'Dirección de entrega',
-            codigoSeguimiento: pkg.tracking_id || pkg.tracking || '',
-            telefono: pkg.destinatario?.celular || '',
-            peso: pkg.peso_kg ? `${pkg.peso_kg} kg` : '',
-            dimensiones: pkg.medidas ? `${pkg.medidas.largo_cm}x${pkg.medidas.ancho_cm}x${pkg.medidas.alto_cm} cm` : '',
+            codigoSeguimiento: p.tracking_id || p.tracking || '',
+            telefono: p.destinatario?.celular || '',
+            peso: p.peso_kg ? `${p.peso_kg} kg` : '',
+            dimensiones: p.medidas ? `${p.medidas.largo_cm}x${p.medidas.ancho_cm}x${p.medidas.alto_cm} cm` : '',
             estado: estadoPkg,
+            coordenadas: p.coordenadas ?? null,
           };
         });
+
+        let fechaAsig = '12 Oct 2026';
+        const fechaRef = summary.despachado_at || summary.created_at;
+        if (fechaRef) {
+          const d = new Date(fechaRef);
+          fechaAsig = !isNaN(d.getTime()) ? d.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }) : fechaAsig;
+        }
 
         return {
           id: idStr,
           codigo: summary.codigo || `L-${idStr}`,
           origen: summary.sede?.nombre || 'Sede sur',
           destino: summary.zona_destino?.nombre || 'Zona sur',
-          totalPaquetes: packages.length || summary.total_paquetes || 0,
+          totalPaquetes: summary.cantidad_paquetes ?? paradas.length,
           estado: estadoLote === 'EN_RUTA' ? 'En ruta' : 'Asignado',
-          fechaAsignacion: summary.created_at ? new Date(summary.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }) : '12 Oct 2026',
+          fechaAsignacion: fechaAsig,
           paradas,
         };
       }),

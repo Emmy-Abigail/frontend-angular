@@ -31,11 +31,13 @@ export interface RegistroPaqueteRequest {
     numero_documento: string;
     nombres: string;
     celular: string;
+    correo: string;
   };
   destinatario: {
     nombres: string;
     dni: string;
     celular: string;
+    correo: string;
   };
   direccion: {
     ubigeo_distrito: string;
@@ -45,6 +47,8 @@ export interface RegistroPaqueteRequest {
     manzana?: string | null;
     lote?: string | null;
     referencia?: string | null;
+    lat?: number | null;
+    lng?: number | null;
   };
   peso_kg: number;
   largo_cm: number;

@@ -2,6 +2,7 @@ import { CommonModule, Location } from '@angular/common';
 import {
   Component,
   ElementRef,
+  inject,
   OnInit,
   ViewChild,
 } from '@angular/core';
@@ -11,6 +12,7 @@ import {
   LotesConductorService,
   MotivoFallo,
 } from '../../core/services/lotes-conductor';
+import { CatalogService } from '../../core/services/catalog.service';
 
 type EstadoPaquete = 'ASIGNADO' | 'EN RUTA' | 'ENTREGADO' | 'FALLIDO';
 
@@ -22,6 +24,7 @@ interface Paquete {
   direccion: string;
   peso: string;
   dimensiones: string;
+  coordenadas?: { lat: number; lng: number } | null;
 }
 
 @Component({
@@ -32,6 +35,11 @@ interface Paquete {
   styleUrl: './detalle-paquete-conductor.css',
 })
 export class DetallePaqueteConductor implements OnInit {
+  private route = inject(ActivatedRoute);
+  private location = inject(Location);
+  private lotesService = inject(LotesConductorService);
+  private catalogService = inject(CatalogService);
+
   @ViewChild('inputFoto')
   inputFoto?: ElementRef<HTMLInputElement>;
 
@@ -46,6 +54,7 @@ export class DetallePaqueteConductor implements OnInit {
   mostrarEntregaExitosa = false;
   mostrarErrorFoto = false;
   guardandoEntrega = false;
+  mensajeErrorEntrega = '';
 
   fotoSeleccionada: File | null = null;
   vistaPreviaFoto: string | null = null;
@@ -56,92 +65,29 @@ export class DetallePaqueteConductor implements OnInit {
   mostrarConfirmacionFallo = false;
   mostrarErrorFallo = false;
   guardandoFallo = false;
+  mensajeErrorFallo = '';
 
-  motivoFallo: MotivoFallo | '' = '';
+  motivoFallo = '';
   observacionFallo = '';
 
-  readonly motivosFallo: { label: MotivoFallo; id: number }[] = [
+  motivosFallo: { label: string; id: number }[] = [
     { label: 'Cliente ausente', id: 1 },
-    { label: 'Dirección incorrecta o no encontrada', id: 2 },
-    { label: 'Paquete rechazado por el cliente', id: 3 },
-    { label: 'Otros', id: 4 },
+    { label: 'Dirección errónea', id: 2 },
+    { label: 'Rechazado', id: 3 },
   ];
 
   paquete: Paquete = {
     id: 1,
-    tracking: 'Q4HN7TZ2KD',
-    destinatario: 'Juan Carlos Mendoza',
-    telefono: '+51 987 654 321',
-    direccion: 'Av. La Marina 2345, San Miguel',
-    peso: '2.4 kg',
-    dimensiones: '30x20x15 cm',
+    tracking: '',
+    destinatario: '',
+    telefono: '',
+    direccion: '',
+    peso: '',
+    dimensiones: '',
   };
 
-  private readonly paquetesEjemplo: Paquete[] = [
-    {
-      id: 1,
-      tracking: 'Q4HN7TZ2KD',
-      destinatario: 'Juan Carlos Mendoza',
-      telefono: '+51 987 654 321',
-      direccion: 'Av. La Marina 2345, San Miguel',
-      peso: '2.4 kg',
-      dimensiones: '30x20x15 cm',
-    },
-    {
-      id: 2,
-      tracking: 'M8KP3XR5LA',
-      destinatario: 'María Belén Soto',
-      telefono: '+51 986 543 210',
-      direccion: 'Jr. Ayacucho 456, Surco',
-      peso: '1.8 kg',
-      dimensiones: '25x18x12 cm',
-    },
-    {
-      id: 3,
-      tracking: 'P7DN2WC9BT',
-      destinatario: 'Andrés Felipe Ramírez',
-      telefono: '+51 985 432 109',
-      direccion: 'Calle Los Cedros 129, Miraflores',
-      peso: '3.1 kg',
-      dimensiones: '35x25x20 cm',
-    },
-    {
-      id: 4,
-      tracking: 'R5FT8HJ4QM',
-      destinatario: 'Roberto Jiménez Vargas',
-      telefono: '+51 984 321 098',
-      direccion: 'Av. Arequipa 3890, Lince',
-      peso: '2.0 kg',
-      dimensiones: '28x20x15 cm',
-    },
-    {
-      id: 5,
-      tracking: 'C6VB9LK2XZ',
-      destinatario: 'Camila Fernanda Torres',
-      telefono: '+51 983 210 987',
-      direccion: 'Jr. de la Unión 1020, Cercado',
-      peso: '1.5 kg',
-      dimensiones: '22x16x10 cm',
-    },
-    {
-      id: 6,
-      tracking: 'T3GH6NM8YP',
-      destinatario: 'Valeria Alejandra Flores',
-      telefono: '+51 982 109 876',
-      direccion: 'Jr. Huallaga 567, Cercado',
-      peso: '2.7 kg',
-      dimensiones: '32x22x18 cm',
-    },
-  ];
-
-  constructor(
-    private route: ActivatedRoute,
-    private location: Location,
-    private lotesService: LotesConductorService,
-  ) {}
-
   ngOnInit(): void {
-    this.loteId = this.route.snapshot.paramMap.get('id') ?? 'L-098';
+    this.loteId = this.route.snapshot.paramMap.get('id') ?? '';
 
     const numero = Number(this.route.snapshot.paramMap.get('numero'));
     this.numeroParada = Number.isInteger(numero) && numero > 0 ? numero : 1;
@@ -156,29 +102,66 @@ export class DetallePaqueteConductor implements OnInit {
         ? 'EN RUTA'
         : 'ASIGNADO';
 
+    this.catalogService.getFailureReasons().subscribe({
+      next: (reasons) => {
+        if (reasons && reasons.length > 0) {
+          this.motivosFallo = reasons.map((r) => ({ label: r.nombre, id: r.id }));
+        }
+      },
+    });
+
     this.cargarPaquete();
   }
 
   private cargarPaquete(): void {
-    if (this.paqueteId) {
-      this.lotesService.cargarDetallePaqueteApi(this.paqueteId).subscribe({
-        next: (pkg) => {
-          if (pkg) {
-            this.paquete = pkg;
-          } else {
-            this.usarPaqueteFallback();
+    if (this.loteId) {
+      this.lotesService.cargarDetalleLoteApi(this.loteId).subscribe({
+        next: (detalle) => {
+          if (detalle && detalle.paradas) {
+            const parada = detalle.paradas.find(
+              (p: any) => p.numero === this.numeroParada || (this.paqueteId && p.paqueteId === this.paqueteId)
+            );
+            if (parada) {
+              this.paquete = {
+                id: parada.paqueteId,
+                tracking: parada.codigoSeguimiento,
+                destinatario: parada.destinatario,
+                telefono: parada.telefono || '',
+                direccion: parada.direccion,
+                peso: parada.peso,
+                dimensiones: parada.dimensiones,
+                coordenadas: parada.coordenadas,
+              };
+              if (parada.paqueteId) {
+                this.paqueteId = parada.paqueteId;
+              }
+              return;
+            }
+          }
+
+          if (this.paqueteId) {
+            this.cargarPorId(this.paqueteId);
           }
         },
-        error: () => this.usarPaqueteFallback(),
+        error: () => {
+          if (this.paqueteId) {
+            this.cargarPorId(this.paqueteId);
+          }
+        },
       });
-    } else {
-      this.usarPaqueteFallback();
+    } else if (this.paqueteId) {
+      this.cargarPorId(this.paqueteId);
     }
   }
 
-  private usarPaqueteFallback(): void {
-    this.paquete =
-      this.paquetesEjemplo[this.numeroParada - 1] ?? this.paquetesEjemplo[0];
+  private cargarPorId(id: number): void {
+    this.lotesService.cargarDetallePaqueteApi(id).subscribe({
+      next: (pkg) => {
+        if (pkg) {
+          this.paquete = pkg;
+        }
+      },
+    });
   }
 
   volver(): void {
@@ -195,8 +178,11 @@ export class DetallePaqueteConductor implements OnInit {
     return telefono.replace(/[^0-9+]/g, '');
   }
 
-  /** Genera la URL directa a Google Maps con la dirección registrada */
+  /** Genera la URL directa a Google Maps con coordenadas o texto */
   getGoogleMapsUrl(direccion: string): string {
+    if (this.paquete?.coordenadas && typeof this.paquete.coordenadas.lat === 'number' && typeof this.paquete.coordenadas.lng === 'number') {
+      return `https://www.google.com/maps/search/?api=1&query=${this.paquete.coordenadas.lat},${this.paquete.coordenadas.lng}`;
+    }
     const destino = direccion ? `${direccion}, Lima, Perú` : 'Lima, Perú';
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destino)}`;
   }
@@ -283,15 +269,16 @@ export class DetallePaqueteConductor implements OnInit {
     }
 
     this.guardandoEntrega = true;
+    this.mensajeErrorEntrega = '';
     const idParaApi = this.paquete.id || this.paqueteId || this.numeroParada;
 
     this.lotesService.registrarEntregaApi(idParaApi, this.fotoSeleccionada, this.comentario).subscribe({
       next: () => {
         this.finalizarEntregaLocal();
       },
-      error: () => {
-        // En caso de que el backend no esté en línea o sea una parada local, completamos localmente
-        this.finalizarEntregaLocal();
+      error: (err) => {
+        this.guardandoEntrega = false;
+        this.mensajeErrorEntrega = err?.error?.message || 'Error al registrar la entrega. Intente nuevamente.';
       },
     });
   }
@@ -375,6 +362,7 @@ export class DetallePaqueteConductor implements OnInit {
     }
 
     this.guardandoFallo = true;
+    this.mensajeErrorFallo = '';
     const itemMotivo = this.motivosFallo.find(m => m.label === this.motivoFallo);
     const motivoId = itemMotivo ? itemMotivo.id : 1;
     const idParaApi = this.paquete.id || this.paqueteId || this.numeroParada;
@@ -383,8 +371,9 @@ export class DetallePaqueteConductor implements OnInit {
       next: () => {
         this.finalizarFalloLocal(observacion);
       },
-      error: () => {
-        this.finalizarFalloLocal(observacion);
+      error: (err) => {
+        this.guardandoFallo = false;
+        this.mensajeErrorFallo = err?.error?.message || 'Error al registrar el fallo. Intente nuevamente.';
       },
     });
   }

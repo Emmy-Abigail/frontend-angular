@@ -13,6 +13,7 @@ export interface Parada {
   direccion: string;
   codigoSeguimiento: string;
   estado: EstadoParada;
+  coordenadas?: { lat: number; lng: number } | null;
 }
 
 interface Lote {
@@ -38,6 +39,8 @@ export class Entregas implements OnInit {
 
   loteEnRutaId: string | null = null;
   paradasCompletadas = 0;
+  cargando = false;
+  mensajeError = '';
 
   lote: Lote = {
     id: '',
@@ -49,51 +52,6 @@ export class Entregas implements OnInit {
     paradas: [],
   };
 
-  private readonly paradasEjemplo: Parada[] = [
-    {
-      numero: 1,
-      destinatario: 'Juan Carlos Mendoza',
-      direccion: 'Av. La Marina 2345, San Miguel',
-      codigoSeguimiento: 'Q4HN7TZ2KD',
-      estado: 'Pendiente',
-    },
-    {
-      numero: 2,
-      destinatario: 'María Belén Soto',
-      direccion: 'Jr. Ayacucho 456, Surco',
-      codigoSeguimiento: 'M8KP3XR5LA',
-      estado: 'Pendiente',
-    },
-    {
-      numero: 3,
-      destinatario: 'Andrés Felipe Ramírez',
-      direccion: 'Calle Los Cedros 129, Miraflores',
-      codigoSeguimiento: 'P7DN2WC9BT',
-      estado: 'Pendiente',
-    },
-    {
-      numero: 4,
-      destinatario: 'Roberto Jiménez Vargas',
-      direccion: 'Av. Arequipa 3890, Lince',
-      codigoSeguimiento: 'R5FT8HJ4QM',
-      estado: 'Pendiente',
-    },
-    {
-      numero: 5,
-      destinatario: 'Camila Fernanda Torres',
-      direccion: 'Jr. de la Unión 1020, Cercado',
-      codigoSeguimiento: 'C6VB9LK2XZ',
-      estado: 'Pendiente',
-    },
-    {
-      numero: 6,
-      destinatario: 'Valeria Alejandra Flores',
-      direccion: 'Jr. Huallaga 567, Cercado',
-      codigoSeguimiento: 'T3GH6NM8YP',
-      estado: 'Pendiente',
-    },
-  ];
-
   constructor(
     private route: ActivatedRoute,
     private location: Location,
@@ -103,68 +61,40 @@ export class Entregas implements OnInit {
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
-      const id = params.get('id') ?? 'L-098';
-      this.cargarLote(id);
+      const id = params.get('id') ?? '';
+      if (id) {
+        this.cargarLote(id);
+      }
     });
   }
 
   private cargarLote(id: string): void {
+    this.cargando = true;
+    this.mensajeError = '';
+
     this.lotesService.cargarDetalleLoteApi(id).subscribe({
       next: (detalle) => {
-        if (detalle && detalle.paradas && detalle.paradas.length > 0) {
+        this.cargando = false;
+        if (detalle) {
           this.lote = {
             id: detalle.id,
             fechaAsignacion: detalle.fechaAsignacion || '12 Oct 2026',
             origen: detalle.origen || 'Sede sur',
             destino: detalle.destino || 'Zona sur',
-            totalPaquetes: detalle.totalPaquetes || detalle.paradas.length,
+            totalPaquetes: detalle.totalPaquetes || (detalle.paradas ? detalle.paradas.length : 0),
             estado: detalle.estado,
-            paradas: detalle.paradas,
+            paradas: detalle.paradas || [],
           };
           this.sincronizarEstado();
         } else {
-          this.cargarFallbackLote(id);
+          this.mensajeError = 'No se encontró el lote solicitado.';
         }
       },
-      error: () => {
-        this.cargarFallbackLote(id);
+      error: (err) => {
+        this.cargando = false;
+        this.mensajeError = err.error?.message || 'Error al cargar el detalle del lote.';
       },
     });
-  }
-
-  private cargarFallbackLote(id: string): void {
-    if (id === 'L-098') {
-      this.lote = {
-        id: 'L-098',
-        fechaAsignacion: '12 Oct 2026',
-        origen: 'Sede sur',
-        destino: 'Zona sur',
-        totalPaquetes: 6,
-        estado: 'Asignado',
-        paradas: this.paradasEjemplo,
-      };
-    } else if (id === 'LOT-9922') {
-      this.lote = {
-        id: 'LOT-9922',
-        fechaAsignacion: '12 Oct 2026',
-        origen: 'Sede sur',
-        destino: 'Zona norte',
-        totalPaquetes: 5,
-        estado: 'Asignado',
-        paradas: this.paradasEjemplo.slice(0, 5),
-      };
-    } else {
-      this.lote = {
-        id,
-        fechaAsignacion: '12 Oct 2026',
-        origen: 'Sede sur',
-        destino: 'Zona sur',
-        totalPaquetes: 0,
-        estado: 'Asignado',
-        paradas: [],
-      };
-    }
-    this.sincronizarEstado();
   }
 
   private sincronizarEstado(): void {
@@ -284,10 +214,9 @@ export class Entregas implements OnInit {
     // Llamada API al backend
     this.lotesService.iniciarRutaApi(this.lote.id).subscribe({
       next: (res) => {
-        if (!res.ok && res.error === 'lote_en_ruta_activo') {
+        if (!res.ok) {
           this.cerrarConfirmacionRuta();
-          this.loteEnRutaId = res.message || 'L-098';
-          this.mostrarAvisoRutaActiva = true;
+          this.mensajeError = res.message || 'No se pudo iniciar la ruta.';
           return;
         }
 
@@ -300,27 +229,29 @@ export class Entregas implements OnInit {
           queryParams: { filtro: 'EN_RUTA' },
         });
       },
-      error: () => {
-        // Fallback local
-        this.lotesService.iniciarRuta(this.lote.id);
-        this.lote.estado = 'En ruta';
+      error: (err) => {
         this.cerrarConfirmacionRuta();
-        this.router.navigate(['/conductor/mis-lotes'], {
-          queryParams: { filtro: 'EN_RUTA' },
-        });
+        if (err?.status === 409) {
+          this.mensajeError = err.error?.message || 'Ya tienes otro lote en ruta activa.';
+        } else {
+          this.mensajeError = err.error?.message || 'Error al iniciar la ruta en el servidor.';
+        }
       },
     });
   }
 
-  getGoogleMapsUrl(direccion: string): string {
+  getGoogleMapsUrl(direccion: string, coordenadas?: { lat: number; lng: number } | null): string {
+    if (coordenadas && typeof coordenadas.lat === 'number' && typeof coordenadas.lng === 'number') {
+      return `https://www.google.com/maps/search/?api=1&query=${coordenadas.lat},${coordenadas.lng}`;
+    }
     const destino = direccion ? `${direccion}, Lima, Perú` : 'Lima, Perú';
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destino)}`;
   }
 
   abrirMapa(): void {
     if (this.lote.paradas.length > 0) {
-      const direccion = this.lote.paradas[0].direccion;
-      window.open(this.getGoogleMapsUrl(direccion), '_blank');
+      const parada = this.lote.paradas[0];
+      window.open(this.getGoogleMapsUrl(parada.direccion, parada.coordenadas), '_blank');
     } else {
       window.open('https://www.google.com/maps', '_blank');
     }

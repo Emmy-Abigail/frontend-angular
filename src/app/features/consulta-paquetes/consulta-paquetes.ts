@@ -32,8 +32,6 @@ interface PaqueteConsulta {
 export class ConsultaPaquetes {
   private readonly router = inject(Router);
   private readonly operadorService = inject(OperadorService);
-  private readonly clavePaquetes = 'riva_paquetes';
-
   busqueda = '';
   estadoSeleccionado = 'TODOS';
   fechaDesde = '';
@@ -45,130 +43,80 @@ export class ConsultaPaquetes {
   paqueteSeleccionado: PaqueteConsulta | null = null;
   ultimaActualizacion = new Date();
 
-  private readonly paquetesEjemplo: PaqueteConsulta[] = [
-    {
-      tracking: 'Q4HN7TZ2KD',
-      remitente: 'Juan Pérez',
-      destinatario: 'María García',
-      destino: 'Jesús María',
-      estado: 'EN RUTA',
-      lote: 'L-101',
-      fechaIngreso: '2026-10-17',
-      horaIngreso: '08:00',
-    },
-    {
-      tracking: 'RUV7KHBJKD',
-      remitente: 'Logística Sur',
-      destinatario: 'Tienda Centro',
-      destino: 'San Martín de Porres',
-      estado: 'EN ALMACEN',
-      lote: 'L-098',
-      fechaIngreso: '2026-10-17',
-      horaIngreso: '07:40',
-    },
-    {
-      tracking: 'K3P8WZ2MNA',
-      remitente: 'Electrónica S.A.',
-      destinatario: 'Roberto Gómez',
-      destino: 'Villa El Salvador',
-      estado: 'ENTREGADO',
-      lote: 'L-095',
-      fechaIngreso: '2026-10-18',
-      horaIngreso: '18:10',
-    },
-    {
-      tracking: 'W8FJ3KN6RA',
-      remitente: 'Almacén Norte',
-      destinatario: 'Ana Belén',
-      destino: 'Los Ángeles',
-      estado: 'ASIGNADO',
-      lote: 'L-090',
-      fechaIngreso: '2026-10-18',
-      horaIngreso: '15:25',
-    },
-    {
-      tracking: 'F8M2QX7LPA',
-      remitente: 'Juan Pérez Quispe',
-      destinatario: 'María García',
-      destino: 'Miraflores',
-      estado: 'FALLIDO',
-      lote: 'L-098',
-      fechaIngreso: '2026-10-20',
-      horaIngreso: '09:05',
-    },
-  ];
-
   paquetes: PaqueteConsulta[] = [];
+  cargando = false;
+  mensajeError = '';
+  totalItems = 0;
+  totalPaginasServidor = 1;
 
   constructor() {
     this.cargarPaquetes();
   }
 
-  private cargarPaquetes(): void {
+  cargarPaquetes(): void {
+    this.cargando = true;
+    this.mensajeError = '';
+
     this.operadorService.listarPaquetes({
       q: this.busqueda || undefined,
       estado: this.estadoSeleccionado !== 'TODOS' ? this.estadoSeleccionado : undefined,
       desde: this.fechaDesde || undefined,
       hasta: this.fechaHasta || undefined,
-      page: 1,
-      per_page: 50,
+      page: this.paginaActual,
+      per_page: this.elementosPorPagina,
     }).subscribe({
       next: (res) => {
-        const items = res?.items ?? [];
-        if (items.length > 0) {
-          this.paquetes = items.map((pkg: any) => {
-            let fechaStr = '2026-10-20';
-            let horaStr = '09:00';
-            if (pkg.fecha_ingreso) {
-              const partes = pkg.fecha_ingreso.split(' ');
-              fechaStr = partes[0] || fechaStr;
-              horaStr = partes[1]?.slice(0, 5) || horaStr;
-            }
-
-            const estadoCodigo = (pkg.estado?.codigo || pkg.estado || 'EN_ALMACEN')
-              .replace(/_/g, ' ')
-              .toUpperCase() as EstadoPaquete;
-
-            return {
-              tracking: pkg.tracking_id || pkg.tracking,
-              remitente: pkg.remitente?.nombres || 'Cliente Riva',
-              destinatario: pkg.destinatario?.nombres || 'Destinatario',
-              destino: pkg.destino?.distrito || 'Lima',
-              estado: estadoCodigo,
-              lote: pkg.id_lote ? `L-${pkg.id_lote}` : 'L-101',
-              fechaIngreso: fechaStr,
-              horaIngreso: horaStr,
-            };
-          });
+        this.cargando = false;
+        const items = res?.data ?? [];
+        if (res?.meta) {
+          this.totalPaginasServidor = res.meta.total_pages || 1;
+          this.totalItems = res.meta.total || 0;
         } else {
-          this.cargarFallbackLocal();
+          this.totalPaginasServidor = 1;
+          this.totalItems = items.length;
         }
+
+        this.paquetes = items.map((pkg: any) => {
+          let fechaStr = '-';
+          let horaStr = '-';
+          if (pkg.fecha_ingreso) {
+            const d = new Date(pkg.fecha_ingreso);
+            fechaStr = !isNaN(d.getTime()) ? d.toLocaleDateString('es-PE') : pkg.fecha_ingreso;
+            horaStr = !isNaN(d.getTime()) ? d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '';
+          }
+
+          const estadoCodigo = (pkg.estado?.codigo || pkg.estado || 'EN_ALMACEN')
+            .replace(/_/g, ' ')
+            .toUpperCase() as EstadoPaquete;
+
+          const destNombre = typeof pkg.destinatario === 'string'
+            ? pkg.destinatario
+            : (pkg.destinatario?.nombres || '-');
+
+          const remitNombre = typeof pkg.remitente === 'string'
+            ? pkg.remitente
+            : (pkg.remitente?.nombres || '-');
+
+          const distritoNombre = pkg.destino?.distrito || (typeof pkg.destino === 'string' ? pkg.destino : '-');
+
+          return {
+            tracking: pkg.tracking_id || pkg.tracking,
+            remitente: remitNombre,
+            destinatario: destNombre,
+            destino: distritoNombre,
+            estado: estadoCodigo,
+            lote: pkg.id_lote ? `L-${pkg.id_lote}` : (pkg.lote?.codigo || '-'),
+            fechaIngreso: fechaStr,
+            horaIngreso: horaStr,
+          };
+        });
       },
-      error: () => {
-        this.cargarFallbackLocal();
+      error: (err) => {
+        this.cargando = false;
+        this.paquetes = [];
+        this.mensajeError = err.error?.message || 'Error al consultar paquetes del servidor.';
       },
     });
-  }
-
-  private cargarFallbackLocal(): void {
-    try {
-      const registrosGuardados = localStorage.getItem(this.clavePaquetes);
-      const paquetesGuardados: PaqueteConsulta[] = registrosGuardados
-        ? JSON.parse(registrosGuardados)
-        : [];
-
-      this.paquetes = [
-        ...paquetesGuardados,
-        ...this.paquetesEjemplo.filter(
-          (ejemplo) =>
-            !paquetesGuardados.some(
-              (guardado) => guardado.tracking === ejemplo.tracking,
-            ),
-        ),
-      ];
-    } catch {
-      this.paquetes = [...this.paquetesEjemplo];
-    }
   }
 
   get paquetesFiltrados(): PaqueteConsulta[] {
@@ -202,19 +150,11 @@ export class ConsultaPaquetes {
   }
 
   get totalPaginas(): number {
-    return Math.max(
-      1,
-      Math.ceil(this.paquetesFiltrados.length / this.elementosPorPagina),
-    );
+    return Math.max(1, this.totalPaginasServidor);
   }
 
   get paquetesVisibles(): PaqueteConsulta[] {
-    const inicio = (this.paginaActual - 1) * this.elementosPorPagina;
-
-    return this.paquetesFiltrados.slice(
-      inicio,
-      inicio + this.elementosPorPagina,
-    );
+    return this.paquetes;
   }
 
   get paginas(): number[] {
@@ -225,7 +165,7 @@ export class ConsultaPaquetes {
   }
 
   get totalRegistros(): number {
-    return this.paquetesFiltrados.length;
+    return this.totalItems || this.paquetes.length;
   }
 
   cambiarFiltro(): void {
@@ -234,14 +174,15 @@ export class ConsultaPaquetes {
   }
 
   actualizar(): void {
+    this.paginaActual = 1;
     this.cargarPaquetes();
     this.ultimaActualizacion = new Date();
-    this.paginaActual = 1;
   }
 
   cambiarPagina(pagina: number): void {
-    if (pagina >= 1 && pagina <= this.totalPaginas) {
+    if (pagina >= 1 && pagina <= this.totalPaginas && pagina !== this.paginaActual) {
       this.paginaActual = pagina;
+      this.cargarPaquetes();
     }
   }
 

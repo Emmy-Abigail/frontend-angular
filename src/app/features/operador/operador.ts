@@ -1,23 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { AfterViewInit, Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import * as L from 'leaflet';
 
 import { AuthService } from '../../core/services/auth';
 import { OperadorService, RegistroPaqueteRequest } from '../../core/services/operador.service';
+import { CatalogService } from '../../core/services/catalog.service';
 import { Department, District } from '../../core/models/catalog.models';
 import { GEOGRAPHY_MOCK } from '../../core/data/geography.mock';
-
-interface PaqueteConsulta {
-  tracking: string;
-  remitente: string;
-  destinatario: string;
-  destino: string;
-  estado: 'EN RUTA' | 'EN ALMACEN' | 'ENTREGADO' | 'ASIGNADO';
-  lote: string;
-  fechaIngreso: string;
-  horaIngreso: string;
-}
 
 @Component({
   standalone: true,
@@ -26,12 +17,11 @@ interface PaqueteConsulta {
   styleUrl: './operador.css',
   templateUrl: './operador.html',
 })
-export class Operador {
+export class Operador implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
   private operadorService = inject(OperadorService);
+  private catalogService = inject(CatalogService);
   private router = inject(Router);
-
-  private readonly clavePaquetes = 'riva_paquetes';
 
   currentUser = this.authService.currentUser;
 
@@ -52,13 +42,80 @@ export class Operador {
     return distrito?.nombre_mostrado ?? '';
   }
 
-  // Estado de las validaciones
+  // Estado de las validaciones y del servidor
   enviado = false;
   guardando = false;
+  mensajeError = '';
+  erroresServidor: Record<string, string> = {};
   camposTocados = new Set<string>();
+
+  // Mapa interactivo Leaflet
+  punto: { lat: number; lng: number } | null = null;
+  private mapa?: L.Map;
+  private marcador?: L.Marker;
+
+  ngOnInit(): void {
+    this.catalogService.getGeography().subscribe({
+      next: (data) => {
+        if (data && data.length > 0) {
+          this.departamentos = data;
+        }
+      },
+      error: () => {
+        // Mantiene GEOGRAPHY_MOCK si no responde la red
+      },
+    });
+  }
+
+  ngAfterViewInit(): void {
+    if (typeof window !== 'undefined') {
+      const contenedor = document.getElementById('mapa-entrega');
+      if (contenedor) {
+        this.mapa = L.map('mapa-entrega').setView([-12.0464, -77.0428], 12);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap',
+        }).addTo(this.mapa);
+
+        this.mapa.on('click', (e: L.LeafletMouseEvent) => {
+          this.punto = { lat: e.latlng.lat, lng: e.latlng.lng };
+
+          if (!this.marcador) {
+            this.marcador = L.marker(e.latlng, {
+              draggable: true,
+              icon: L.icon({
+                iconUrl: 'assets/marker-icon.png',
+                iconRetinaUrl: 'assets/marker-icon-2x.png',
+                shadowUrl: 'assets/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+              }),
+            }).addTo(this.mapa!);
+
+            this.marcador.on('dragend', () => {
+              const p = this.marcador!.getLatLng();
+              this.punto = { lat: p.lat, lng: p.lng };
+            });
+          } else {
+            this.marcador.setLatLng(e.latlng);
+          }
+        });
+      }
+    }
+  }
+
+  centrarMapaEnDistrito(): void {
+    const distrito = this.todosLosDistritos.find((item) => item.ubigeo === this.direccion.distrito);
+    if (distrito && distrito.lat && distrito.lng && this.mapa) {
+      this.mapa.setView([distrito.lat, distrito.lng], 15);
+    }
+  }
 
   marcarTocado(campo: string): void {
     this.camposTocados.add(campo);
+    if (campo === 'distrito') {
+      this.centrarMapaEnDistrito();
+    }
     if (['pesoReal', 'largo', 'ancho', 'alto', 'distrito'].includes(campo)) {
       this.actualizarCotizacion();
     }
@@ -103,7 +160,7 @@ export class Operador {
   };
 
   // Valores de cotización
-  tarifaBasePorKg = 0.05;
+  tarifaBasePorKg = 2.50;
   factorZona = 1.0;
   totalEstimadoServidor: number | null = null;
 
@@ -323,65 +380,22 @@ export class Operador {
   }
 
   mostrarError(campo: string): boolean {
+    if (this.erroresServidor[campo]) {
+      return true;
+    }
     return (
       (this.enviado || this.camposTocados.has(campo)) &&
       this.errores[campo] === true
     );
   }
 
+  obtenerMensajeError(campo: string, defaultMsg: string): string {
+    return this.erroresServidor[campo] || defaultMsg;
+  }
+
   validarFormulario(): boolean {
     this.enviado = true;
     return this.formularioValido;
-  }
-
-  private generarCodigoSeguimiento(): string {
-    const caracteres = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let codigo = '';
-
-    for (let i = 0; i < 10; i++) {
-      const indice = Math.floor(Math.random() * caracteres.length);
-      codigo += caracteres[indice];
-    }
-
-    return codigo;
-  }
-
-  private guardarPaqueteConsulta(): void {
-    const ahora = new Date();
-
-    const paqueteNuevo: PaqueteConsulta = {
-      tracking: this.codigoSeguimiento,
-      remitente: this.remitente.nombre.trim(),
-      destinatario: this.destinatario.nombre.trim(),
-      destino: this.nombreDistritoSeleccionado || 'Sin destino',
-      estado: 'EN ALMACEN',
-      lote: this.loteAsignado,
-      fechaIngreso: [
-        ahora.getFullYear(),
-        String(ahora.getMonth() + 1).padStart(2, '0'),
-        String(ahora.getDate()).padStart(2, '0'),
-      ].join('-'),
-      horaIngreso: [
-        String(ahora.getHours()).padStart(2, '0'),
-        String(ahora.getMinutes()).padStart(2, '0'),
-      ].join(':'),
-    };
-
-    try {
-      const registrosGuardados = localStorage.getItem(this.clavePaquetes);
-      const paquetes: PaqueteConsulta[] = registrosGuardados
-        ? JSON.parse(registrosGuardados)
-        : [];
-
-      paquetes.unshift(paqueteNuevo);
-
-      localStorage.setItem(
-        this.clavePaquetes,
-        JSON.stringify(paquetes),
-      );
-    } catch (error) {
-      console.error('No se pudo guardar el paquete localmente.', error);
-    }
   }
 
   registrarPaquete(): void {
@@ -390,20 +404,22 @@ export class Operador {
     }
 
     this.guardando = true;
+    this.mensajeError = '';
+    this.erroresServidor = {};
 
-    // Nota: El backend PHP en PackageDetails.php NO acepta campo 'correo'
-    // (daría 422 Campo no permitido). Por eso se omiten de la petición al backend.
     const payload: RegistroPaqueteRequest = {
       remitente: {
         tipo_documento: this.tipoDocumentoRemitente,
         numero_documento: this.remitente.documento.trim(),
         nombres: this.remitente.nombre.trim(),
         celular: this.remitente.celular.trim(),
+        correo: this.remitente.correo.trim(),
       },
       destinatario: {
         nombres: this.destinatario.nombre.trim(),
         dni: this.destinatario.dni.trim(),
         celular: this.destinatario.celular.trim(),
+        correo: this.destinatario.correo.trim(),
       },
       direccion: {
         ubigeo_distrito: this.direccion.distrito,
@@ -413,6 +429,7 @@ export class Operador {
         manzana: this.direccion.manzana.trim() || null,
         lote: this.direccion.lote.trim() || null,
         referencia: this.direccion.referencia.trim() || null,
+        ...(this.punto ? { lat: this.punto.lat, lng: this.punto.lng } : {}),
       },
       peso_kg: this.paquete.pesoReal!,
       largo_cm: this.paquete.largo!,
@@ -425,53 +442,32 @@ export class Operador {
         this.guardando = false;
         this.codigoSeguimiento = res.tracking_id;
         this.codigoCopiado = false;
-        this.fechaIngreso = res.fecha_ingreso || new Date().toLocaleString('es-PE');
+        this.fechaIngreso = res.fecha_ingreso ? new Date(res.fecha_ingreso).toLocaleString('es-PE') : new Date().toLocaleString('es-PE');
         if (res.lote) {
           this.loteAsignado = res.lote.codigo || `L-${res.lote.id}`;
           this.vehiculoAsignado = res.lote.vehiculo || 'Motorizado';
           this.zonaLote = res.lote.zona || 'Zona Sur';
         }
         if (res.cotizacion?.monto) {
-          this.totalEstimadoServidor = res.cotizacion.monto;
+          this.totalEstimadoServidor = typeof res.cotizacion.monto === 'number' ? res.cotizacion.monto : parseFloat(res.cotizacion.monto as any);
         }
 
-        this.guardarPaqueteConsulta();
         this.modalRegistroAbierto = true;
       },
-      error: () => {
-        // En caso de que el backend no tenga aún el microservicio de asignación de Python
-        // (error 503 asignacion_no_disponible del backend) o desconexión,
-        // se completa la asignación automática por reglas de negocio:
+      error: (err) => {
         this.guardando = false;
-        this.codigoSeguimiento = this.generarCodigoSeguimiento();
-        this.codigoCopiado = false;
-        this.fechaIngreso = new Date().toLocaleString('es-PE', {
-          dateStyle: 'short',
-          timeStyle: 'short',
-        });
+        this.modalRegistroAbierto = false;
 
-        // Reglas R1 y R2 de asignación de vehículo (documento oficial Demo 3):
-        const ladoMayor = Math.max(
-          this.paquete.largo || 0,
-          this.paquete.ancho || 0,
-          this.paquete.alto || 0,
-        );
-        const peso = this.paquete.pesoReal || 0;
-
-        if (peso <= 20 && ladoMayor <= 40) {
-          this.vehiculoAsignado = 'Motorizado';
-          this.loteAsignado = 'L-101';
-        } else if (peso <= 200 && ladoMayor <= 125) {
-          this.vehiculoAsignado = 'Auto';
-          this.loteAsignado = 'L-102';
+        if (err.status === 422 && err.error?.campos) {
+          this.erroresServidor = err.error.campos;
+          this.mensajeError = err.error.message || 'Por favor revisa los campos señalados.';
+        } else if (err.status === 503) {
+          this.mensajeError = err.error?.message || 'Servicio no disponible, reintente';
+        } else if (err.status === 409) {
+          this.mensajeError = err.error?.message || 'Conflicto al registrar el paquete.';
         } else {
-          this.vehiculoAsignado = 'Camión';
-          this.loteAsignado = 'L-104';
+          this.mensajeError = err.error?.message || 'Error al registrar el paquete. Verifique los datos e intente nuevamente.';
         }
-        this.zonaLote = 'Zona Sur';
-
-        this.guardarPaqueteConsulta();
-        this.modalRegistroAbierto = true;
       },
     });
   }
@@ -506,8 +502,17 @@ export class Operador {
   limpiarFormulario(): void {
     this.enviado = false;
     this.guardando = false;
+    this.mensajeError = '';
+    this.erroresServidor = {};
     this.totalEstimadoServidor = null;
     this.camposTocados.clear();
+
+    this.punto = null;
+    if (this.marcador && this.mapa) {
+      this.mapa.removeLayer(this.marcador);
+      this.marcador = undefined;
+    }
+    this.mapa?.setView([-12.0464, -77.0428], 12);
 
     this.tipoDocumentoRemitente = 'DNI';
 

@@ -320,6 +320,16 @@
             [(ngModel)]="direccion.referencia"
             placeholder="Ej. Frente al parque Kennedy" />
         </div>
+
+        <!-- Punto en el mapa (Leaflet + OpenStreetMap) -->
+        <div class="field" style="grid-column: 1 / -1; margin-top: 14px;">
+          <label style="font-weight: 600;">Punto exacto de entrega en el mapa</label>
+          <p style="font-size: 11px; color: #64748b; margin: 2px 0 8px;">Haz clic en el mapa para marcar el punto exacto de entrega (puedes arrastrar el marcador).</p>
+          <div id="mapa-entrega" style="height: 300px; width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; z-index: 1;"></div>
+          <small *ngIf="punto" style="display: block; margin-top: 6px; color: #0284c7; font-weight: 600;">
+            Punto: {{ punto.lat | number:'1.6-6' }}, {{ punto.lng | number:'1.6-6' }}
+          </small>
+        </div>
       </div>
     </section>
 
@@ -489,6 +499,10 @@
 
     <p class="form-feedback error-feedback" *ngIf="enviado && !formularioValido">
       Revisa los campos marcados antes de continuar.
+    </p>
+
+    <p class="form-feedback error-feedback" *ngIf="mensajeError">
+      {{ mensajeError }}
     </p>
   </aside>
 </form>

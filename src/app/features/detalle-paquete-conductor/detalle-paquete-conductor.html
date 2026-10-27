@@ -319,6 +319,12 @@
           Entregado con la foto. Es un estado final y no se puede cambiar.
         </p>
 
+        @if (mensajeErrorEntrega) {
+          <div class="error-fallo" style="margin-bottom: 12px;" role="alert">
+            {{ mensajeErrorEntrega }}
+          </div>
+        }
+
         <div class="acciones-modal">
           <button
             class="boton boton-secundario"
@@ -459,6 +465,12 @@
         <p class="modal-subtexto">
           El paquete quedará registrado como fallido. Este estado no se puede cambiar.
         </p>
+
+        @if (mensajeErrorFallo) {
+          <div class="error-fallo" style="margin-bottom: 12px;" role="alert">
+            {{ mensajeErrorFallo }}
+          </div>
+        }
 
         <div class="acciones-modal">
           <button

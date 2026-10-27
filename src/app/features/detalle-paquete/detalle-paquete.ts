@@ -13,7 +13,9 @@ type EstadoPaquete =
 interface PaqueteDetalle {
   tracking: string;
   remitente: string;
+  correoRemitente?: string;
   destinatario: string;
+  correoDestinatario?: string;
   destino: string;
   estado: EstadoPaquete;
   lote: string;
@@ -25,6 +27,7 @@ interface PaqueteDetalle {
   celularDestinatario?: string;
   direccionEntrega?: string;
   referenciaEntrega?: string;
+  coordenadas?: { lat: number; lng: number };
   pesoReal?: string;
   pesoFacturable?: string;
   medidas?: string;
@@ -44,6 +47,7 @@ interface PaqueteDetalle {
   comentarioEntrega?: string;
   motivoFallo?: string;
   observacionConductor?: string;
+  historial?: any[];
 }
 
 @Component({
@@ -55,7 +59,6 @@ interface PaqueteDetalle {
 })
 export class DetallePaquete {
   private readonly operadorService = inject(OperadorService);
-  private readonly clavePaquetes = 'riva_paquetes';
 
   paquete: PaqueteDetalle | null = null;
 
@@ -92,9 +95,16 @@ export class DetallePaquete {
     this.volverAConsulta();
   }
 
+  cargando = false;
+  errorMensaje = '';
+
   private cargarPaquete(tracking: string): void {
+    this.cargando = true;
+    this.errorMensaje = '';
+
     this.operadorService.obtenerPaquete(tracking).subscribe({
       next: (res) => {
+        this.cargando = false;
         if (res && (res.tracking_id || res.id)) {
           const dir = res.direccion;
           let dirTexto = '';
@@ -110,131 +120,57 @@ export class DetallePaquete {
             .replace(/_/g, ' ')
             .toUpperCase() as EstadoPaquete;
 
+          let fechaIngresoStr = '-';
+          let horaIngresoStr = '-';
+          if (res.fecha_ingreso) {
+            const d = new Date(res.fecha_ingreso);
+            fechaIngresoStr = !isNaN(d.getTime()) ? d.toLocaleDateString('es-PE') : res.fecha_ingreso;
+            horaIngresoStr = !isNaN(d.getTime()) ? d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '';
+          }
+
           this.paquete = {
             tracking: res.tracking_id || tracking,
             remitente: res.remitente?.nombres || 'Cliente Riva',
+            correoRemitente: res.remitente?.correo,
+            documentoRemitente: res.remitente ? `${res.remitente.tipo_documento || 'DNI'} ${res.remitente.numero_documento || ''}` : '',
+            celularRemitente: res.remitente?.celular || '',
+
             destinatario: res.destinatario?.nombres || 'Destinatario',
-            destino: res.direccion?.distrito || 'Miraflores',
+            correoDestinatario: res.destinatario?.correo,
+            documentoDestinatario: res.destinatario?.dni || '',
+            celularDestinatario: res.destinatario?.celular || '',
+
+            destino: res.direccion?.distrito || (typeof res.destino === 'string' ? res.destino : 'Lima'),
             estado: estadoCodigo,
-            lote: res.lote?.codigo || (res.id_lote ? `L-${res.id_lote}` : 'L-098'),
-            fechaIngreso: res.fecha_ingreso ? res.fecha_ingreso.split(' ')[0] : '20/10/2026',
-            horaIngreso: res.fecha_ingreso ? res.fecha_ingreso.split(' ')[1]?.slice(0, 5) : '09:05',
-            documentoRemitente: res.remitente ? `${res.remitente.tipo_documento} ${res.remitente.numero_documento}` : 'DNI 45678912',
-            celularRemitente: res.remitente?.celular || '987654321',
-            documentoDestinatario: res.destinatario?.dni || '44102938',
-            celularDestinatario: res.destinatario?.celular || '976553210',
-            direccionEntrega: dirTexto || 'Calle Shell 320, Miraflores',
-            referenciaEntrega: res.direccion?.referencia || 'Esquina con Av. diagonal',
-            pesoReal: res.medidas?.peso_kg ? `${res.medidas.peso_kg} kg` : `${res.peso_kg || 3.0} kg`,
-            pesoFacturable: `${res.medidas?.peso_kg || 3.0} kg`,
-            medidas: res.medidas ? `${res.medidas.largo_cm} x ${res.medidas.ancho_cm} x ${res.medidas.alto_cm} cm` : '30 x 22 x 10 cm',
-            pesoVolumetrico: '1.32 kg',
-            factorZona: '1.0',
-            costo: res.costo_estimado ? `S/ ${res.costo_estimado}` : 'S/ 0.15',
-            zonaLote: res.lote?.zona || 'Zona Sur',
-            vehiculo: res.vehiculo?.nombre || 'Motorizado',
-            conductor: res.conductor?.nombres || 'Carlos Huamán',
-            placa: res.conductor?.placa || 'KLM-321',
-            fechaAsignacion: '20/10/2026',
-            horaAsignacion: '09:05',
-            operador: 'Ana Torres (operadora)',
-            fechaRuta: '20/10/2026',
-            horaRuta: '09:45',
-            fechaEntrega: estadoCodigo === 'ENTREGADO' ? '20/10/2026 10:30' : undefined,
-            motivoFallo: estadoCodigo === 'FALLIDO' ? 'Cliente ausente' : undefined,
-            observacionConductor: estadoCodigo === 'FALLIDO' ? 'Se tocó el timbre 3 veces y se llamó al celular sin respuesta.' : undefined,
+            lote: res.lote?.codigo || (res.id_lote ? `L-${res.id_lote}` : '-'),
+            fechaIngreso: fechaIngresoStr,
+            horaIngreso: horaIngresoStr,
+
+            direccionEntrega: dirTexto || '-',
+            referenciaEntrega: res.direccion?.referencia || '',
+            coordenadas: res.direccion?.coordenadas || (res.direccion?.lat ? { lat: res.direccion.lat, lng: res.direccion.lng } : undefined),
+
+            pesoReal: res.medidas?.peso_kg ? `${res.medidas.peso_kg} kg` : (res.peso_kg ? `${res.peso_kg} kg` : '-'),
+            pesoFacturable: res.medidas?.peso_kg ? `${res.medidas.peso_kg} kg` : (res.peso_kg ? `${res.peso_kg} kg` : '-'),
+            medidas: res.medidas ? `${res.medidas.largo_cm} x ${res.medidas.ancho_cm} x ${res.medidas.alto_cm} cm` : '',
+            costo: res.costo_estimado ? `S/ ${Number(res.costo_estimado).toFixed(2)}` : undefined,
+
+            zonaLote: res.lote?.zona || res.zona_destino?.nombre || '',
+            vehiculo: res.vehiculo?.nombre || res.lote?.vehiculo || '',
+            conductor: res.conductor?.nombres,
+            placa: res.conductor?.placa,
+            historial: res.historial || [],
           };
         } else {
-          this.cargarFallbackLocal(tracking);
+          this.paquete = null;
+          this.errorMensaje = 'No se encontró el paquete solicitado.';
         }
       },
-      error: () => {
-        this.cargarFallbackLocal(tracking);
+      error: (err) => {
+        this.cargando = false;
+        this.paquete = null;
+        this.errorMensaje = err.error?.message || 'Error al obtener el detalle del paquete.';
       },
     });
-  }
-
-  private cargarFallbackLocal(tracking: string): void {
-    try {
-      const registrosGuardados = localStorage.getItem(this.clavePaquetes);
-      const paquetesGuardados: PaqueteDetalle[] = registrosGuardados
-        ? JSON.parse(registrosGuardados)
-        : [];
-
-      const paquetesEjemplo: PaqueteDetalle[] = [
-        {
-          tracking: 'Q4HN7TZ2KD',
-          remitente: 'Juan Perez Quispe',
-          destinatario: 'María García',
-          destino: 'Miraflores',
-          estado: 'EN RUTA',
-          lote: 'L-098',
-          fechaIngreso: '20/10/2026',
-          horaIngreso: '09:05',
-          documentoRemitente: 'DNI 45678912',
-          celularRemitente: '987654321',
-          documentoDestinatario: '44102938',
-          celularDestinatario: '976553210',
-          direccionEntrega: 'Calle Shell 320, Miraflores',
-          referenciaEntrega: 'Esquina con Av. diagonal',
-          pesoReal: '3.00 kg',
-          pesoFacturable: '3.00 kg',
-          medidas: '30 x 22 x 10 cm',
-          pesoVolumetrico: '1.32 kg',
-          factorZona: '1.0',
-          costo: 'S/ 0.15',
-          zonaLote: 'Zona sur',
-          vehiculo: 'Motorizado',
-          conductor: 'Carlos Huamán',
-          placa: 'KLM-321',
-          fechaAsignacion: '20/10/26',
-          horaAsignacion: '09:05',
-          operador: 'Ana Torres (operadora)',
-          fechaRuta: '20/10/26',
-          horaRuta: '09:45',
-        },
-        {
-          tracking: 'RUV7KHBJKD',
-          remitente: 'Logística Sur',
-          destinatario: 'Tienda Centro',
-          destino: 'San Martín de Porres',
-          estado: 'EN ALMACEN',
-          lote: 'L-098',
-          fechaIngreso: '17/10/2026',
-          horaIngreso: '07:40',
-          pesoReal: '2.50 kg',
-          pesoFacturable: '2.50 kg',
-          medidas: '25 x 20 x 15 cm',
-          pesoVolumetrico: '1.50 kg',
-          costo: 'S/ 0.15',
-        },
-      ];
-
-      const paqueteEncontrado = [
-        ...paquetesGuardados,
-        ...paquetesEjemplo,
-      ].find((item) => item.tracking === tracking);
-
-      if (paqueteEncontrado) {
-        this.paquete = paqueteEncontrado;
-      } else {
-        this.paquete = {
-          tracking,
-          remitente: 'Remitente General',
-          destinatario: 'Destinatario General',
-          destino: 'Lima',
-          estado: 'EN ALMACEN',
-          lote: 'L-101',
-          fechaIngreso: '20/10/2026',
-          horaIngreso: '09:05',
-          pesoReal: '3.00 kg',
-          pesoFacturable: '3.00 kg',
-          medidas: '30 x 22 x 10 cm',
-          costo: 'S/ 0.15',
-        };
-      }
-    } catch {
-      this.paquete = null;
-    }
   }
 }

@@ -29,38 +29,7 @@ interface LoteConductor {
 export class MisLotes implements OnInit {
   filtroActivo: FiltroLotes = 'TODOS';
 
-  lotes: LoteConductor[] = [
-    {
-      id: 'L-098',
-      codigo: 'L - 098',
-      zonaOrigen: 'Sede sur',
-      zonaDestino: 'Zona sur',
-      paquetes: 20,
-      paradas: 6,
-      horaAsignacion: '08:30',
-      estado: 'ASIGNADO',
-    },
-    {
-      id: 'LOT-9922',
-      codigo: 'LOT-9922',
-      zonaOrigen: 'Sede sur',
-      zonaDestino: 'Zona norte',
-      paquetes: 5,
-      paradas: 5,
-      horaAsignacion: '08:30',
-      estado: 'ASIGNADO',
-    },
-    {
-      id: 'LOT-9923',
-      codigo: 'LOT-9923',
-      zonaOrigen: 'Sede sur',
-      zonaDestino: 'Zona este',
-      paquetes: 0,
-      paradas: 0,
-      horaAsignacion: '08:30',
-      estado: 'ASIGNADO',
-    },
-  ];
+  lotes: LoteConductor[] = [];
 
   constructor(
     private router: Router,
@@ -85,23 +54,12 @@ export class MisLotes implements OnInit {
   cargarLotes(): void {
     this.lotesService.cargarMisLotesApi().subscribe({
       next: (lotes) => {
-        if (lotes && lotes.length > 0) {
-          this.lotes = lotes;
-        } else {
-          this.sincronizarLotes();
-        }
+        this.lotes = lotes ?? [];
       },
       error: () => {
-        this.sincronizarLotes();
+        this.lotes = [];
       },
     });
-  }
-
-  private sincronizarLotes(): void {
-    this.lotes = this.lotes.map(lote => ({
-      ...lote,
-      estado: this.lotesService.obtenerEstado(lote.id),
-    }));
   }
 
   get lotesVisibles(): LoteConductor[] {

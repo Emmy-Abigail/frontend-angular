@@ -1,12 +1,13 @@
-
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
+import { OperadorService } from '../../core/services/operador.service';
 
 type EstadoLotes = 'PREPARACION' | 'DESPACHADOS';
 type EstadoDespacho = 'EN RUTA' | 'ASIGNADO' | 'CERRADO';
 type EstadoPaquete = 'EN RUTA' | 'ENTREGADO' | 'FALLIDO';
 
 interface Lote {
+  id?: number | string;
   codigo: string;
   zona: string;
   vehiculo: string;
@@ -20,6 +21,7 @@ interface Lote {
   placa?: string;
   estadoDespacho?: EstadoDespacho;
   horaDespacho?: string;
+  version?: number;
 }
 
 interface Conductor {
@@ -46,11 +48,14 @@ interface Paquete {
   templateUrl: './lotes.html',
   styleUrl: './lotes.css',
 })
-export class Lotes {
+export class Lotes implements OnInit {
+  private operadorService = inject(OperadorService);
   readonly Math = Math;
 
   estadoSeleccionado: EstadoLotes = 'PREPARACION';
   ultimaActualizacion = new Date();
+  cargandoLotes = false;
+  mensajeErrorLotes = '';
 
   // Modales del despacho
   modalDespachoAbierto = false;
@@ -66,118 +71,85 @@ export class Lotes {
   paqueteSeleccionadoId: number | null = null;
   paquetesLote: Paquete[] = [];
 
-  conductores: Conductor[] = [
-    {
-      id: 1,
-      nombre: 'Luis Ramos',
-      placa: 'DEF-789',
-      estado: 'LIBRE',
-      lotesPendientes: 0,
-    },
-    {
-      id: 2,
-      nombre: 'Pedro Quispe',
-      placa: 'XYZ-456',
-      estado: 'LIBRE',
-      lotesPendientes: 1,
-    },
-    {
-      id: 3,
-      nombre: 'Pedro Quispe',
-      placa: 'KLM-321',
-      estado: 'EN RUTA',
-      lotesPendientes: 2,
-    },
-  ];
+  conductores: Conductor[] = [];
+  lotesPreparacion: Lote[] = [];
+  lotesDespachados: Lote[] = [];
 
-  lotesPreparacion: Lote[] = [
-    {
-      codigo: 'L-101',
-      zona: 'Zona Sur',
-      vehiculo: 'Motorizado',
-      paquetes: 20,
-      capacidadPaquetes: 20,
-      peso: 18,
-      capacidadPeso: 20,
-      horaInicio: '08:00',
-      completo: true,
-    },
-    {
-      codigo: 'L-102',
-      zona: 'Zona Sur',
-      vehiculo: 'Auto',
-      paquetes: 2,
-      capacidadPaquetes: 20,
-      peso: 45,
-      capacidadPeso: 200,
-      horaInicio: '08:20',
-    },
-    {
-      codigo: 'L-103',
-      zona: 'Zona Norte',
-      vehiculo: 'Motorizado',
-      paquetes: 1,
-      capacidadPaquetes: 20,
-      peso: 2,
-      capacidadPeso: 30,
-      horaInicio: '08:30',
-    },
-    {
-      codigo: 'L-104',
-      zona: 'Zona Centro',
-      vehiculo: 'Camión',
-      paquetes: 6,
-      capacidadPaquetes: 20,
-      peso: 210,
-      capacidadPeso: 1000,
-      horaInicio: '09:10',
-    },
-  ];
+  ngOnInit(): void {
+    this.cargarLotes();
+  }
 
-  lotesDespachados: Lote[] = [
-    {
-      codigo: 'L-098',
-      zona: 'Zona Sur',
-      vehiculo: 'Motorizado',
-      paquetes: 4,
-      capacidadPaquetes: 20,
-      peso: 18,
-      capacidadPeso: 20,
-      horaInicio: '07:30',
-      responsable: 'Carlos Huamán',
-      placa: 'KLM-321',
-      estadoDespacho: 'EN RUTA',
-      horaDespacho: '09:05',
-    },
-    {
-      codigo: 'L-095',
-      zona: 'Zona Oeste',
-      vehiculo: 'Motorizado',
-      paquetes: 4,
-      capacidadPaquetes: 20,
-      peso: 12,
-      capacidadPeso: 20,
-      horaInicio: '07:20',
-      responsable: 'Pedro Quispe',
-      placa: 'XYZ-456',
-      estadoDespacho: 'ASIGNADO',
-      horaDespacho: '08:40',
-    },
-    {
-      codigo: 'L-097',
-      zona: 'Zona Este',
-      vehiculo: 'Motorizado',
-      paquetes: 6,
-      capacidadPaquetes: 20,
-      peso: 16,
-      capacidadPeso: 20,
-      horaInicio: '07:00',
-      responsable: 'Juan Soto',
-      placa: 'DEF-789',
-      estadoDespacho: 'CERRADO',
-      horaDespacho: '08:10',
-    },
-  ];
+  cargarLotes(): void {
+    this.cargandoLotes = true;
+    this.mensajeErrorLotes = '';
+
+    // Lotes en preparación
+    this.operadorService.listarLotes('EN_PREPARACION').subscribe({
+      next: (res) => {
+        this.cargandoLotes = false;
+        const items = res?.data ?? (Array.isArray(res) ? res : []);
+        this.lotesPreparacion = items.map((l: any) => {
+          let horaInicio = '08:00';
+          if (l.created_at) {
+            const d = new Date(l.created_at);
+            horaInicio = !isNaN(d.getTime()) ? d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : horaInicio;
+          }
+          const cant = l.cantidad_paquetes ?? l.total_paquetes ?? 0;
+          const maxP = l.capacidad_paquetes || 20;
+
+          return {
+            id: l.id,
+            codigo: l.codigo || `L-${l.id}`,
+            zona: l.zona_destino?.nombre || l.zona || 'Zona Sur',
+            vehiculo: l.vehiculo?.nombre || l.vehiculo || 'Motorizado',
+            paquetes: cant,
+            capacidadPaquetes: maxP,
+            peso: Number(l.peso_total_kg || 0),
+            capacidadPeso: Number(l.capacidad_peso_kg || 20),
+            horaInicio,
+            completo: cant >= maxP,
+            version: l.version ?? 0,
+          };
+        });
+      },
+      error: (err) => {
+        this.cargandoLotes = false;
+        this.mensajeErrorLotes = err.error?.message || 'Error al listar lotes en preparación.';
+      },
+    });
+
+    // Lotes despachados
+    this.operadorService.listarLotes('DESPACHADOS').subscribe({
+      next: (res) => {
+        const items = res?.data ?? (Array.isArray(res) ? res : []);
+        this.lotesDespachados = items.map((l: any) => {
+          let horaDesp = '09:00';
+          if (l.despachado_at || l.created_at) {
+            const d = new Date(l.despachado_at || l.created_at);
+            horaDesp = !isNaN(d.getTime()) ? d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : horaDesp;
+          }
+
+          return {
+            id: l.id,
+            codigo: l.codigo || `L-${l.id}`,
+            zona: l.zona_destino?.nombre || l.zona || 'Zona Sur',
+            vehiculo: l.vehiculo?.nombre || l.vehiculo || 'Motorizado',
+            paquetes: l.cantidad_paquetes ?? l.total_paquetes ?? 0,
+            capacidadPaquetes: l.capacidad_paquetes || 20,
+            peso: Number(l.peso_total_kg || 0),
+            capacidadPeso: Number(l.capacidad_peso_kg || 20),
+            horaInicio: '07:30',
+            responsable: l.conductor?.nombres || l.responsable,
+            placa: l.conductor?.placa || l.placa,
+            estadoDespacho: (l.estado === 'EN_RUTA' ? 'EN RUTA' : (l.estado === 'CERRADO' ? 'CERRADO' : 'ASIGNADO')) as EstadoDespacho,
+            horaDespacho: horaDesp,
+            version: l.version ?? 0,
+          };
+        });
+      },
+      error: () => {},
+    });
+  }
 
   get lotesVisibles(): Lote[] {
     return this.estadoSeleccionado === 'PREPARACION'
@@ -213,6 +185,7 @@ export class Lotes {
 
   actualizar(): void {
     this.ultimaActualizacion = new Date();
+    this.cargarLotes();
   }
 
   // -----------------------------
@@ -226,6 +199,27 @@ export class Lotes {
     this.conflictoDespacho = false;
     this.modalConfirmacionAbierta = false;
     this.modalDespachoAbierto = true;
+
+    if (lote.id) {
+      this.operadorService.obtenerLote(lote.id).subscribe({
+        next: (detalle) => {
+          if (detalle) {
+            if (detalle.version !== undefined && this.loteSeleccionado) {
+              this.loteSeleccionado.version = detalle.version;
+            }
+            if (detalle.conductores_disponibles) {
+              this.conductores = detalle.conductores_disponibles.map((c: any) => ({
+                id: c.id,
+                nombre: c.nombres || c.nombre,
+                placa: c.placa || '',
+                estado: c.estado || 'LIBRE',
+                lotesPendientes: c.lotes_pendientes ?? c.lotesPendientes ?? 0,
+              }));
+            }
+          }
+        },
+      });
+    }
   }
 
   cerrarModalDespacho(): void {
@@ -289,42 +283,33 @@ export class Lotes {
       return;
     }
 
-    const loteSigueEnPreparacion = this.lotesPreparacion.some(
-      (item) => item.codigo === lote.codigo,
-    );
+    const version = lote.version ?? 0;
+    const loteId = lote.id || lote.codigo.replace(/\D/g, '');
 
-    if (!loteSigueEnPreparacion) {
-      this.mostrarConflictoDespacho();
-      return;
-    }
-
-    const horaActual = new Date().toLocaleTimeString('es-PE', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
+    this.operadorService.despacharLote(loteId, conductor.id, version).subscribe({
+      next: () => {
+        this.cerrarModalDespacho();
+        this.cargarLotes();
+        this.estadoSeleccionado = 'DESPACHADOS';
+      },
+      error: (err) => {
+        if (err.status === 409) {
+          this.mensajeValidacion = err.error?.message || 'Este lote ya fue despachado por otro operador.';
+          this.mostrarConflictoDespacho();
+          if (lote.id) {
+            this.operadorService.obtenerLote(lote.id).subscribe({
+              next: (d) => {
+                if (d && d.version !== undefined && this.loteSeleccionado) {
+                  this.loteSeleccionado.version = d.version;
+                }
+              },
+            });
+          }
+        } else {
+          this.mensajeValidacion = err.error?.message || 'Error al despachar el lote.';
+        }
+      },
     });
-
-    lote.responsable = conductor.nombre;
-    lote.placa = conductor.placa;
-    lote.estadoDespacho = 'ASIGNADO';
-    lote.horaDespacho = horaActual;
-
-    this.lotesPreparacion = this.lotesPreparacion.filter(
-      (item) => item.codigo !== lote.codigo,
-    );
-
-    this.lotesDespachados = [lote, ...this.lotesDespachados];
-
-    conductor.lotesPendientes += 1;
-
-    if (conductor.lotesPendientes >= 3) {
-      conductor.estado = 'EN RUTA';
-    }
-
-    this.ultimaActualizacion = new Date();
-
-    this.cerrarModalDespacho();
-    this.estadoSeleccionado = 'DESPACHADOS';
   }
 
   mostrarConflictoDespacho(): void {
@@ -335,16 +320,8 @@ export class Lotes {
   }
 
   volverListaTrasConflicto(): void {
-    if (this.loteSeleccionado) {
-      const codigoLote = this.loteSeleccionado.codigo;
-
-      this.lotesPreparacion = this.lotesPreparacion.filter(
-        (lote) => lote.codigo !== codigoLote,
-      );
-    }
-
     this.cerrarModalDespacho();
-    this.ultimaActualizacion = new Date();
+    this.cargarLotes();
   }
 
   // -----------------------------
@@ -355,43 +332,39 @@ export class Lotes {
     this.loteSeleccionado = lote;
     this.paqueteSeleccionadoId = null;
     this.detalleLoteAbierto = true;
+    this.paquetesLote = [];
 
-    // Datos de demostración para desarrollar la interfaz.
-    // Más adelante se reemplazarán por los paquetes reales del backend.
-    this.paquetesLote = [
-      {
-        id: 1,
-        tracking: 'Q4HN7TZ2KD',
-        destinatario: 'Juan Pérez',
-        receptor: 'María García',
-        direccion: 'Jesús María',
-        estado: 'EN RUTA',
+    const loteId = lote.id || lote.codigo.replace(/\D/g, '');
+    this.operadorService.obtenerLote(loteId).subscribe({
+      next: (res) => {
+        const pkgs = res?.paquetes ?? res?.paradas ?? [];
+        this.paquetesLote = pkgs.map((p: any, idx: number) => {
+          let dirTexto = '';
+          const dir = p.direccion;
+          if (typeof dir === 'string') {
+            dirTexto = dir;
+          } else if (dir) {
+            const via = [dir.tipo_via, dir.nombre_via].filter(Boolean).join(' ');
+            const num = dir.numero ? `N° ${dir.numero}` : '';
+            dirTexto = [via, num, dir.distrito].filter(Boolean).join(', ');
+          }
+
+          const estadoPkg = (p.estado === 'ENTREGADO' ? 'ENTREGADO' : (p.estado === 'FALLIDO' ? 'FALLIDO' : 'EN RUTA')) as EstadoPaquete;
+
+          return {
+            id: p.id ?? p.id_paquete ?? (idx + 1),
+            tracking: p.tracking_id || p.tracking || '',
+            destinatario: p.destinatario?.nombres || p.destinatario || '-',
+            receptor: p.receptor || p.destinatario?.nombres || '-',
+            direccion: dirTexto || '-',
+            estado: estadoPkg,
+          };
+        });
       },
-      {
-        id: 2,
-        tracking: 'RUV7KHBJKD',
-        destinatario: 'Logística Sur',
-        receptor: 'Tienda Centro',
-        direccion: 'San Martín de Porres',
-        estado: 'ENTREGADO',
+      error: () => {
+        this.paquetesLote = [];
       },
-      {
-        id: 3,
-        tracking: 'K3P8WZ2MNA',
-        destinatario: 'Electrónica S.A.',
-        receptor: 'Roberto Gómez',
-        direccion: 'Villa El Salvador',
-        estado: 'ENTREGADO',
-      },
-      {
-        id: 4,
-        tracking: 'W8FJ3KN6RA',
-        destinatario: 'Almacén Norte',
-        receptor: 'Ana Belén',
-        direccion: 'Los Ángeles',
-        estado: 'FALLIDO',
-      },
-    ];
+    });
   }
 
   volverAListaLotes(): void {
@@ -408,24 +381,10 @@ export class Lotes {
 
   actualizarEstadoPaquete(estado: EstadoPaquete): void {
     const paquete = this.paqueteSeleccionado;
-
     if (!paquete) {
       return;
     }
-
     paquete.estado = estado;
-
-    const todosFinalizados = this.paquetesLote.every(
-      (item) => item.estado === 'ENTREGADO' || item.estado === 'FALLIDO',
-    );
-
-    if (todosFinalizados && this.loteSeleccionado) {
-      this.loteSeleccionado.estadoDespacho = 'CERRADO';
-    } else if (this.loteSeleccionado) {
-      this.loteSeleccionado.estadoDespacho = 'EN RUTA';
-    }
-
-    this.ultimaActualizacion = new Date();
   }
 
   verPaquetes(lote: Lote): void {
