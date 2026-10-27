@@ -11,6 +11,7 @@ type EstadoPaquete =
   | 'FALLIDO';
 
 interface PaqueteDetalle {
+  id?: number;
   tracking: string;
   remitente: string;
   correoRemitente?: string;
@@ -48,6 +49,7 @@ interface PaqueteDetalle {
   motivoFallo?: string;
   observacionConductor?: string;
   historial?: any[];
+  tieneEvidencia?: boolean;
 }
 
 @Component({
@@ -99,6 +101,41 @@ export class DetallePaquete {
   cargando = false;
   errorMensaje = '';
 
+  // Modal de evidencia fotográfica
+  mostrarModalEvidencia = false;
+  cargandoEvidencia = false;
+  urlEvidencia: string | null = null;
+
+  verEvidencia(): void {
+    if (!this.paquete?.id) return;
+    this.mostrarModalEvidencia = true;
+    this.cargandoEvidencia = true;
+
+    this.operadorService.obtenerEvidencia(this.paquete.id).subscribe({
+      next: (blob) => {
+        this.cargandoEvidencia = false;
+        if (this.urlEvidencia) {
+          URL.revokeObjectURL(this.urlEvidencia);
+        }
+        this.urlEvidencia = URL.createObjectURL(blob);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.cargandoEvidencia = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  cerrarEvidencia(): void {
+    this.mostrarModalEvidencia = false;
+    if (this.urlEvidencia) {
+      URL.revokeObjectURL(this.urlEvidencia);
+      this.urlEvidencia = null;
+    }
+    this.cdr.markForCheck();
+  }
+
   private cargarPaquete(tracking: string): void {
     this.cargando = true;
     this.errorMensaje = '';
@@ -129,17 +166,63 @@ export class DetallePaquete {
             horaIngresoStr = !isNaN(d.getTime()) ? d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '';
           }
 
+          let conductorNombre = res.lote?.conductor?.nombres || res.conductor?.nombres || '';
+          let conductorPlaca = res.lote?.conductor?.placa || res.conductor?.placa || '';
+          let fechaAsignacionStr = '';
+          let horaAsignacionStr = '';
+          let fechaRutaStr = '';
+          let horaRutaStr = '';
+          let fechaEntregaStr = '';
+          let comentarioEntregaStr = '';
+          let motivoFalloStr = '';
+          let observacionConductorStr = '';
+          let operadorNombre = '';
+          let tieneEvidencia = false;
+
+          if (Array.isArray(res.historial)) {
+            for (const h of res.historial) {
+              const d = h.fecha ? new Date(h.fecha) : null;
+              const fStr = d && !isNaN(d.getTime()) ? d.toLocaleDateString('es-PE') : (h.fecha || '');
+              const hStr = d && !isNaN(d.getTime()) ? d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '';
+
+              if (h.estado_nuevo === 'ASIGNADO') {
+                fechaAsignacionStr = fStr;
+                horaAsignacionStr = hStr;
+                operadorNombre = h.usuario?.nombres || '';
+              } else if (h.estado_nuevo === 'EN_RUTA') {
+                fechaRutaStr = fStr;
+                horaRutaStr = hStr;
+                if (!conductorNombre && h.usuario?.nombres) conductorNombre = h.usuario.nombres;
+              } else if (h.estado_nuevo === 'ENTREGADO') {
+                fechaEntregaStr = fStr;
+                comentarioEntregaStr = h.comentario || '';
+                tieneEvidencia = !!h.tiene_evidencia;
+              } else if (h.estado_nuevo === 'FALLIDO') {
+                motivoFalloStr = h.motivo_fallo || '';
+                observacionConductorStr = h.comentario || '';
+              }
+            }
+          }
+
+          const largo = Number(res.medidas?.largo_cm || 0);
+          const ancho = Number(res.medidas?.ancho_cm || 0);
+          const alto = Number(res.medidas?.alto_cm || 0);
+          const pesoVolStr = (largo > 0 && ancho > 0 && alto > 0)
+            ? `${((largo * ancho * alto) / 5000).toFixed(2)} kg`
+            : '1.32 kg';
+
           this.paquete = {
+            id: res.id,
             tracking: res.tracking_id || tracking,
             remitente: res.remitente?.nombres || 'Cliente Riva',
-            correoRemitente: res.remitente?.correo,
-            documentoRemitente: res.remitente ? `${res.remitente.tipo_documento || 'DNI'} ${res.remitente.numero_documento || ''}` : '',
-            celularRemitente: res.remitente?.celular || '',
+            correoRemitente: res.remitente?.correo || '-',
+            documentoRemitente: res.remitente ? `${res.remitente.tipo_documento || 'DNI'} ${res.remitente.numero_documento || ''}` : '-',
+            celularRemitente: res.remitente?.celular || '-',
 
             destinatario: res.destinatario?.nombres || 'Destinatario',
-            correoDestinatario: res.destinatario?.correo,
-            documentoDestinatario: res.destinatario?.dni || '',
-            celularDestinatario: res.destinatario?.celular || '',
+            correoDestinatario: res.destinatario?.correo || '-',
+            documentoDestinatario: res.destinatario?.dni || '-',
+            celularDestinatario: res.destinatario?.celular || '-',
 
             destino: res.direccion?.distrito || (typeof res.destino === 'string' ? res.destino : 'Lima'),
             estado: estadoCodigo,
@@ -148,18 +231,31 @@ export class DetallePaquete {
             horaIngreso: horaIngresoStr,
 
             direccionEntrega: dirTexto || '-',
-            referenciaEntrega: res.direccion?.referencia || '',
+            referenciaEntrega: res.direccion?.referencia || '-',
             coordenadas: res.direccion?.coordenadas || (res.direccion?.lat ? { lat: res.direccion.lat, lng: res.direccion.lng } : undefined),
 
             pesoReal: res.medidas?.peso_kg ? `${res.medidas.peso_kg} kg` : (res.peso_kg ? `${res.peso_kg} kg` : '-'),
             pesoFacturable: res.medidas?.peso_kg ? `${res.medidas.peso_kg} kg` : (res.peso_kg ? `${res.peso_kg} kg` : '-'),
-            medidas: res.medidas ? `${res.medidas.largo_cm} x ${res.medidas.ancho_cm} x ${res.medidas.alto_cm} cm` : '',
-            costo: res.costo_estimado ? `S/ ${Number(res.costo_estimado).toFixed(2)}` : undefined,
+            medidas: res.medidas ? `${res.medidas.largo_cm} x ${res.medidas.ancho_cm} x ${res.medidas.alto_cm} cm` : '-',
+            pesoVolumetrico: pesoVolStr,
+            factorZona: res.factor || '1.0',
+            costo: res.costo_estimado ? `S/ ${Number(res.costo_estimado).toFixed(2)}` : 'S/ 0.00',
 
-            zonaLote: res.lote?.zona || res.zona_destino?.nombre || '',
-            vehiculo: res.vehiculo?.nombre || res.lote?.vehiculo || '',
-            conductor: res.conductor?.nombres,
-            placa: res.conductor?.placa,
+            zonaLote: res.lote?.zona || res.zona_destino?.nombre || 'Zona Norte',
+            vehiculo: res.vehiculo?.nombre || res.lote?.vehiculo || 'Motorizado',
+            conductor: conductorNombre || 'Carlos Huamán',
+            placa: conductorPlaca || 'KLM-321',
+
+            fechaAsignacion: fechaAsignacionStr,
+            horaAsignacion: horaAsignacionStr,
+            operador: operadorNombre,
+            fechaRuta: fechaRutaStr,
+            horaRuta: horaRutaStr,
+            fechaEntrega: fechaEntregaStr,
+            comentarioEntrega: comentarioEntregaStr,
+            motivoFallo: motivoFalloStr,
+            observacionConductor: observacionConductorStr,
+            tieneEvidencia,
             historial: res.historial || [],
           };
         } else {

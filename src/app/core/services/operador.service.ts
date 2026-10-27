@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, switchMap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface CotizacionRequest {
@@ -107,8 +107,28 @@ export class OperadorService {
     return this.http.get<any>(`${this.baseUrl}/packages`, { params });
   }
 
-  obtenerPaquete(id: number | string): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/packages/${id}`);
+  obtenerPaquete(idOrTracking: number | string): Observable<any> {
+    const str = String(idOrTracking).trim();
+    if (/^[0-9]+$/.test(str)) {
+      return this.http.get<any>(`${this.baseUrl}/packages/${str}`);
+    }
+
+    return this.listarPaquetes({ q: str }).pipe(
+      switchMap((res) => {
+        const item = res?.data?.find(
+          (p: any) => p.tracking_id === str || p.tracking === str
+        ) ?? res?.data?.[0];
+
+        if (item && item.id) {
+          return this.http.get<any>(`${this.baseUrl}/packages/${item.id}`);
+        }
+        return throwError(() => new Error('Paquete no encontrado'));
+      })
+    );
+  }
+
+  obtenerEvidencia(id: number | string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/packages/${id}/evidence`, { responseType: 'blob' });
   }
 
   listarLotes(estado?: string, page = 1, size = 20): Observable<any> {

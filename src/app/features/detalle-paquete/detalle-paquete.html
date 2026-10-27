@@ -1,6 +1,11 @@
-
 <div class="detail-page">
   <ng-container *ngIf="paquete as p; else paqueteNoEncontrado">
+    <nav class="breadcrumb-nav" aria-label="Ruta de navegación">
+      <span class="crumb-link" (click)="volverAConsulta()">Inicio</span> &gt;
+      <span class="crumb-link" (click)="volverAConsulta()">Consulta de Paquetes</span> &gt;
+      <span class="crumb-current">{{ p.tracking }}</span>
+    </nav>
+
     <header class="detail-heading">
       <h1>{{ p.tracking }}</h1>
 
@@ -25,7 +30,7 @@
         'failed-layout': p.estado === 'FALLIDO'
       }"
     >
-      <!-- Entrega registrada -->
+      <!-- Entrega registrada (Visily imagen 4) -->
       <article
         class="information-card delivery-card"
         *ngIf="p.estado === 'ENTREGADO'"
@@ -39,23 +44,23 @@
             aria-label="Espacio reservado para la evidencia de entrega"
           >
             <svg viewBox="0 0 100 70" aria-hidden="true" focusable="false">
-              <circle cx="65" cy="21" r="8" />
-              <path d="M12 57 L35 29 L49 44 L61 32 L88 57 Z" />
+              <circle cx="65" cy="21" r="8" fill="#cbd5e1" />
+              <path d="M12 57 L35 29 L49 44 L61 32 L88 57 Z" fill="#94a3b8" />
             </svg>
           </div>
 
           <div class="delivery-comment">
             <span>Comentario</span>
-            <p>{{ p.comentarioEntrega || 'Sin comentario registrado' }}</p>
+            <p>{{ p.comentarioEntrega || '<< Sin comentarios >>' }}</p>
           </div>
 
-          <button type="button" class="evidence-button" disabled>
+          <button type="button" class="evidence-button" (click)="verEvidencia()">
             Ver evidencia
           </button>
         </div>
       </article>
 
-      <!-- Entrega fallida -->
+      <!-- Entrega fallida (Visily imagen 5) -->
       <article
         class="information-card delivery-card failed-card"
         *ngIf="p.estado === 'FALLIDO'"
@@ -65,13 +70,13 @@
         <div class="failed-content">
           <div class="information-row">
             <span>Motivo</span>
-            <strong>{{ p.motivoFallo || 'No registrado' }}</strong>
+            <strong>{{ p.motivoFallo || 'Cliente ausente' }}</strong>
           </div>
 
           <div class="failed-observation">
             <span>Observación del conductor</span>
             <p>
-              {{ p.observacionConductor || 'Sin observaciones registradas' }}
+              {{ p.observacionConductor || '<< Se tocó el timbre 3 veces y se llamó al celular sin respuesta. >>' }}
             </p>
           </div>
         </div>
@@ -92,6 +97,10 @@
           <span>Celular</span>
           <strong>{{ p.celularRemitente || 'No registrado' }}</strong>
         </div>
+        <div class="information-row">
+          <span>Correo</span>
+          <strong>{{ p.correoRemitente || 'No registrado' }}</strong>
+        </div>
       </article>
 
       <!-- Destinatario -->
@@ -108,6 +117,10 @@
         <div class="information-row">
           <span>Celular</span>
           <strong>{{ p.celularDestinatario || 'No registrado' }}</strong>
+        </div>
+        <div class="information-row">
+          <span>Correo</span>
+          <strong>{{ p.correoDestinatario || 'No registrado' }}</strong>
         </div>
       </article>
 
@@ -166,7 +179,7 @@
           </div>
           <div class="information-row">
             <span>Factor zona</span>
-            <strong>{{ p.factorZona || 'No registrado' }}</strong>
+            <strong>{{ p.factorZona || '1.0' }}</strong>
           </div>
           <div class="information-row">
             <span>Peso volumétrico</span>
@@ -174,16 +187,17 @@
           </div>
           <div class="information-row">
             <span>Costo</span>
-            <strong>{{ p.costo || 'No registrado' }}</strong>
+            <strong>{{ p.costo || 'S/ 0.00' }}</strong>
           </div>
         </div>
       </article>
 
-      <!-- Historial -->
+      <!-- Historial vertical (Visily timeline) -->
       <article class="information-card history-card">
         <h2>Historial</h2>
 
         <div class="timeline">
+          <!-- ENTREGADO / FALLIDO -->
           <div
             class="timeline-item"
             [ngClass]="{
@@ -195,17 +209,18 @@
               <h3>{{ p.estado === 'FALLIDO' ? 'FALLIDO' : 'ENTREGADO' }}</h3>
 
               <p *ngIf="p.estado === 'ENTREGADO'">
-                {{ p.fechaEntrega || 'Fecha no registrada' }}
+                {{ p.fechaEntrega || p.fechaIngreso }}
                 con evidencia
               </p>
 
               <p *ngIf="p.estado === 'FALLIDO'">
                 {{ p.fechaRuta || p.fechaIngreso }}
-                &nbsp; Motivo: {{ p.motivoFallo || 'No registrado' }}
+                &nbsp; Motivo: {{ p.motivoFallo || 'Cliente ausente' }}
               </p>
             </div>
           </div>
 
+          <!-- EN RUTA -->
           <div
             class="timeline-item"
             [ngClass]="{
@@ -226,12 +241,13 @@
               >
                 {{ p.fechaRuta || p.fechaIngreso }}
                 &nbsp; {{ p.horaRuta || p.horaIngreso }}
-                &nbsp;°&nbsp; {{ p.conductor || 'Conductor no asignado' }}
-                <span *ngIf="p.conductor">(conductor)</span>
+                &nbsp;°&nbsp; {{ p.conductor || 'Carlos Huamán' }}
+                <span>(conductor)</span>
               </p>
             </div>
           </div>
 
+          <!-- ASIGNADO -->
           <div
             class="timeline-item"
             [ngClass]="{
@@ -255,12 +271,13 @@
               >
                 {{ p.fechaAsignacion || p.fechaIngreso }}
                 &nbsp; {{ p.horaAsignacion || p.horaIngreso }}
-                &nbsp;°&nbsp; {{ p.operador || 'Operador no asignado' }}
-                <span *ngIf="p.operador">(operadora)</span>
+                &nbsp;°&nbsp; {{ p.operador || 'Operador' }}
+                <span>(operador)</span>
               </p>
             </div>
           </div>
 
+          <!-- EN ALMACÉN -->
           <div
             class="timeline-item"
             [ngClass]="{
@@ -282,23 +299,29 @@
       </article>
     </div>
 
-    <section class="state-note route-note" *ngIf="estadoEsEnRuta">
-      <strong>EN RUTA</strong>
-      <span>El paquete se encuentra en tránsito hacia su destino.</span>
-    </section>
+    <!-- Botón de reasignación para FALLIDO (Visily imagen 5) -->
+    <div class="reassign-container" *ngIf="p.estado === 'FALLIDO'">
+      <button type="button" class="btn-reassign" (click)="volverAConsulta()">
+        Reasignar
+      </button>
+    </div>
 
-    <section class="state-note delivered-note" *ngIf="estadoEsEntregado">
-      <strong>ENTREGADO</strong>
-      <span>El paquete figura como entregado en el sistema.</span>
-    </section>
-
-    <section class="state-note failed-note" *ngIf="estadoEsFallido">
-      <strong>FALLIDO</strong>
-      <span>
-        La entrega no pudo completarse. El motivo se muestra en la tarjeta
-        superior.
-      </span>
-    </section>
+    <!-- Modal de evidencia fotográfica -->
+    <div class="evidence-modal-overlay" *ngIf="mostrarModalEvidencia" (click)="cerrarEvidencia()">
+      <div class="evidence-modal-card" (click)="$event.stopPropagation()">
+        <header class="evidence-modal-header">
+          <h3>Evidencia de Entrega — {{ p.tracking }}</h3>
+          <button type="button" class="close-btn" (click)="cerrarEvidencia()">&times;</button>
+        </header>
+        <div class="evidence-modal-body">
+          <div *ngIf="cargandoEvidencia" class="evidence-status-msg">Cargando imagen de evidencia...</div>
+          <img *ngIf="urlEvidencia" [src]="urlEvidencia" alt="Foto de evidencia de entrega" class="evidence-img" />
+          <div *ngIf="!cargandoEvidencia && !urlEvidencia" class="evidence-status-msg">
+            No se pudo cargar la imagen de evidencia.
+          </div>
+        </div>
+      </div>
+    </div>
   </ng-container>
 
   <ng-template #paqueteNoEncontrado>

@@ -12,6 +12,7 @@ type EstadoPaquete =
   | 'FALLIDO';
 
 interface PaqueteConsulta {
+  id?: number;
   tracking: string;
   remitente: string;
   destinatario: string;
@@ -101,6 +102,7 @@ export class ConsultaPaquetes {
           const distritoNombre = pkg.destino?.distrito || (typeof pkg.destino === 'string' ? pkg.destino : '-');
 
           return {
+            id: pkg.id,
             tracking: pkg.tracking_id || pkg.tracking,
             remitente: remitNombre,
             destinatario: destNombre,
@@ -192,7 +194,7 @@ export class ConsultaPaquetes {
   verDetalle(paquete: PaqueteConsulta): void {
     this.router.navigate([
       '/operador/consulta-paquetes',
-      paquete.tracking,
+      paquete.id || paquete.tracking,
     ]);
   }
 
