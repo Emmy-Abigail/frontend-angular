@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   EstadoLoteConductor,
@@ -35,6 +35,7 @@ export class MisLotes implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private lotesService: LotesConductorService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -55,9 +56,11 @@ export class MisLotes implements OnInit {
     this.lotesService.cargarMisLotesApi().subscribe({
       next: (lotes) => {
         this.lotes = lotes ?? [];
+        this.cdr.markForCheck();
       },
       error: () => {
         this.lotes = [];
+        this.cdr.markForCheck();
       },
     });
   }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OperadorService } from '../../core/services/operador.service';
 
@@ -59,6 +59,7 @@ interface PaqueteDetalle {
 })
 export class DetallePaquete {
   private readonly operadorService = inject(OperadorService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   paquete: PaqueteDetalle | null = null;
 
@@ -165,11 +166,13 @@ export class DetallePaquete {
           this.paquete = null;
           this.errorMensaje = 'No se encontró el paquete solicitado.';
         }
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.cargando = false;
         this.paquete = null;
         this.errorMensaje = err.error?.message || 'Error al obtener el detalle del paquete.';
+        this.cdr.markForCheck();
       },
     });
   }

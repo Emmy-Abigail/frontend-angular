@@ -97,8 +97,8 @@ export class AuthService {
     this.stopSessionPolling();
     if (!this.isAuthenticated()) return;
 
-    // Polling rápido cada 10 segundos para respuesta ágil ante desactivación
-    this.sessionPollSub = timer(3000, 10000)
+    // Polling ordenado cada 30 segundos para evitar saturar la consola/red de inspección
+    this.sessionPollSub = timer(10000, 30000)
       .pipe(
         switchMap(() =>
           this.http.get<void>(`${environment.apiUrl}/auth/session`).pipe(
@@ -112,11 +112,6 @@ export class AuthService {
         )
       )
       .subscribe();
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('focus', this.onWindowFocus);
-      document.addEventListener('visibilitychange', this.onVisibilityChange);
-    }
   }
 
   stopSessionPolling(): void {

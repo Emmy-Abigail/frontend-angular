@@ -1,5 +1,5 @@
 import { CommonModule, Location } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LotesConductorService, ParadaLote } from '../../core/services/lotes-conductor';
 
@@ -57,6 +57,7 @@ export class Entregas implements OnInit {
     private location: Location,
     private router: Router,
     private lotesService: LotesConductorService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -89,10 +90,12 @@ export class Entregas implements OnInit {
         } else {
           this.mensajeError = 'No se encontró el lote solicitado.';
         }
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.cargando = false;
         this.mensajeError = err.error?.message || 'Error al cargar el detalle del lote.';
+        this.cdr.markForCheck();
       },
     });
   }
@@ -228,6 +231,7 @@ export class Entregas implements OnInit {
         this.router.navigate(['/conductor/mis-lotes'], {
           queryParams: { filtro: 'EN_RUTA' },
         });
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.cerrarConfirmacionRuta();
@@ -236,6 +240,7 @@ export class Entregas implements OnInit {
         } else {
           this.mensajeError = err.error?.message || 'Error al iniciar la ruta en el servidor.';
         }
+        this.cdr.markForCheck();
       },
     });
   }

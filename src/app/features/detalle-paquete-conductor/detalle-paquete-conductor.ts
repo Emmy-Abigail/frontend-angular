@@ -1,5 +1,6 @@
 import { CommonModule, Location } from '@angular/common';
 import {
+  ChangeDetectorRef,
   Component,
   ElementRef,
   inject,
@@ -39,6 +40,7 @@ export class DetallePaqueteConductor implements OnInit {
   private location = inject(Location);
   private lotesService = inject(LotesConductorService);
   private catalogService = inject(CatalogService);
+  private cdr = inject(ChangeDetectorRef);
 
   @ViewChild('inputFoto')
   inputFoto?: ElementRef<HTMLInputElement>;
@@ -135,6 +137,7 @@ export class DetallePaqueteConductor implements OnInit {
               if (parada.paqueteId) {
                 this.paqueteId = parada.paqueteId;
               }
+              this.cdr.markForCheck();
               return;
             }
           }
@@ -142,11 +145,13 @@ export class DetallePaqueteConductor implements OnInit {
           if (this.paqueteId) {
             this.cargarPorId(this.paqueteId);
           }
+          this.cdr.markForCheck();
         },
         error: () => {
           if (this.paqueteId) {
             this.cargarPorId(this.paqueteId);
           }
+          this.cdr.markForCheck();
         },
       });
     } else if (this.paqueteId) {
@@ -160,6 +165,10 @@ export class DetallePaqueteConductor implements OnInit {
         if (pkg) {
           this.paquete = pkg;
         }
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.cdr.markForCheck();
       },
     });
   }
@@ -279,6 +288,7 @@ export class DetallePaqueteConductor implements OnInit {
       error: (err) => {
         this.guardandoEntrega = false;
         this.mensajeErrorEntrega = err?.error?.message || 'Error al registrar la entrega. Intente nuevamente.';
+        this.cdr.markForCheck();
       },
     });
   }
@@ -289,6 +299,7 @@ export class DetallePaqueteConductor implements OnInit {
     this.mostrarConfirmacionEntrega = false;
     this.mostrarRegistroEntrega = false;
     this.mostrarEntregaExitosa = true;
+    this.cdr.markForCheck();
   }
 
   cerrarEntregaExitosa(): void {
@@ -374,6 +385,7 @@ export class DetallePaqueteConductor implements OnInit {
       error: (err) => {
         this.guardandoFallo = false;
         this.mensajeErrorFallo = err?.error?.message || 'Error al registrar el fallo. Intente nuevamente.';
+        this.cdr.markForCheck();
       },
     });
   }
@@ -390,6 +402,7 @@ export class DetallePaqueteConductor implements OnInit {
     this.guardandoFallo = false;
     this.mostrarConfirmacionFallo = false;
     this.mostrarRegistroFallo = false;
+    this.cdr.markForCheck();
     this.location.back();
   }
 }

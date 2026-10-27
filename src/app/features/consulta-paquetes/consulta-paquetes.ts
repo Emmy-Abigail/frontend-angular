@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { OperadorService } from '../../core/services/operador.service';
@@ -32,6 +32,7 @@ interface PaqueteConsulta {
 export class ConsultaPaquetes {
   private readonly router = inject(Router);
   private readonly operadorService = inject(OperadorService);
+  private readonly cdr = inject(ChangeDetectorRef);
   busqueda = '';
   estadoSeleccionado = 'TODOS';
   fechaDesde = '';
@@ -110,11 +111,13 @@ export class ConsultaPaquetes {
             horaIngreso: horaStr,
           };
         });
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.cargando = false;
         this.paquetes = [];
         this.mensajeError = err.error?.message || 'Error al consultar paquetes del servidor.';
+        this.cdr.markForCheck();
       },
     });
   }

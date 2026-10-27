@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, inject, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import * as L from 'leaflet';
@@ -22,6 +22,7 @@ export class Operador implements OnInit, AfterViewInit {
   private operadorService = inject(OperadorService);
   private catalogService = inject(CatalogService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   currentUser = this.authService.currentUser;
 
@@ -282,9 +283,11 @@ export class Operador implements OnInit, AfterViewInit {
           if (res.tarifa_base_kg) this.tarifaBasePorKg = parseFloat(res.tarifa_base_kg);
           if (res.factor) this.factorZona = parseFloat(res.factor);
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.totalEstimadoServidor = null;
+        this.cdr.markForCheck();
       },
     });
   }
@@ -453,6 +456,7 @@ export class Operador implements OnInit, AfterViewInit {
         }
 
         this.modalRegistroAbierto = true;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.guardando = false;
@@ -468,16 +472,19 @@ export class Operador implements OnInit, AfterViewInit {
         } else {
           this.mensajeError = err.error?.message || 'Error al registrar el paquete. Verifique los datos e intente nuevamente.';
         }
+        this.cdr.markForCheck();
       },
     });
   }
 
   cerrarModalRegistro(): void {
     this.modalRegistroAbierto = false;
+    this.cdr.markForCheck();
   }
 
   verPaquete(): void {
     this.modalRegistroAbierto = false;
+    this.cdr.markForCheck();
     void this.router.navigate(['/operador/consulta-paquetes']);
   }
 
@@ -488,6 +495,7 @@ export class Operador implements OnInit, AfterViewInit {
     } catch {
       this.codigoCopiado = false;
     }
+    this.cdr.markForCheck();
   }
 
   registrarOtro(): void {
@@ -548,5 +556,6 @@ export class Operador implements OnInit, AfterViewInit {
       ancho: null,
       alto: null,
     };
+    this.cdr.markForCheck();
   }
 }

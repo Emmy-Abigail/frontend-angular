@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { OperadorService } from '../../core/services/operador.service';
 
 type EstadoLotes = 'PREPARACION' | 'DESPACHADOS';
@@ -50,6 +50,7 @@ interface Paquete {
 })
 export class Lotes implements OnInit {
   private operadorService = inject(OperadorService);
+  private cdr = inject(ChangeDetectorRef);
   readonly Math = Math;
 
   estadoSeleccionado: EstadoLotes = 'PREPARACION';
@@ -111,10 +112,12 @@ export class Lotes implements OnInit {
             version: l.version ?? 0,
           };
         });
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.cargandoLotes = false;
         this.mensajeErrorLotes = err.error?.message || 'Error al listar lotes en preparación.';
+        this.cdr.markForCheck();
       },
     });
 
@@ -146,8 +149,11 @@ export class Lotes implements OnInit {
             version: l.version ?? 0,
           };
         });
+        this.cdr.markForCheck();
       },
-      error: () => {},
+      error: () => {
+        this.cdr.markForCheck();
+      },
     });
   }
 
@@ -216,7 +222,11 @@ export class Lotes implements OnInit {
                 lotesPendientes: c.lotes_pendientes ?? c.lotesPendientes ?? 0,
               }));
             }
+            this.cdr.markForCheck();
           }
+        },
+        error: () => {
+          this.cdr.markForCheck();
         },
       });
     }
@@ -291,6 +301,7 @@ export class Lotes implements OnInit {
         this.cerrarModalDespacho();
         this.cargarLotes();
         this.estadoSeleccionado = 'DESPACHADOS';
+        this.cdr.markForCheck();
       },
       error: (err) => {
         if (err.status === 409) {
@@ -302,12 +313,14 @@ export class Lotes implements OnInit {
                 if (d && d.version !== undefined && this.loteSeleccionado) {
                   this.loteSeleccionado.version = d.version;
                 }
+                this.cdr.markForCheck();
               },
             });
           }
         } else {
           this.mensajeValidacion = err.error?.message || 'Error al despachar el lote.';
         }
+        this.cdr.markForCheck();
       },
     });
   }
@@ -360,9 +373,11 @@ export class Lotes implements OnInit {
             estado: estadoPkg,
           };
         });
+        this.cdr.markForCheck();
       },
       error: () => {
         this.paquetesLote = [];
+        this.cdr.markForCheck();
       },
     });
   }
