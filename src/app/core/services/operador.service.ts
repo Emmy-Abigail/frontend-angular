@@ -131,11 +131,18 @@ export class OperadorService {
     return this.http.get(`${this.baseUrl}/packages/${id}/evidence`, { responseType: 'blob' });
   }
 
-  listarLotes(estado?: string, page = 1, size = 20): Observable<any> {
+  listarLotes(estado?: string, page = 1, size = 50): Observable<any> {
     let params = new HttpParams()
       .set('page', String(page))
       .set('size', String(size));
-    if (estado) params = params.set('estado', estado);
+    if (
+      estado &&
+      estado !== 'TODOS' &&
+      estado !== 'DESPACHADOS' &&
+      ['EN_PREPARACION', 'ASIGNADO', 'EN_RUTA', 'CERRADO'].includes(estado)
+    ) {
+      params = params.set('estado', estado);
+    }
 
     return this.http.get<any>(`${this.baseUrl}/batches`, { params });
   }

@@ -101,12 +101,16 @@ export class Lotes implements OnInit {
     this.cargandoLotes = true;
     this.mensajeErrorLotes = '';
 
-    // Lotes en preparación
-    this.operadorService.listarLotes('EN_PREPARACION').subscribe({
+    // Consultamos todos los lotes de la sede sin filtro de estado para no enviar valores inválidos
+    this.operadorService.listarLotes(undefined, 1, 100).subscribe({
       next: (res) => {
         this.cargandoLotes = false;
         const items = res?.data ?? (Array.isArray(res) ? res : []);
-        this.lotesPreparacion = items.map((l: any) => {
+
+        const preparacion: Lote[] = [];
+        const despachados: Lote[] = [];
+
+        for (const l of items) {
           let horaInicio = '08:00';
           let fechaCreacionStr = '';
           if (l.created_at) {
@@ -119,7 +123,20 @@ export class Lotes implements OnInit {
           const cant = l.cantidad_paquetes ?? l.total_paquetes ?? 0;
           const maxP = l.capacidad_paquetes || 20;
 
-          return {
+          let horaDesp = horaInicio;
+          if (l.despachado_at || l.created_at) {
+            const d = new Date(l.despachado_at || l.created_at);
+            if (!isNaN(d.getTime())) {
+              horaDesp = d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+            }
+          }
+
+          let estadoDesp: EstadoDespacho = 'ASIGNADO';
+          if (l.estado === 'EN_RUTA') estadoDesp = 'EN RUTA';
+          else if (l.estado === 'CERRADO') estadoDesp = 'CERRADO';
+          else if (l.estado === 'ASIGNADO') estadoDesp = 'ASIGNADO';
+
+          const loteObj: Lote = {
             id: l.id,
             codigo: l.codigo || `L-${l.id}`,
             zona: l.zona_destino?.nombre || l.zona || 'Zona Sur',
@@ -131,51 +148,28 @@ export class Lotes implements OnInit {
             horaInicio,
             fechaCreacion: fechaCreacionStr,
             completo: cant >= maxP,
+            responsable: l.conductor?.nombres || l.responsable || 'Sin conductor',
+            placa: l.conductor?.placa || l.placa || '-',
+            estadoDespacho: estadoDesp,
+            horaDespacho: horaDesp,
             version: l.version ?? 0,
-            sede: l.sede?.nombre || 'Sede Sur',
+            sede: l.sede?.nombre || 'Sede Norte',
           };
-        });
+
+          if (l.estado === 'EN_PREPARACION') {
+            preparacion.push(loteObj);
+          } else {
+            despachados.push(loteObj);
+          }
+        }
+
+        this.lotesPreparacion = preparacion;
+        this.lotesDespachados = despachados;
         this.cdr.markForCheck();
       },
       error: (err) => {
         this.cargandoLotes = false;
-        this.mensajeErrorLotes = err.error?.message || 'Error al listar lotes en preparación.';
-        this.cdr.markForCheck();
-      },
-    });
-
-    // Lotes despachados
-    this.operadorService.listarLotes('DESPACHADOS').subscribe({
-      next: (res) => {
-        const items = res?.data ?? (Array.isArray(res) ? res : []);
-        this.lotesDespachados = items.map((l: any) => {
-          let horaDesp = '09:00';
-          if (l.despachado_at || l.created_at) {
-            const d = new Date(l.despachado_at || l.created_at);
-            horaDesp = !isNaN(d.getTime()) ? d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : horaDesp;
-          }
-
-          return {
-            id: l.id,
-            codigo: l.codigo || `L-${l.id}`,
-            zona: l.zona_destino?.nombre || l.zona || 'Zona Sur',
-            vehiculo: l.vehiculo?.nombre || l.vehiculo || 'Motorizado',
-            paquetes: l.cantidad_paquetes ?? l.total_paquetes ?? 0,
-            capacidadPaquetes: l.capacidad_paquetes || 20,
-            peso: Number(l.peso_total_kg || 0),
-            capacidadPeso: Number(l.capacidad_peso_kg || 20),
-            horaInicio: '07:30',
-            responsable: l.conductor?.nombres || l.responsable,
-            placa: l.conductor?.placa || l.placa,
-            estadoDespacho: (l.estado === 'EN_RUTA' ? 'EN RUTA' : (l.estado === 'CERRADO' ? 'CERRADO' : 'ASIGNADO')) as EstadoDespacho,
-            horaDespacho: horaDesp,
-            version: l.version ?? 0,
-            sede: l.sede?.nombre || 'Sede Sur',
-          };
-        });
-        this.cdr.markForCheck();
-      },
-      error: () => {
+        this.mensajeErrorLotes = err.error?.message || 'Error al listar lotes.';
         this.cdr.markForCheck();
       },
     });
