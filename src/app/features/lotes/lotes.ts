@@ -1,10 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { OperadorService } from '../../core/services/operador.service';
 
 type EstadoLotes = 'PREPARACION' | 'DESPACHADOS';
 type EstadoDespacho = 'EN RUTA' | 'ASIGNADO' | 'CERRADO';
-type EstadoPaquete = 'EN RUTA' | 'ENTREGADO' | 'FALLIDO';
+type EstadoPaquete = 'EN ALMACEN' | 'EN RUTA' | 'ENTREGADO' | 'FALLIDO' | 'ASIGNADO';
 
 interface Lote {
   id?: number | string;
@@ -22,6 +25,9 @@ interface Lote {
   estadoDespacho?: EstadoDespacho;
   horaDespacho?: string;
   version?: number;
+  sede?: string;
+  fechaCreacion?: string;
+  paqueteMasAntiguo?: string;
 }
 
 interface Conductor {
@@ -34,10 +40,14 @@ interface Conductor {
 
 interface Paquete {
   id: number;
+  parada?: number;
   tracking: string;
   destinatario: string;
-  receptor: string;
+  receptor?: string;
+  distrito: string;
   direccion: string;
+  peso: number;
+  horaIngreso: string;
   estado: EstadoPaquete;
 }
 
@@ -51,6 +61,7 @@ interface Paquete {
 export class Lotes implements OnInit {
   private operadorService = inject(OperadorService);
   private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
   readonly Math = Math;
 
   estadoSeleccionado: EstadoLotes = 'PREPARACION';
@@ -67,10 +78,16 @@ export class Lotes implements OnInit {
   conductorSeleccionadoId: number | null = null;
   mensajeValidacion = '';
 
-  // Vista de detalle del lote
+  // Vista de detalle del lote (Visily)
   detalleLoteAbierto = false;
-  paqueteSeleccionadoId: number | null = null;
+  tipoDetalle: 'PREPARACION' | 'DESPACHADO' = 'PREPARACION';
+  cargandoDetalle = false;
   paquetesLote: Paquete[] = [];
+
+  // Contadores para el card de Despacho (Visily Imagen 1)
+  conteoEntregados = 0;
+  conteoFallidos = 0;
+  conteoEnRuta = 0;
 
   conductores: Conductor[] = [];
   lotesPreparacion: Lote[] = [];
@@ -91,9 +108,13 @@ export class Lotes implements OnInit {
         const items = res?.data ?? (Array.isArray(res) ? res : []);
         this.lotesPreparacion = items.map((l: any) => {
           let horaInicio = '08:00';
+          let fechaCreacionStr = '';
           if (l.created_at) {
             const d = new Date(l.created_at);
-            horaInicio = !isNaN(d.getTime()) ? d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : horaInicio;
+            if (!isNaN(d.getTime())) {
+              horaInicio = d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+              fechaCreacionStr = `${d.toLocaleDateString('es-PE')} ${horaInicio}`;
+            }
           }
           const cant = l.cantidad_paquetes ?? l.total_paquetes ?? 0;
           const maxP = l.capacidad_paquetes || 20;
@@ -108,8 +129,10 @@ export class Lotes implements OnInit {
             peso: Number(l.peso_total_kg || 0),
             capacidadPeso: Number(l.capacidad_peso_kg || 20),
             horaInicio,
+            fechaCreacion: fechaCreacionStr,
             completo: cant >= maxP,
             version: l.version ?? 0,
+            sede: l.sede?.nombre || 'Sede Sur',
           };
         });
         this.cdr.markForCheck();
@@ -147,6 +170,7 @@ export class Lotes implements OnInit {
             estadoDespacho: (l.estado === 'EN_RUTA' ? 'EN RUTA' : (l.estado === 'CERRADO' ? 'CERRADO' : 'ASIGNADO')) as EstadoDespacho,
             horaDespacho: horaDesp,
             version: l.version ?? 0,
+            sede: l.sede?.nombre || 'Sede Sur',
           };
         });
         this.cdr.markForCheck();
@@ -173,14 +197,6 @@ export class Lotes implements OnInit {
     return (
       this.conductores.find(
         (conductor) => conductor.id === this.conductorSeleccionadoId,
-      ) ?? null
-    );
-  }
-
-  get paqueteSeleccionado(): Paquete | null {
-    return (
-      this.paquetesLote.find(
-        (paquete) => paquete.id === this.paqueteSeleccionadoId,
       ) ?? null
     );
   }
@@ -236,7 +252,9 @@ export class Lotes implements OnInit {
     this.modalDespachoAbierto = false;
     this.modalConfirmacionAbierta = false;
     this.conflictoDespacho = false;
-    this.loteSeleccionado = null;
+    if (!this.detalleLoteAbierto) {
+      this.loteSeleccionado = null;
+    }
     this.conductorSeleccionadoId = null;
     this.mensajeValidacion = '';
   }
@@ -299,6 +317,7 @@ export class Lotes implements OnInit {
     this.operadorService.despacharLote(loteId, conductor.id, version).subscribe({
       next: () => {
         this.cerrarModalDespacho();
+        this.detalleLoteAbierto = false;
         this.cargarLotes();
         this.estadoSeleccionado = 'DESPACHADOS';
         this.cdr.markForCheck();
@@ -338,71 +357,153 @@ export class Lotes implements OnInit {
   }
 
   // -----------------------------
-  // Detalle de lote y sus paquetes
+  // Vistas de Detalle (Visily)
   // -----------------------------
 
-  verLote(lote: Lote): void {
+  /**
+   * Clic en "Ver paquetes" en Lotes en Preparación (Visily Imagen 2)
+   */
+  verPaquetes(lote: Lote): void {
+    this.tipoDetalle = 'PREPARACION';
     this.loteSeleccionado = lote;
-    this.paqueteSeleccionadoId = null;
     this.detalleLoteAbierto = true;
-    this.paquetesLote = [];
+    this.cargarDetalleLote(lote);
+  }
 
-    const loteId = lote.id || lote.codigo.replace(/\D/g, '');
-    this.operadorService.obtenerLote(loteId).subscribe({
-      next: (res) => {
-        const pkgs = res?.paquetes ?? res?.paradas ?? [];
-        this.paquetesLote = pkgs.map((p: any, idx: number) => {
-          let dirTexto = '';
-          const dir = p.direccion;
-          if (typeof dir === 'string') {
-            dirTexto = dir;
-          } else if (dir) {
-            const via = [dir.tipo_via, dir.nombre_via].filter(Boolean).join(' ');
-            const num = dir.numero ? `N° ${dir.numero}` : '';
-            dirTexto = [via, num, dir.distrito].filter(Boolean).join(', ');
-          }
+  /**
+   * Clic en "Ver Lote" en Lotes Despachados (Visily Imagen 1)
+   */
+  verLote(lote: Lote): void {
+    this.tipoDetalle = 'DESPACHADO';
+    this.loteSeleccionado = lote;
+    this.detalleLoteAbierto = true;
+    this.cargarDetalleLote(lote);
+  }
 
-          const estadoPkg = (p.estado === 'ENTREGADO' ? 'ENTREGADO' : (p.estado === 'FALLIDO' ? 'FALLIDO' : 'EN RUTA')) as EstadoPaquete;
-
-          return {
-            id: p.id ?? p.id_paquete ?? (idx + 1),
-            tracking: p.tracking_id || p.tracking || '',
-            destinatario: p.destinatario?.nombres || p.destinatario || '-',
-            receptor: p.receptor || p.destinatario?.nombres || '-',
-            direccion: dirTexto || '-',
-            estado: estadoPkg,
-          };
-        });
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.paquetesLote = [];
-        this.cdr.markForCheck();
-      },
-    });
+  actualizarDetalle(): void {
+    if (this.loteSeleccionado) {
+      this.cargarDetalleLote(this.loteSeleccionado);
+    }
   }
 
   volverAListaLotes(): void {
     this.detalleLoteAbierto = false;
-    this.paqueteSeleccionadoId = null;
-    this.paquetesLote = [];
     this.loteSeleccionado = null;
-    this.ultimaActualizacion = new Date();
+    this.paquetesLote = [];
+    this.cargarLotes();
   }
 
-  seleccionarPaquete(id: number): void {
-    this.paqueteSeleccionadoId = id;
+  navegarADetallePaquete(tracking: string): void {
+    if (!tracking) return;
+    void this.router.navigate(['/operador/consulta-paquetes', tracking]);
   }
 
-  actualizarEstadoPaquete(estado: EstadoPaquete): void {
-    const paquete = this.paqueteSeleccionado;
-    if (!paquete) {
-      return;
-    }
-    paquete.estado = estado;
-  }
+  private cargarDetalleLote(lote: Lote): void {
+    this.cargandoDetalle = true;
+    this.paquetesLote = [];
+    const loteId = lote.id || lote.codigo.replace(/\D/g, '');
 
-  verPaquetes(lote: Lote): void {
-    this.verLote(lote);
+    forkJoin({
+      batchRes: this.operadorService.obtenerLote(loteId).pipe(catchError(() => of(null))),
+      packagesRes: this.operadorService.listarPaquetes({ per_page: 100 }).pipe(catchError(() => of(null))),
+    }).subscribe({
+      next: ({ batchRes, packagesRes }) => {
+        this.cargandoDetalle = false;
+
+        const allPackages: any[] = packagesRes?.data ?? [];
+        const packageMap = new Map<string, any>();
+        for (const p of allPackages) {
+          if (p.tracking_id) {
+            packageMap.set(p.tracking_id, p);
+          }
+        }
+
+        if (batchRes) {
+          if (batchRes.version !== undefined && this.loteSeleccionado) {
+            this.loteSeleccionado.version = batchRes.version;
+          }
+          if (batchRes.conductor && this.loteSeleccionado) {
+            this.loteSeleccionado.responsable = batchRes.conductor.nombres || this.loteSeleccionado.responsable;
+            this.loteSeleccionado.placa = batchRes.conductor.placa || this.loteSeleccionado.placa;
+          }
+          if (batchRes.sede?.nombre && this.loteSeleccionado) {
+            this.loteSeleccionado.sede = batchRes.sede.nombre;
+          }
+          if (batchRes.created_at && this.loteSeleccionado) {
+            const d = new Date(batchRes.created_at);
+            this.loteSeleccionado.fechaCreacion = !isNaN(d.getTime())
+              ? `${d.toLocaleDateString('es-PE')} ${d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`
+              : batchRes.created_at;
+          }
+
+          // Progreso por estado de backend
+          const porEstado = batchRes.progreso?.por_estado;
+          if (porEstado) {
+            this.conteoEntregados = porEstado.ENTREGADO ?? 0;
+            this.conteoFallidos = porEstado.FALLIDO ?? 0;
+            this.conteoEnRuta = (porEstado.EN_RUTA ?? 0) + (porEstado.ASIGNADO ?? 0);
+          }
+
+          const rawPkgs: any[] = batchRes.paquetes ?? batchRes.paradas ?? [];
+          let earliestDate: Date | null = null;
+
+          this.paquetesLote = rawPkgs.map((p: any, idx: number) => {
+            const matched = packageMap.get(p.tracking_id || p.tracking);
+
+            let fechaStr = '-';
+            const fIngreso = p.fecha_ingreso || matched?.fecha_ingreso;
+            if (fIngreso) {
+              const d = new Date(fIngreso);
+              if (!isNaN(d.getTime())) {
+                fechaStr = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')} ${d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`;
+                if (!earliestDate || d < earliestDate) {
+                  earliestDate = d;
+                }
+              } else {
+                fechaStr = fIngreso;
+              }
+            }
+
+            const estadoLimpio = (p.estado || matched?.estado?.codigo || 'EN_ALMACEN')
+              .replace(/_/g, ' ')
+              .toUpperCase() as EstadoPaquete;
+
+            const destNombre = matched?.destinatario?.nombres || p.destinatario?.nombres || p.destinatario || 'Cliente';
+            const receptorNombre = matched?.destinatario?.nombres || p.receptor || destNombre;
+            const distritoNombre = p.distrito?.nombre || matched?.destino?.distrito || (typeof p.distrito === 'string' ? p.distrito : 'Lima');
+            const dirTexto = matched?.direccion || p.direccion || distritoNombre;
+
+            return {
+              id: p.id ?? matched?.id ?? (idx + 1),
+              parada: p.orden_parada ?? (idx + 1),
+              tracking: p.tracking_id || p.tracking || '',
+              destinatario: destNombre,
+              receptor: receptorNombre,
+              distrito: distritoNombre,
+              direccion: dirTexto,
+              peso: Number(p.peso_kg ?? matched?.peso_kg ?? 1),
+              horaIngreso: fechaStr,
+              estado: estadoLimpio,
+            };
+          });
+
+          if (earliestDate && this.loteSeleccionado) {
+            const d: Date = earliestDate;
+            this.loteSeleccionado.paqueteMasAntiguo = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')} ${d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`;
+          }
+
+          if (!porEstado) {
+            this.conteoEntregados = this.paquetesLote.filter((pkg) => pkg.estado === 'ENTREGADO').length;
+            this.conteoFallidos = this.paquetesLote.filter((pkg) => pkg.estado === 'FALLIDO').length;
+            this.conteoEnRuta = this.paquetesLote.filter((pkg) => pkg.estado === 'EN RUTA' || pkg.estado === 'ASIGNADO').length;
+          }
+        }
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.cargandoDetalle = false;
+        this.cdr.markForCheck();
+      },
+    });
   }
 }
