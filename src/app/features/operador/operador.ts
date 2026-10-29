@@ -35,6 +35,26 @@ export class Operador implements OnInit, AfterViewInit {
     );
   }
 
+  get idZonaDeMiSede(): number {
+    const sedeNombre = (this.currentUser()?.sede?.nombre || '').toLowerCase();
+    if (sedeNombre.includes('norte')) return 1;
+    if (sedeNombre.includes('centro')) return 2;
+    if (sedeNombre.includes('sur')) return 3;
+    if (sedeNombre.includes('este')) return 4;
+    if (sedeNombre.includes('oeste') || sedeNombre.includes('callao')) return 5;
+    return 1;
+  }
+
+  get distritosDeMiSede(): District[] {
+    const zonaId = this.idZonaDeMiSede;
+    return this.todosLosDistritos.filter((d) => d.id_zona === zonaId);
+  }
+
+  get otrosDistritos(): District[] {
+    const zonaId = this.idZonaDeMiSede;
+    return this.todosLosDistritos.filter((d) => d.id_zona !== zonaId);
+  }
+
   get nombreDistritoSeleccionado(): string {
     const distrito = this.todosLosDistritos.find(
       (item) => item.ubigeo === this.direccion.distrito,
@@ -144,13 +164,15 @@ export class Operador implements OnInit, AfterViewInit {
     });
   }
 
-  onBuscarDireccionInput(event: Event): void {
+  onNombreViaInput(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.busquedaDireccion = input.value;
+    this.direccion.nombreVia = input.value;
+    this.marcarTocado('nombreVia');
+
     if (this.debounceBusqueda) {
       clearTimeout(this.debounceBusqueda);
     }
-    const query = this.busquedaDireccion.trim();
+    const query = this.direccion.nombreVia.trim();
     if (query.length < 3) {
       this.sugerenciasDireccion = [];
       this.buscandoDirecciones = false;
@@ -158,19 +180,92 @@ export class Operador implements OnInit, AfterViewInit {
     }
     this.buscandoDirecciones = true;
     this.debounceBusqueda = setTimeout(() => {
-      this.operadorService.sugerirDirecciones(query).subscribe({
-        next: (res) => {
-          this.sugerenciasDireccion = res?.data || [];
-          this.buscandoDirecciones = false;
-          this.cdr.markForCheck();
-        },
-        error: () => {
-          this.sugerenciasDireccion = [];
-          this.buscandoDirecciones = false;
-          this.cdr.markForCheck();
-        },
+      this.buscarSugerencias(query);
+    }, 250);
+  }
+
+  buscarSugerencias(query: string): void {
+    this.operadorService.sugerirDirecciones(query).subscribe({
+      next: (res) => {
+        const data = res?.data || [];
+        this.procesarSugerencias(data, query);
+      },
+      error: () => {
+        this.fallbackPhotonSearch(query);
+      },
+    });
+  }
+
+  private procesarSugerencias(data: DireccionSugerencia[], query: string): void {
+    if (data.length === 0) {
+      this.fallbackPhotonSearch(query);
+      return;
+    }
+    const distritosSede = this.distritosDeMiSede;
+    const deMiSede = data.filter((s) =>
+      distritosSede.some(
+        (d) =>
+          d.ubigeo === s.ubigeo_distrito ||
+          (s.distrito && s.distrito.toLowerCase().includes(d.nombre_mostrado.toLowerCase())),
+      ),
+    );
+    this.sugerenciasDireccion = deMiSede.length > 0 ? deMiSede : data;
+    this.buscandoDirecciones = false;
+    this.cdr.markForCheck();
+  }
+
+  private fallbackPhotonSearch(query: string): void {
+    const bbox = '-77.30,-12.60,-76.55,-11.50';
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=10&bbox=${bbox}`;
+    fetch(url)
+      .then((r) => r.json())
+      .then((json) => {
+        const places: DireccionSugerencia[] = [];
+        const features = json.features || [];
+        const distritosCatalog = this.todosLosDistritos;
+        const distritosSede = this.distritosDeMiSede;
+
+        for (const f of features) {
+          const coords = f.geometry?.coordinates;
+          const props = f.properties || {};
+          if (!coords) continue;
+          const street = props.street || (props.type === 'street' ? props.name : null) || props.name;
+          const houseNum = props.housenumber || null;
+          const districtName = props.district || props.city || '';
+
+          const matchDistrict = distritosCatalog.find(
+            (d) =>
+              d.nombre_mostrado.toLowerCase().includes(districtName.toLowerCase()) ||
+              d.nombre_oficial.toLowerCase().includes(districtName.toLowerCase()) ||
+              districtName.toLowerCase().includes(d.nombre_mostrado.toLowerCase()),
+          );
+
+          if (matchDistrict) {
+            const via = street ? (street.startsWith('Av') ? 'Av.' : street.startsWith('Jr') ? 'Jr.' : street.startsWith('Cl') ? 'Calle' : 'Av.') : 'Av.';
+            const cleanStreet = street ? street.replace(/^(Av.|Avenida|Jr.|Jirón|Calle|Psje.)\s*/i, '') : query;
+            places.push({
+              etiqueta: `${via} ${cleanStreet}${houseNum ? ' ' + houseNum : ''}, ${matchDistrict.nombre_mostrado}`,
+              tipo_via: via,
+              nombre_via: cleanStreet,
+              numero: houseNum,
+              ubigeo_distrito: matchDistrict.ubigeo,
+              distrito: matchDistrict.nombre_mostrado,
+              lat: coords[1],
+              lng: coords[0],
+            });
+          }
+        }
+
+        const deMiSede = places.filter((p) => distritosSede.some((d) => d.ubigeo === p.ubigeo_distrito));
+        this.sugerenciasDireccion = deMiSede.length > 0 ? deMiSede : places;
+        this.buscandoDirecciones = false;
+        this.cdr.markForCheck();
+      })
+      .catch(() => {
+        this.sugerenciasDireccion = [];
+        this.buscandoDirecciones = false;
+        this.cdr.markForCheck();
       });
-    }, 300);
   }
 
   seleccionarSugerencia(sug: DireccionSugerencia): void {
@@ -209,7 +304,6 @@ export class Operador implements OnInit, AfterViewInit {
       }
     }
     this.sugerenciasDireccion = [];
-    this.busquedaDireccion = sug.etiqueta;
     this.actualizarCotizacion();
     this.cdr.markForCheck();
   }

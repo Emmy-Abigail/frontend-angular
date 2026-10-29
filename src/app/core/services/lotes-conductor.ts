@@ -88,8 +88,8 @@ export class LotesConductorService {
           return {
             id: idStr,
             codigo: lote.codigo || `L-${lote.id}`,
-            zonaOrigen: lote.sede?.nombre || 'Sede Sur',
-            zonaDestino: lote.zona_destino?.nombre || 'Zona Sur',
+            zonaOrigen: lote.sede?.nombre || 'Sede Norte',
+            zonaDestino: lote.zona_destino?.nombre || 'Zona Norte',
             paquetes: lote.cantidad_paquetes ?? lote.total_paquetes ?? 0,
             paradas: lote.cantidad_paquetes ?? lote.total_paquetes ?? 0,
             horaAsignacion: horaStr,
@@ -159,8 +159,8 @@ export class LotesConductorService {
         return {
           id: idStr,
           codigo: summary.codigo || `L-${idStr}`,
-          origen: summary.sede?.nombre || 'Sede sur',
-          destino: summary.zona_destino?.nombre || 'Zona sur',
+          origen: summary.sede?.nombre || 'Sede Norte',
+          destino: summary.zona_destino?.nombre || 'Zona Norte',
           totalPaquetes: summary.cantidad_paquetes ?? paradas.length,
           estado: estadoLote === 'EN_RUTA' ? 'En ruta' : 'Asignado',
           fechaAsignacion: fechaAsig,
@@ -259,8 +259,8 @@ export class LotesConductorService {
       {
         id: 'L-098',
         codigo: 'L - 098',
-        zonaOrigen: 'Sede sur',
-        zonaDestino: 'Zona sur',
+        zonaOrigen: 'Sede Norte',
+        zonaDestino: 'Zona Norte',
         paquetes: 20,
         paradas: 6,
         horaAsignacion: '08:30',
@@ -269,7 +269,7 @@ export class LotesConductorService {
       {
         id: 'LOT-9922',
         codigo: 'LOT-9922',
-        zonaOrigen: 'Sede sur',
+        zonaOrigen: 'Sede Norte',
         zonaDestino: 'Zona norte',
         paquetes: 5,
         paradas: 5,
@@ -279,8 +279,8 @@ export class LotesConductorService {
       {
         id: 'LOT-9923',
         codigo: 'LOT-9923',
-        zonaOrigen: 'Sede sur',
-        zonaDestino: 'Zona este',
+        zonaOrigen: 'Sede Norte',
+        zonaDestino: 'Zona Norte',
         paquetes: 0,
         paradas: 0,
         horaAsignacion: '08:30',

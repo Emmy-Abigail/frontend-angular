@@ -203,39 +203,7 @@
         <h2>2. Dirección de entrega</h2>
       </div>
 
-      <!-- Buscador asistido de direcciones (OpenStreetMap / Photon) -->
-      <div class="field address-search-box" style="margin-bottom: 16px; position: relative;">
-        <label for="buscarDireccion" style="display: flex; align-items: center; justify-content: space-between;">
-          <span>Buscar dirección o lugar</span>
-          <small style="color: #64748b; font-weight: normal;">Escribe para sugerencias automáticas</small>
-        </label>
-        <div style="position: relative;">
-          <input
-            id="buscarDireccion"
-            name="buscarDireccion"
-            type="text"
-            [value]="busquedaDireccion"
-            (input)="onBuscarDireccionInput($event)"
-            placeholder="Ej. Av. Caminos del Inca 1250, Surco"
-            autocomplete="off" />
-          <span *ngIf="buscandoDirecciones" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #64748b;">
-            Buscando...
-          </span>
-        </div>
 
-        <ul *ngIf="sugerenciasDireccion.length > 0" class="address-suggestions-dropdown">
-          <li *ngFor="let sug of sugerenciasDireccion" (click)="seleccionarSugerencia(sug)">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#0284c7" stroke-width="2" style="flex-shrink: 0;">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"></path>
-              <circle cx="12" cy="9" r="2.5"></circle>
-            </svg>
-            <div>
-              <strong>{{ sug.etiqueta }}</strong>
-              <small *ngIf="sug.distrito">{{ sug.distrito }}</small>
-            </div>
-          </li>
-        </ul>
-      </div>
 
       <div class="address-grid">
         <div class="field">
@@ -245,15 +213,25 @@
             id="distrito"
             name="distrito"
             [(ngModel)]="direccion.distrito"
-            (change)="actualizarCotizacion()"
+            (change)="marcarTocado('distrito')"
             (blur)="marcarTocado('distrito')">
             <option value="">Seleccionar distrito</option>
 
-            <option
-              *ngFor="let distrito of todosLosDistritos"
-              [value]="distrito.ubigeo">
-              {{ distrito.nombre_mostrado }}
-            </option>
+            <optgroup [label]="'Distritos de cobertura (' + (currentUser()?.sede?.nombre || 'Sede Norte') + ')'">
+              <option
+                *ngFor="let distrito of distritosDeMiSede"
+                [value]="distrito.ubigeo">
+                {{ distrito.nombre_mostrado }}
+              </option>
+            </optgroup>
+
+            <optgroup label="Otras zonas">
+              <option
+                *ngFor="let distrito of otrosDistritos"
+                [value]="distrito.ubigeo">
+                {{ distrito.nombre_mostrado }}
+              </option>
+            </optgroup>
           </select>
 
           <small class="error-message" *ngIf="mostrarError('distrito')">
@@ -283,15 +261,34 @@
           </small>
         </div>
 
-        <div class="field">
-          <label for="nombreVia">Nombre de la vía</label>
+        <div class="field" style="position: relative;">
+          <label for="nombreVia" style="display: flex; align-items: center; justify-content: space-between;">
+            <span>Nombre de la vía / Dirección</span>
+            <small *ngIf="buscandoDirecciones" style="color: #0284c7; font-weight: normal;">Buscando...</small>
+          </label>
 
           <input
             id="nombreVia"
             name="nombreVia"
             [(ngModel)]="direccion.nombreVia"
-            placeholder="Ej. José Larco"
+            (input)="onNombreViaInput($event)"
+            placeholder="Ej. Habich 123 o Av. Carlos Izaguirre"
+            autocomplete="off"
             (blur)="marcarTocado('nombreVia')" />
+
+          <!-- Sugerencias desplegables estilo inDrive / Google Maps -->
+          <ul *ngIf="sugerenciasDireccion.length > 0" class="address-suggestions-dropdown">
+            <li *ngFor="let sug of sugerenciasDireccion" (mousedown)="seleccionarSugerencia(sug)">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#0284c7" stroke-width="2" style="flex-shrink: 0;">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"></path>
+                <circle cx="12" cy="9" r="2.5"></circle>
+              </svg>
+              <div>
+                <strong>{{ sug.etiqueta }}</strong>
+                <small *ngIf="sug.distrito">{{ sug.distrito }}</small>
+              </div>
+            </li>
+          </ul>
 
           <small class="error-message" *ngIf="mostrarError('nombreVia')">
             Este campo es obligatorio.

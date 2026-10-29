@@ -45,8 +45,8 @@ export class Entregas implements OnInit {
   lote: Lote = {
     id: '',
     fechaAsignacion: '12 Oct 2026',
-    origen: 'Sede sur',
-    destino: 'Zona sur',
+    origen: 'Sede Norte',
+    destino: 'Zona Norte',
     totalPaquetes: 0,
     estado: 'Asignado',
     paradas: [],
@@ -80,8 +80,8 @@ export class Entregas implements OnInit {
           this.lote = {
             id: detalle.id,
             fechaAsignacion: detalle.fechaAsignacion || '12 Oct 2026',
-            origen: detalle.origen || 'Sede sur',
-            destino: detalle.destino || 'Zona sur',
+            origen: detalle.origen || 'Sede Norte',
+            destino: detalle.destino || 'Zona Norte',
             totalPaquetes: detalle.totalPaquetes || (detalle.paradas ? detalle.paradas.length : 0),
             estado: detalle.estado,
             paradas: detalle.paradas || [],

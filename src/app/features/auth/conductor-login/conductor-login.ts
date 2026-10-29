@@ -39,7 +39,7 @@ export class ConductorLogin implements OnInit {
 
     const user = this.authService.currentUser();
     if (this.authService.isAuthenticated() && user?.rol === 'CONDUCTOR') {
-      this.router.navigate(['/conductor/asignaciones']);
+      this.router.navigate(['/conductor/mis-lotes']);
     }
   }
 
