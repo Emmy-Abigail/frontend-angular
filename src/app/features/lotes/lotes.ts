@@ -59,6 +59,16 @@ interface Paquete {
   styleUrl: './lotes.css',
 })
 export class Lotes implements OnInit {
+  obtenerCapacidadPeso(vehiculo: string, capacidadBackend?: number): number {
+    const v = (vehiculo || '').toLowerCase();
+    if (v.includes('camion') || v.includes('camión')) return 1000;
+    if (v.includes('auto')) return 200;
+    if (v.includes('moto') || v.includes('motorizado')) return 20;
+    if (capacidadBackend && capacidadBackend > 20) return Number(capacidadBackend);
+    return 20;
+  }
+
+
   private operadorService = inject(OperadorService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
@@ -144,7 +154,7 @@ export class Lotes implements OnInit {
             paquetes: cant,
             capacidadPaquetes: maxP,
             peso: Number(l.peso_total_kg || 0),
-            capacidadPeso: Number(l.capacidad_peso_kg || 20),
+            capacidadPeso: this.obtenerCapacidadPeso(l.vehiculo?.nombre || l.vehiculo, l.capacidad_peso_kg),
             horaInicio,
             fechaCreacion: fechaCreacionStr,
             completo: cant >= maxP,
@@ -415,6 +425,11 @@ export class Lotes implements OnInit {
         if (batchRes) {
           if (batchRes.version !== undefined && this.loteSeleccionado) {
             this.loteSeleccionado.version = batchRes.version;
+          }
+          if (batchRes.vehiculo && this.loteSeleccionado) {
+            const vNom = batchRes.vehiculo.nombre || batchRes.vehiculo;
+            this.loteSeleccionado.vehiculo = vNom;
+            this.loteSeleccionado.capacidadPeso = this.obtenerCapacidadPeso(vNom, batchRes.capacidad_peso_kg);
           }
           if (batchRes.conductor && this.loteSeleccionado) {
             this.loteSeleccionado.responsable = batchRes.conductor.nombres || this.loteSeleccionado.responsable;

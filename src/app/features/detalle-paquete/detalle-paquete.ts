@@ -105,12 +105,14 @@ export class DetallePaquete {
   mostrarModalEvidencia = false;
   cargandoEvidencia = false;
   urlEvidencia: string | null = null;
+  urlEvidenciaPreview: string | null = null;
 
   verEvidencia(): void {
     if (!this.paquete?.id) return;
     this.mostrarModalEvidencia = true;
-    this.cargandoEvidencia = true;
+    if (this.urlEvidencia) return;
 
+    this.cargandoEvidencia = true;
     this.operadorService.obtenerEvidencia(this.paquete.id).subscribe({
       next: (blob) => {
         this.cargandoEvidencia = false;
@@ -198,10 +200,34 @@ export class DetallePaquete {
                 comentarioEntregaStr = h.comentario || '';
                 tieneEvidencia = !!h.tiene_evidencia;
               } else if (h.estado_nuevo === 'FALLIDO') {
-                motivoFalloStr = h.motivo_fallo || '';
+                if (h.motivo_fallo) {
+                  motivoFalloStr = typeof h.motivo_fallo === 'object'
+                    ? (h.motivo_fallo.nombre || h.motivo_fallo.descripcion || h.motivo_fallo.codigo || 'Cliente ausente')
+                    : String(h.motivo_fallo);
+                }
                 observacionConductorStr = h.comentario || '';
               }
             }
+          }
+
+          if (!motivoFalloStr && res.motivo_fallo) {
+            motivoFalloStr = typeof res.motivo_fallo === 'object'
+              ? (res.motivo_fallo.nombre || res.motivo_fallo.descripcion || res.motivo_fallo.codigo || 'Cliente ausente')
+              : String(res.motivo_fallo);
+          }
+
+          // Cargar vista previa de la evidencia si existe
+          if (tieneEvidencia && res.id) {
+            this.operadorService.obtenerEvidencia(res.id).subscribe({
+              next: (blob) => {
+                if (this.urlEvidenciaPreview) {
+                  URL.revokeObjectURL(this.urlEvidenciaPreview);
+                }
+                this.urlEvidenciaPreview = URL.createObjectURL(blob);
+                this.cdr.markForCheck();
+              },
+              error: () => {},
+            });
           }
 
           const largo = Number(res.medidas?.largo_cm || 0);
@@ -210,6 +236,10 @@ export class DetallePaquete {
           const pesoVolStr = (largo > 0 && ancho > 0 && alto > 0)
             ? `${((largo * ancho * alto) / 5000).toFixed(2)} kg`
             : '1.32 kg';
+
+          const enAlmacen = estadoCodigo === 'EN ALMACEN' || !conductorNombre;
+          const conductorFinal = enAlmacen ? 'Por asignar' : conductorNombre;
+          const placaFinal = enAlmacen ? '-' : (conductorPlaca || '-');
 
           this.paquete = {
             id: res.id,
@@ -243,8 +273,8 @@ export class DetallePaquete {
 
             zonaLote: res.lote?.zona || res.zona_destino?.nombre || 'Zona Norte',
             vehiculo: res.vehiculo?.nombre || res.lote?.vehiculo || 'Motorizado',
-            conductor: conductorNombre || 'Carlos Huamán',
-            placa: conductorPlaca || 'KLM-321',
+            conductor: conductorFinal,
+            placa: placaFinal,
 
             fechaAsignacion: fechaAsignacionStr,
             horaAsignacion: horaAsignacionStr,

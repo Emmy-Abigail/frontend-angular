@@ -40,10 +40,18 @@
         <div class="delivery-content">
           <div
             class="evidence-preview"
-            role="img"
-            aria-label="Espacio reservado para la evidencia de entrega"
+            role="button"
+            tabindex="0"
+            (click)="verEvidencia()"
+            aria-label="Ver evidencia de entrega"
           >
-            <svg viewBox="0 0 100 70" aria-hidden="true" focusable="false">
+            <img
+              *ngIf="urlEvidenciaPreview"
+              [src]="urlEvidenciaPreview"
+              alt="Evidencia de entrega"
+              class="evidence-thumbnail"
+            />
+            <svg *ngIf="!urlEvidenciaPreview" viewBox="0 0 100 70" aria-hidden="true" focusable="false">
               <circle cx="65" cy="21" r="8" fill="#cbd5e1" />
               <path d="M12 57 L35 29 L49 44 L61 32 L88 57 Z" fill="#94a3b8" />
             </svg>
@@ -140,11 +148,11 @@
         </div>
         <div class="information-row">
           <span>Conductor</span>
-          <strong>{{ p.conductor || 'No asignado' }}</strong>
+          <strong>{{ (p.estado === 'EN ALMACEN' || !p.conductor || p.conductor === 'No asignado') ? 'Por asignar' : p.conductor }}</strong>
         </div>
         <div class="information-row">
           <span>Placa</span>
-          <strong>{{ p.placa || 'No registrada' }}</strong>
+          <strong>{{ (p.estado === 'EN ALMACEN' || !p.placa || p.placa === 'No registrada' || p.placa === '-') ? '-' : p.placa }}</strong>
         </div>
       </article>
 
@@ -241,7 +249,7 @@
               >
                 {{ p.fechaRuta || p.fechaIngreso }}
                 &nbsp; {{ p.horaRuta || p.horaIngreso }}
-                &nbsp;°&nbsp; {{ p.conductor || 'Carlos Huamán' }}
+                &nbsp;°&nbsp; {{ p.conductor || 'Por asignar' }}
                 <span>(conductor)</span>
               </p>
             </div>
