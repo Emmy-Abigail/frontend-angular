@@ -133,6 +133,34 @@ export class Operador implements OnInit, AfterViewInit {
     }
   }
 
+  moverMarcadorYCentrar(lat: number, lng: number, zoom = 17): void {
+    this.punto = { lat, lng };
+    if (this.mapa) {
+      this.mapa.setView([lat, lng], zoom);
+      if (!this.marcador) {
+        this.marcador = L.marker([lat, lng], {
+          draggable: true,
+          icon: L.icon({
+            iconUrl: 'assets/marker-icon.png',
+            iconRetinaUrl: 'assets/marker-icon-2x.png',
+            shadowUrl: 'assets/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+          }),
+        }).addTo(this.mapa);
+
+        this.marcador.on('dragend', () => {
+          const p = this.marcador!.getLatLng();
+          this.actualizarPuntoEnMapa(p.lat, p.lng);
+        });
+      } else {
+        this.marcador.setLatLng([lat, lng]);
+      }
+    }
+    this.actualizarCotizacion();
+    this.cdr.markForCheck();
+  }
+
   actualizarPuntoEnMapa(lat: number, lng: number): void {
     this.punto = { lat, lng };
     this.geocodificandoPunto = true;
@@ -173,8 +201,9 @@ export class Operador implements OnInit, AfterViewInit {
       if (this.debounceBusqueda) {
         clearTimeout(this.debounceBusqueda);
       }
+      this.buscandoDirecciones = true;
       this.debounceBusqueda = setTimeout(() => {
-        this.buscarSugerencias(this.direccion.nombreVia.trim());
+        this.buscarSugerencias(this.direccion.nombreVia.trim(), true);
       }, 300);
     }
   }
@@ -195,11 +224,12 @@ export class Operador implements OnInit, AfterViewInit {
     }
     this.buscandoDirecciones = true;
     this.debounceBusqueda = setTimeout(() => {
-      this.buscarSugerencias(query);
+      const hasNumber = /\s+\d{1,5}[A-Za-z]?$/.test(query);
+      this.buscarSugerencias(query, hasNumber);
     }, 250);
   }
 
-  buscarSugerencias(query: string): void {
+  buscarSugerencias(query: string, autoUpdateMap = false): void {
     const distritosCatalog = this.todosLosDistritos;
     const currentDistrict =
       distritosCatalog.find((d) => d.ubigeo === this.direccion.distrito) ||
@@ -218,6 +248,7 @@ export class Operador implements OnInit, AfterViewInit {
     if (numMatch) {
       extractedNum = numMatch[1];
       raw = raw.slice(0, numMatch.index).trim();
+      this.direccion.numero = extractedNum;
     }
 
     let cleanStreet = raw.replace(/^(Av\.|Avenida|Jr\.|Jirón|Calle|Psje\.|Pasaje|Carretera)\s+/i, '').trim();
@@ -233,15 +264,21 @@ export class Operador implements OnInit, AfterViewInit {
             ? 'Calle'
             : 'Jr.');
 
-    const queryContextual = `${cleanStreet} ${currentDistrict.nombre_mostrado}`;
+    const queryContextual = extractedNum
+      ? `${cleanStreet} ${extractedNum} ${currentDistrict.nombre_mostrado}`
+      : `${cleanStreet} ${currentDistrict.nombre_mostrado}`;
 
     this.operadorService.sugerirDirecciones(queryContextual).subscribe({
       next: (res) => {
         const data = res?.data || [];
-        this.procesarSugerencias(data, cleanStreet, extractedNum, currentDistrict, tipoViaActual);
+        if (data.length > 0) {
+          this.procesarSugerencias(data, cleanStreet, extractedNum, currentDistrict, tipoViaActual, autoUpdateMap);
+        } else {
+          this.fallbackPhotonSearch(cleanStreet, extractedNum, currentDistrict, tipoViaActual, autoUpdateMap);
+        }
       },
       error: () => {
-        this.fallbackPhotonSearch(cleanStreet, extractedNum, currentDistrict, tipoViaActual);
+        this.fallbackPhotonSearch(cleanStreet, extractedNum, currentDistrict, tipoViaActual, autoUpdateMap);
       },
     });
   }
@@ -252,20 +289,23 @@ export class Operador implements OnInit, AfterViewInit {
     extractedNum: string,
     currentDistrict: any,
     tipoViaActual: string,
+    autoUpdateMap = false,
   ): void {
     const distNombre = currentDistrict.nombre_mostrado.toLowerCase();
+    const distOficial = (currentDistrict.nombre_oficial || '').toLowerCase();
 
     let filtradas = data.filter((s) => {
       const sDist = (s.distrito || '').toLowerCase();
       return (
         s.ubigeo_distrito === currentDistrict.ubigeo ||
         sDist.includes(distNombre) ||
-        distNombre.includes(sDist)
+        distNombre.includes(sDist) ||
+        (distOficial && (sDist.includes(distOficial) || distOficial.includes(sDist)))
       );
     });
 
     if (filtradas.length === 0) {
-      this.fallbackPhotonSearch(cleanStreet, extractedNum, currentDistrict, tipoViaActual);
+      this.fallbackPhotonSearch(cleanStreet, extractedNum, currentDistrict, tipoViaActual, autoUpdateMap);
       return;
     }
 
@@ -284,6 +324,11 @@ export class Operador implements OnInit, AfterViewInit {
       };
     });
 
+    if (autoUpdateMap && this.sugerenciasDireccion.length > 0) {
+      const best = this.sugerenciasDireccion[0];
+      this.moverMarcadorYCentrar(best.lat, best.lng, 17);
+    }
+
     this.buscandoDirecciones = false;
     this.cdr.markForCheck();
   }
@@ -293,21 +338,40 @@ export class Operador implements OnInit, AfterViewInit {
     extractedNum: string,
     currentDistrict: any,
     tipoViaActual: string,
+    autoUpdateMap = false,
   ): void {
-    const variants = [
-      `${cleanStreet} ${currentDistrict.nombre_mostrado}`,
-      `${cleanStreet.replace(/^Carlos\s+/i, '')} ${currentDistrict.nombre_mostrado}`,
-      cleanStreet,
-    ];
+    const cleanStreetNoPrefix = cleanStreet.replace(
+      /^(Carlos|Don|San|Santa|Mariscal|Coronel|General|Doctor|Dr\.|Ing\.)\s+/i,
+      '',
+    );
+
+    const variants: string[] = [];
+    if (extractedNum) {
+      variants.push(`${cleanStreet} ${extractedNum} ${currentDistrict.nombre_mostrado}`);
+      if (cleanStreetNoPrefix !== cleanStreet) {
+        variants.push(`${cleanStreetNoPrefix} ${extractedNum} ${currentDistrict.nombre_mostrado}`);
+      }
+      variants.push(`${cleanStreet} ${extractedNum}`);
+      if (cleanStreetNoPrefix !== cleanStreet) {
+        variants.push(`${cleanStreetNoPrefix} ${extractedNum}`);
+      }
+    }
+    variants.push(`${cleanStreet} ${currentDistrict.nombre_mostrado}`);
+    if (cleanStreetNoPrefix !== cleanStreet) {
+      variants.push(`${cleanStreetNoPrefix} ${currentDistrict.nombre_mostrado}`);
+    }
+    variants.push(cleanStreet);
 
     const bbox = '-77.30,-12.60,-76.55,-11.50';
     const distNombre = currentDistrict.nombre_mostrado.toLowerCase();
-    const distOficial = currentDistrict.nombre_oficial.toLowerCase();
+    const distOficial = (currentDistrict.nombre_oficial || '').toLowerCase();
 
     const doFetch = (index: number) => {
       if (index >= variants.length) {
         const via = this.direccion.tipoVia || tipoViaActual;
         const num = extractedNum || this.direccion.numero || null;
+        const defLat = currentDistrict.lat || -12.03;
+        const defLng = currentDistrict.lng || -77.0575;
         this.sugerenciasDireccion = [
           {
             etiqueta: `${via} ${cleanStreet}${num ? ' ' + num : ''}, ${currentDistrict.nombre_mostrado}`,
@@ -316,10 +380,13 @@ export class Operador implements OnInit, AfterViewInit {
             numero: num,
             ubigeo_distrito: currentDistrict.ubigeo,
             distrito: currentDistrict.nombre_mostrado,
-            lat: currentDistrict.lat,
-            lng: currentDistrict.lng,
+            lat: defLat,
+            lng: defLng,
           },
         ];
+        if (autoUpdateMap) {
+          this.moverMarcadorYCentrar(defLat, defLng, 16);
+        }
         this.buscandoDirecciones = false;
         this.cdr.markForCheck();
         return;
@@ -339,12 +406,26 @@ export class Operador implements OnInit, AfterViewInit {
             const props = f.properties || {};
             if (!coords) continue;
 
-            const pDist = (props.district || props.city || '').toLowerCase();
+            const pDist = [
+              props.district,
+              props.suburb,
+              props.city,
+              props.county,
+              props.town,
+              props.state,
+            ]
+              .filter(Boolean)
+              .join(' ')
+              .toLowerCase();
+
             const esMismoDistrito =
+              !distNombre ||
               pDist.includes(distNombre) ||
               pDist.includes(distOficial) ||
               distNombre.includes(pDist) ||
-              distOficial.includes(pDist);
+              (distOficial && distOficial.includes(pDist));
+
+            const houseNum = props.housenumber || extractedNum || null;
 
             if (esMismoDistrito) {
               const via =
@@ -354,12 +435,12 @@ export class Operador implements OnInit, AfterViewInit {
                   : props.street?.startsWith('Jr')
                     ? 'Jr.'
                     : tipoViaActual);
-              const num = extractedNum || props.housenumber || null;
+
               matches.push({
-                etiqueta: `${via} ${cleanStreet}${num ? ' ' + num : ''}, ${currentDistrict.nombre_mostrado}`,
+                etiqueta: `${via} ${cleanStreet}${houseNum ? ' ' + houseNum : ''}, ${currentDistrict.nombre_mostrado}`,
                 tipo_via: via,
                 nombre_via: cleanStreet,
-                numero: num,
+                numero: houseNum,
                 ubigeo_distrito: currentDistrict.ubigeo,
                 distrito: currentDistrict.nombre_mostrado,
                 lat: coords[1],
@@ -371,6 +452,9 @@ export class Operador implements OnInit, AfterViewInit {
 
           if (matches.length > 0) {
             this.sugerenciasDireccion = matches;
+            if (autoUpdateMap && matches[0]) {
+              this.moverMarcadorYCentrar(matches[0].lat, matches[0].lng, 17);
+            }
             this.buscandoDirecciones = false;
             this.cdr.markForCheck();
           } else {
@@ -398,28 +482,7 @@ export class Operador implements OnInit, AfterViewInit {
     if (sug.ubigeo_distrito) {
       this.direccion.distrito = sug.ubigeo_distrito;
     }
-    this.punto = { lat: sug.lat, lng: sug.lng };
-    if (this.mapa) {
-      this.mapa.setView([sug.lat, sug.lng], 16);
-      if (!this.marcador) {
-        this.marcador = L.marker([sug.lat, sug.lng], {
-          draggable: true,
-          icon: L.icon({
-            iconUrl: 'assets/marker-icon.png',
-            iconRetinaUrl: 'assets/marker-icon-2x.png',
-            shadowUrl: 'assets/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-          }),
-        }).addTo(this.mapa);
-        this.marcador.on('dragend', () => {
-          const p = this.marcador!.getLatLng();
-          this.actualizarPuntoEnMapa(p.lat, p.lng);
-        });
-      } else {
-        this.marcador.setLatLng([sug.lat, sug.lng]);
-      }
-    }
+    this.moverMarcadorYCentrar(sug.lat, sug.lng, 17);
     this.sugerenciasDireccion = [];
     this.actualizarCotizacion();
     this.cdr.markForCheck();
@@ -436,6 +499,9 @@ export class Operador implements OnInit, AfterViewInit {
     this.camposTocados.add(campo);
     if (campo === 'distrito') {
       this.centrarMapaEnDistrito();
+      if (this.direccion.nombreVia.trim().length >= 3) {
+        this.buscarSugerencias(this.direccion.nombreVia.trim(), true);
+      }
     }
     if (['pesoReal', 'largo', 'ancho', 'alto', 'distrito'].includes(campo)) {
       this.actualizarCotizacion();
