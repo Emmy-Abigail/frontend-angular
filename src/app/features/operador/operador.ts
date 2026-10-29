@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import * as L from 'leaflet';
 
 import { AuthService } from '../../core/services/auth';
-import { OperadorService, RegistroPaqueteRequest } from '../../core/services/operador.service';
+import { OperadorService, RegistroPaqueteRequest, DireccionSugerencia } from '../../core/services/operador.service';
 import { CatalogService } from '../../core/services/catalog.service';
 import { Department, District } from '../../core/models/catalog.models';
 import { GEOGRAPHY_MOCK } from '../../core/data/geography.mock';
@@ -50,6 +50,14 @@ export class Operador implements OnInit, AfterViewInit {
   erroresServidor: Record<string, string> = {};
   camposTocados = new Set<string>();
 
+  // Geocodificación y búsqueda asistida de direcciones (backend /geocode/suggest y /geocode/reverse)
+  busquedaDireccion = '';
+  sugerenciasDireccion: DireccionSugerencia[] = [];
+  buscandoDirecciones = false;
+  geocodificandoPunto = false;
+  correoInfo = '';
+  private debounceBusqueda: any = null;
+
   // Mapa interactivo Leaflet
   punto: { lat: number; lng: number } | null = null;
   private mapa?: L.Map;
@@ -79,7 +87,7 @@ export class Operador implements OnInit, AfterViewInit {
         }).addTo(this.mapa);
 
         this.mapa.on('click', (e: L.LeafletMouseEvent) => {
-          this.punto = { lat: e.latlng.lat, lng: e.latlng.lng };
+          this.actualizarPuntoEnMapa(e.latlng.lat, e.latlng.lng);
 
           if (!this.marcador) {
             this.marcador = L.marker(e.latlng, {
@@ -95,7 +103,7 @@ export class Operador implements OnInit, AfterViewInit {
 
             this.marcador.on('dragend', () => {
               const p = this.marcador!.getLatLng();
-              this.punto = { lat: p.lat, lng: p.lng };
+              this.actualizarPuntoEnMapa(p.lat, p.lng);
             });
           } else {
             this.marcador.setLatLng(e.latlng);
@@ -103,6 +111,107 @@ export class Operador implements OnInit, AfterViewInit {
         });
       }
     }
+  }
+
+  actualizarPuntoEnMapa(lat: number, lng: number): void {
+    this.punto = { lat, lng };
+    this.geocodificandoPunto = true;
+    this.operadorService.geocodificarInverso(lat, lng).subscribe({
+      next: (res) => {
+        this.geocodificandoPunto = false;
+        if (res?.data) {
+          const item = res.data;
+          if (item.ubigeo_distrito) {
+            this.direccion.distrito = item.ubigeo_distrito;
+          }
+          if (item.tipo_via) {
+            this.direccion.tipoVia = item.tipo_via;
+          }
+          if (item.nombre_via) {
+            this.direccion.nombreVia = item.nombre_via;
+          }
+          if (item.numero) {
+            this.direccion.numero = item.numero;
+          }
+          this.actualizarCotizacion();
+        }
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.geocodificandoPunto = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  onBuscarDireccionInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.busquedaDireccion = input.value;
+    if (this.debounceBusqueda) {
+      clearTimeout(this.debounceBusqueda);
+    }
+    const query = this.busquedaDireccion.trim();
+    if (query.length < 3) {
+      this.sugerenciasDireccion = [];
+      this.buscandoDirecciones = false;
+      return;
+    }
+    this.buscandoDirecciones = true;
+    this.debounceBusqueda = setTimeout(() => {
+      this.operadorService.sugerirDirecciones(query).subscribe({
+        next: (res) => {
+          this.sugerenciasDireccion = res?.data || [];
+          this.buscandoDirecciones = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.sugerenciasDireccion = [];
+          this.buscandoDirecciones = false;
+          this.cdr.markForCheck();
+        },
+      });
+    }, 300);
+  }
+
+  seleccionarSugerencia(sug: DireccionSugerencia): void {
+    if (sug.ubigeo_distrito) {
+      this.direccion.distrito = sug.ubigeo_distrito;
+    }
+    if (sug.tipo_via) {
+      this.direccion.tipoVia = sug.tipo_via;
+    }
+    if (sug.nombre_via) {
+      this.direccion.nombreVia = sug.nombre_via;
+    }
+    if (sug.numero) {
+      this.direccion.numero = sug.numero;
+    }
+    this.punto = { lat: sug.lat, lng: sug.lng };
+    if (this.mapa) {
+      this.mapa.setView([sug.lat, sug.lng], 16);
+      if (!this.marcador) {
+        this.marcador = L.marker([sug.lat, sug.lng], {
+          draggable: true,
+          icon: L.icon({
+            iconUrl: 'assets/marker-icon.png',
+            iconRetinaUrl: 'assets/marker-icon-2x.png',
+            shadowUrl: 'assets/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+          }),
+        }).addTo(this.mapa);
+        this.marcador.on('dragend', () => {
+          const p = this.marcador!.getLatLng();
+          this.actualizarPuntoEnMapa(p.lat, p.lng);
+        });
+      } else {
+        this.marcador.setLatLng([sug.lat, sug.lng]);
+      }
+    }
+    this.sugerenciasDireccion = [];
+    this.busquedaDireccion = sug.etiqueta;
+    this.actualizarCotizacion();
+    this.cdr.markForCheck();
   }
 
   centrarMapaEnDistrito(): void {
@@ -455,6 +564,23 @@ export class Operador implements OnInit, AfterViewInit {
           this.totalEstimadoServidor = typeof res.cotizacion.monto === 'number' ? res.cotizacion.monto : parseFloat(res.cotizacion.monto as any);
         }
 
+        if (res.correo_enviado) {
+          const { remitente, destinatario } = res.correo_enviado;
+          if (remitente && destinatario) {
+            this.correoInfo = 'Código de seguimiento enviado por correo al remitente y destinatario.';
+          } else if (remitente) {
+            this.correoInfo = 'Código de seguimiento enviado por correo al remitente.';
+          } else if (destinatario) {
+            this.correoInfo = 'Código de seguimiento enviado por correo al destinatario.';
+          } else if (remitente === false || destinatario === false) {
+            this.correoInfo = 'El paquete fue registrado, pero no se pudo enviar el correo de seguimiento.';
+          } else {
+            this.correoInfo = '';
+          }
+        } else {
+          this.correoInfo = '';
+        }
+
         this.modalRegistroAbierto = true;
         this.cdr.markForCheck();
       },
@@ -514,6 +640,11 @@ export class Operador implements OnInit, AfterViewInit {
     this.erroresServidor = {};
     this.totalEstimadoServidor = null;
     this.camposTocados.clear();
+    this.busquedaDireccion = '';
+    this.sugerenciasDireccion = [];
+    this.buscandoDirecciones = false;
+    this.geocodificandoPunto = false;
+    this.correoInfo = '';
 
     this.punto = null;
     if (this.marcador && this.mapa) {

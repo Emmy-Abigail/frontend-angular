@@ -56,6 +56,17 @@ export interface RegistroPaqueteRequest {
   alto_cm: number;
 }
 
+export interface DireccionSugerencia {
+  etiqueta: string;
+  tipo_via: string | null;
+  nombre_via: string | null;
+  numero: string | null;
+  ubigeo_distrito: string;
+  distrito: string;
+  lat: number;
+  lng: number;
+}
+
 export interface RegistroPaqueteResponse {
   id: number;
   tracking_id: string;
@@ -70,6 +81,10 @@ export interface RegistroPaqueteResponse {
     codigo: string;
     vehiculo: string;
     zona: string;
+  };
+  correo_enviado?: {
+    remitente: boolean | null;
+    destinatario: boolean | null;
   };
 }
 
@@ -86,6 +101,16 @@ export class OperadorService {
 
   registrarPaquete(payload: RegistroPaqueteRequest): Observable<RegistroPaqueteResponse> {
     return this.http.post<RegistroPaqueteResponse>(`${this.baseUrl}/packages`, payload);
+  }
+
+  sugerirDirecciones(q: string): Observable<{ data: DireccionSugerencia[] }> {
+    const params = new HttpParams().set('q', q.trim());
+    return this.http.get<{ data: DireccionSugerencia[] }>(`${this.baseUrl}/geocode/suggest`, { params });
+  }
+
+  geocodificarInverso(lat: number, lng: number): Observable<{ data: DireccionSugerencia }> {
+    const params = new HttpParams().set('lat', String(lat)).set('lng', String(lng));
+    return this.http.get<{ data: DireccionSugerencia }>(`${this.baseUrl}/geocode/reverse`, { params });
   }
 
   listarPaquetes(filtro?: {

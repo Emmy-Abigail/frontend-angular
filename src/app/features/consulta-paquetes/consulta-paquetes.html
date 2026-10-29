@@ -143,7 +143,10 @@
 
         <tr *ngIf="paquetesVisibles.length === 0">
           <td colspan="8" class="empty-state">
-            <span class="empty-icon" aria-hidden="true">⌕</span>
+            <svg class="empty-icon" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
             <strong>No se encontraron paquetes</strong>
             <span>
               Prueba modificando los filtros de búsqueda.
