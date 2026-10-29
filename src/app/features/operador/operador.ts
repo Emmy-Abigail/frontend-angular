@@ -178,7 +178,8 @@ export class Operador implements OnInit, AfterViewInit {
           if (item.nombre_via) {
             this.direccion.nombreVia = item.nombre_via;
           }
-          if (item.numero) {
+          // Conservar el número que el operador ya ingresó manualmente si existe
+          if (item.numero && !this.direccion.numero.trim()) {
             this.direccion.numero = item.numero;
           }
           this.actualizarCotizacion();
@@ -229,7 +230,122 @@ export class Operador implements OnInit, AfterViewInit {
     }, 250);
   }
 
-  buscarSugerencias(query: string, autoUpdateMap = false): void {
+  async geocodificarDireccionConNumero(
+    cleanStreet: string,
+    extractedNum: string,
+    currentDistrict: any,
+    tipoViaActual: string,
+  ): Promise<DireccionSugerencia | null> {
+    const num = parseInt(extractedNum, 10);
+    const cleanStreetNoPrefix = cleanStreet.replace(
+      /^(Carlos|Don|San|Santa|Mariscal|Coronel|General|Doctor|Dr\.|Ing\.)\s+/i,
+      '',
+    );
+    const distName = currentDistrict.nombre_mostrado;
+
+    // 1. Intentar búsqueda de predio o casa en Nominatim
+    const queries = [
+      `${cleanStreet} ${extractedNum} ${distName}`,
+      `${cleanStreetNoPrefix} ${extractedNum} ${distName}`,
+      `${extractedNum} ${cleanStreetNoPrefix} ${distName}`,
+    ];
+
+    for (const q of queries) {
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&addressdetails=1&limit=3`;
+        const res = await fetch(url, { headers: { 'User-Agent': 'AntigravityApp/1.0' } });
+        const items = await res.json();
+        if (Array.isArray(items) && items.length > 0) {
+          const house = items.find(
+            (d) =>
+              d.type === 'house' ||
+              d.class === 'place' ||
+              (d.address && d.address.house_number == extractedNum),
+          );
+          if (house) {
+            const via = this.direccion.tipoVia || tipoViaActual;
+            return {
+              etiqueta: `${via} ${cleanStreet} ${extractedNum}, ${distName}`,
+              tipo_via: via,
+              nombre_via: cleanStreet,
+              numero: extractedNum,
+              ubigeo_distrito: currentDistrict.ubigeo,
+              distrito: distName,
+              lat: parseFloat(house.lat),
+              lng: parseFloat(house.lon),
+            };
+          }
+        }
+      } catch {
+        // continuar
+      }
+    }
+
+    // 2. Si no hay nodo individual de casa, obtener geometría de la calle para interpolar la cuadra exacta
+    try {
+      const streetQueries = [
+        `${cleanStreet} ${distName}`,
+        `${cleanStreetNoPrefix} ${distName}`,
+      ];
+
+      for (const sq of streetQueries) {
+        const geomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(sq)}&polygon_geojson=1&limit=8`;
+        const geomRes = await fetch(geomUrl, { headers: { 'User-Agent': 'AntigravityApp/1.0' } });
+        const geomItems = await geomRes.json();
+
+        if (Array.isArray(geomItems) && geomItems.length > 0) {
+          const allCoords: [number, number][] = [];
+          for (const item of geomItems) {
+            if (item.geojson && (item.geojson.type === 'LineString' || item.geojson.type === 'MultiLineString')) {
+              const coords = item.geojson.type === 'LineString' ? item.geojson.coordinates : item.geojson.coordinates.flat();
+              for (const c of coords) {
+                if (Array.isArray(c) && c.length >= 2) {
+                  allCoords.push([c[0], c[1]]);
+                }
+              }
+            }
+          }
+
+          if (allCoords.length > 0) {
+            const lats = allCoords.map((c) => c[1]);
+            const lngs = allCoords.map((c) => c[0]);
+            const latSpan = Math.max(...lats) - Math.min(...lats);
+            const lngSpan = Math.max(...lngs) - Math.min(...lngs);
+
+            if (latSpan >= lngSpan) {
+              allCoords.sort((a, b) => a[1] - b[1]); // Sur a Norte
+            } else {
+              allCoords.sort((a, b) => a[0] - b[0]); // Oeste a Este
+            }
+
+            const cuadra = Math.floor(num / 100);
+            const maxEstimatedCuadra = Math.max(6, cuadra + 1);
+            const fraction = Math.min(Math.max((num - 100) / (maxEstimatedCuadra * 100 - 100), 0.05), 0.95);
+            const targetIdx = Math.round(fraction * (allCoords.length - 1));
+            const pt = allCoords[targetIdx];
+
+            const via = this.direccion.tipoVia || tipoViaActual;
+            return {
+              etiqueta: `${via} ${cleanStreet} ${extractedNum}, ${distName}`,
+              tipo_via: via,
+              nombre_via: cleanStreet,
+              numero: extractedNum,
+              ubigeo_distrito: currentDistrict.ubigeo,
+              distrito: distName,
+              lat: pt[1],
+              lng: pt[0],
+            };
+          }
+        }
+      }
+    } catch {
+      // continuar
+    }
+
+    return null;
+  }
+
+  async buscarSugerencias(query: string, autoUpdateMap = false): Promise<void> {
     const distritosCatalog = this.todosLosDistritos;
     const currentDistrict =
       distritosCatalog.find((d) => d.ubigeo === this.direccion.distrito) ||
@@ -263,6 +379,31 @@ export class Operador implements OnInit, AfterViewInit {
           : query.match(/^Calle/i)
             ? 'Calle'
             : 'Jr.');
+
+    // Si el usuario especificó un número de casa, usar geocodificación con interpolación de cuadra
+    if (extractedNum && /^\d+$/.test(extractedNum)) {
+      this.buscandoDirecciones = true;
+      try {
+        const resultadoExacto = await this.geocodificarDireccionConNumero(
+          cleanStreet,
+          extractedNum,
+          currentDistrict,
+          tipoViaActual,
+        );
+
+        if (resultadoExacto) {
+          this.sugerenciasDireccion = [resultadoExacto];
+          if (autoUpdateMap) {
+            this.moverMarcadorYCentrar(resultadoExacto.lat, resultadoExacto.lng, 18);
+          }
+          this.buscandoDirecciones = false;
+          this.cdr.markForCheck();
+          return;
+        }
+      } catch {
+        // Continuar con backend y Photon
+      }
+    }
 
     const queryContextual = extractedNum
       ? `${cleanStreet} ${extractedNum} ${currentDistrict.nombre_mostrado}`
