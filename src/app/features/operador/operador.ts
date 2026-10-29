@@ -164,6 +164,21 @@ export class Operador implements OnInit, AfterViewInit {
     });
   }
 
+  onNumeroInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.direccion.numero = input.value;
+    this.marcarTocado('numero');
+
+    if (this.direccion.nombreVia.trim().length >= 3) {
+      if (this.debounceBusqueda) {
+        clearTimeout(this.debounceBusqueda);
+      }
+      this.debounceBusqueda = setTimeout(() => {
+        this.buscarSugerencias(this.direccion.nombreVia.trim());
+      }, 300);
+    }
+  }
+
   onNombreViaInput(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.direccion.nombreVia = input.value;
@@ -185,93 +200,192 @@ export class Operador implements OnInit, AfterViewInit {
   }
 
   buscarSugerencias(query: string): void {
-    this.operadorService.sugerirDirecciones(query).subscribe({
+    const distritosCatalog = this.todosLosDistritos;
+    const currentDistrict =
+      distritosCatalog.find((d) => d.ubigeo === this.direccion.distrito) ||
+      this.distritosDeMiSede[0] || {
+        nombre_mostrado: 'San Martín de Porres',
+        nombre_oficial: 'San Martín de Porres',
+        ubigeo: '150135',
+        lat: -12.03,
+        lng: -77.0575,
+        id_zona: 1,
+      };
+
+    let raw = query.trim();
+    let extractedNum = this.direccion.numero ? this.direccion.numero.trim() : '';
+    const numMatch = raw.match(/\s+(\d{1,5}[A-Za-z]?)$/);
+    if (numMatch) {
+      extractedNum = numMatch[1];
+      raw = raw.slice(0, numMatch.index).trim();
+    }
+
+    let cleanStreet = raw.replace(/^(Av\.|Avenida|Jr\.|Jirón|Calle|Psje\.|Pasaje|Carretera)\s+/i, '').trim();
+    cleanStreet = cleanStreet.replace(/bacaflor/i, 'Baca Flor');
+
+    const tipoViaActual =
+      this.direccion.tipoVia ||
+      (query.match(/^(Av\.|Avenida)/i)
+        ? 'Av.'
+        : query.match(/^(Jr\.|Jirón)/i)
+          ? 'Jr.'
+          : query.match(/^Calle/i)
+            ? 'Calle'
+            : 'Jr.');
+
+    const queryContextual = `${cleanStreet} ${currentDistrict.nombre_mostrado}`;
+
+    this.operadorService.sugerirDirecciones(queryContextual).subscribe({
       next: (res) => {
         const data = res?.data || [];
-        this.procesarSugerencias(data, query);
+        this.procesarSugerencias(data, cleanStreet, extractedNum, currentDistrict, tipoViaActual);
       },
       error: () => {
-        this.fallbackPhotonSearch(query);
+        this.fallbackPhotonSearch(cleanStreet, extractedNum, currentDistrict, tipoViaActual);
       },
     });
   }
 
-  private procesarSugerencias(data: DireccionSugerencia[], query: string): void {
-    if (data.length === 0) {
-      this.fallbackPhotonSearch(query);
+  private procesarSugerencias(
+    data: DireccionSugerencia[],
+    cleanStreet: string,
+    extractedNum: string,
+    currentDistrict: any,
+    tipoViaActual: string,
+  ): void {
+    const distNombre = currentDistrict.nombre_mostrado.toLowerCase();
+
+    let filtradas = data.filter((s) => {
+      const sDist = (s.distrito || '').toLowerCase();
+      return (
+        s.ubigeo_distrito === currentDistrict.ubigeo ||
+        sDist.includes(distNombre) ||
+        distNombre.includes(sDist)
+      );
+    });
+
+    if (filtradas.length === 0) {
+      this.fallbackPhotonSearch(cleanStreet, extractedNum, currentDistrict, tipoViaActual);
       return;
     }
-    const distritosSede = this.distritosDeMiSede;
-    const deMiSede = data.filter((s) =>
-      distritosSede.some(
-        (d) =>
-          d.ubigeo === s.ubigeo_distrito ||
-          (s.distrito && s.distrito.toLowerCase().includes(d.nombre_mostrado.toLowerCase())),
-      ),
-    );
-    this.sugerenciasDireccion = deMiSede.length > 0 ? deMiSede : data;
+
+    this.sugerenciasDireccion = filtradas.map((s) => {
+      const num = extractedNum || s.numero || null;
+      const via = this.direccion.tipoVia || s.tipo_via || tipoViaActual;
+      const calle = s.nombre_via || cleanStreet;
+      return {
+        ...s,
+        etiqueta: `${via} ${calle}${num ? ' ' + num : ''}, ${currentDistrict.nombre_mostrado}`,
+        tipo_via: via,
+        nombre_via: calle,
+        numero: num,
+        ubigeo_distrito: currentDistrict.ubigeo,
+        distrito: currentDistrict.nombre_mostrado,
+      };
+    });
+
     this.buscandoDirecciones = false;
     this.cdr.markForCheck();
   }
 
-  private fallbackPhotonSearch(query: string): void {
+  private fallbackPhotonSearch(
+    cleanStreet: string,
+    extractedNum: string,
+    currentDistrict: any,
+    tipoViaActual: string,
+  ): void {
+    const variants = [
+      `${cleanStreet} ${currentDistrict.nombre_mostrado}`,
+      `${cleanStreet.replace(/^Carlos\s+/i, '')} ${currentDistrict.nombre_mostrado}`,
+      cleanStreet,
+    ];
+
     const bbox = '-77.30,-12.60,-76.55,-11.50';
-    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=10&bbox=${bbox}`;
-    fetch(url)
-      .then((r) => r.json())
-      .then((json) => {
-        const places: DireccionSugerencia[] = [];
-        const features = json.features || [];
-        const distritosCatalog = this.todosLosDistritos;
-        const distritosSede = this.distritosDeMiSede;
+    const distNombre = currentDistrict.nombre_mostrado.toLowerCase();
+    const distOficial = currentDistrict.nombre_oficial.toLowerCase();
 
-        for (const f of features) {
-          const coords = f.geometry?.coordinates;
-          const props = f.properties || {};
-          if (!coords) continue;
-          const street = props.street || (props.type === 'street' ? props.name : null) || props.name;
-          const houseNum = props.housenumber || null;
-          const districtName = props.district || props.city || '';
+    const doFetch = (index: number) => {
+      if (index >= variants.length) {
+        const via = this.direccion.tipoVia || tipoViaActual;
+        const num = extractedNum || this.direccion.numero || null;
+        this.sugerenciasDireccion = [
+          {
+            etiqueta: `${via} ${cleanStreet}${num ? ' ' + num : ''}, ${currentDistrict.nombre_mostrado}`,
+            tipo_via: via,
+            nombre_via: cleanStreet,
+            numero: num,
+            ubigeo_distrito: currentDistrict.ubigeo,
+            distrito: currentDistrict.nombre_mostrado,
+            lat: currentDistrict.lat,
+            lng: currentDistrict.lng,
+          },
+        ];
+        this.buscandoDirecciones = false;
+        this.cdr.markForCheck();
+        return;
+      }
 
-          const matchDistrict = distritosCatalog.find(
-            (d) =>
-              d.nombre_mostrado.toLowerCase().includes(districtName.toLowerCase()) ||
-              d.nombre_oficial.toLowerCase().includes(districtName.toLowerCase()) ||
-              districtName.toLowerCase().includes(d.nombre_mostrado.toLowerCase()),
-          );
+      const q = variants[index];
+      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8&bbox=${bbox}`;
 
-          if (matchDistrict) {
-            const via = street ? (street.startsWith('Av') ? 'Av.' : street.startsWith('Jr') ? 'Jr.' : street.startsWith('Cl') ? 'Calle' : 'Av.') : 'Av.';
-            const cleanStreet = street ? street.replace(/^(Av.|Avenida|Jr.|Jirón|Calle|Psje.)\s*/i, '') : query;
-            places.push({
-              etiqueta: `${via} ${cleanStreet}${houseNum ? ' ' + houseNum : ''}, ${matchDistrict.nombre_mostrado}`,
-              tipo_via: via,
-              nombre_via: cleanStreet,
-              numero: houseNum,
-              ubigeo_distrito: matchDistrict.ubigeo,
-              distrito: matchDistrict.nombre_mostrado,
-              lat: coords[1],
-              lng: coords[0],
-            });
+      fetch(url)
+        .then((r) => r.json())
+        .then((json) => {
+          const features = json.features || [];
+          const matches: DireccionSugerencia[] = [];
+
+          for (const f of features) {
+            const coords = f.geometry?.coordinates;
+            const props = f.properties || {};
+            if (!coords) continue;
+
+            const pDist = (props.district || props.city || '').toLowerCase();
+            const esMismoDistrito =
+              pDist.includes(distNombre) ||
+              pDist.includes(distOficial) ||
+              distNombre.includes(pDist) ||
+              distOficial.includes(pDist);
+
+            if (esMismoDistrito) {
+              const via =
+                this.direccion.tipoVia ||
+                (props.street?.startsWith('Av')
+                  ? 'Av.'
+                  : props.street?.startsWith('Jr')
+                    ? 'Jr.'
+                    : tipoViaActual);
+              const num = extractedNum || props.housenumber || null;
+              matches.push({
+                etiqueta: `${via} ${cleanStreet}${num ? ' ' + num : ''}, ${currentDistrict.nombre_mostrado}`,
+                tipo_via: via,
+                nombre_via: cleanStreet,
+                numero: num,
+                ubigeo_distrito: currentDistrict.ubigeo,
+                distrito: currentDistrict.nombre_mostrado,
+                lat: coords[1],
+                lng: coords[0],
+              });
+              break;
+            }
           }
-        }
 
-        const deMiSede = places.filter((p) => distritosSede.some((d) => d.ubigeo === p.ubigeo_distrito));
-        this.sugerenciasDireccion = deMiSede.length > 0 ? deMiSede : places;
-        this.buscandoDirecciones = false;
-        this.cdr.markForCheck();
-      })
-      .catch(() => {
-        this.sugerenciasDireccion = [];
-        this.buscandoDirecciones = false;
-        this.cdr.markForCheck();
-      });
+          if (matches.length > 0) {
+            this.sugerenciasDireccion = matches;
+            this.buscandoDirecciones = false;
+            this.cdr.markForCheck();
+          } else {
+            doFetch(index + 1);
+          }
+        })
+        .catch(() => {
+          doFetch(index + 1);
+        });
+    };
+
+    doFetch(0);
   }
 
   seleccionarSugerencia(sug: DireccionSugerencia): void {
-    if (sug.ubigeo_distrito) {
-      this.direccion.distrito = sug.ubigeo_distrito;
-    }
     if (sug.tipo_via) {
       this.direccion.tipoVia = sug.tipo_via;
     }
@@ -280,6 +394,9 @@ export class Operador implements OnInit, AfterViewInit {
     }
     if (sug.numero) {
       this.direccion.numero = sug.numero;
+    }
+    if (sug.ubigeo_distrito) {
+      this.direccion.distrito = sug.ubigeo_distrito;
     }
     this.punto = { lat: sug.lat, lng: sug.lng };
     if (this.mapa) {

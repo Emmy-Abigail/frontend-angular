@@ -302,6 +302,7 @@
             id="numero"
             name="numero"
             [(ngModel)]="direccion.numero"
+            (input)="onNumeroInput($event)"
             placeholder="Ej. 123"
             (blur)="marcarTocado('numero')" />
 
