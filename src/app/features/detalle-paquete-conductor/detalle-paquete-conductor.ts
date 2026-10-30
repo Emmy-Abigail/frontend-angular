@@ -84,8 +84,8 @@ export class DetallePaqueteConductor implements OnInit {
     destinatario: '',
     telefono: '',
     direccion: '',
-    peso: '',
-    dimensiones: '',
+    peso: 'No disponible',
+    dimensiones: 'No disponible',
   };
 
   ngOnInit(): void {
@@ -121,21 +121,25 @@ export class DetallePaqueteConductor implements OnInit {
         next: (detalle) => {
           if (detalle && detalle.paradas) {
             const parada = detalle.paradas.find(
-              (p: any) => p.numero === this.numeroParada || (this.paqueteId && p.paqueteId === this.paqueteId)
+              (p: any) => this.paqueteId
+                ? p.paqueteId === this.paqueteId
+                : p.numero === this.numeroParada
             );
             if (parada) {
+              this.numeroParada = parada.numero;
               this.paquete = {
                 id: parada.paqueteId,
                 tracking: parada.codigoSeguimiento,
                 destinatario: parada.destinatario,
                 telefono: parada.telefono || '',
                 direccion: parada.direccion,
-                peso: parada.peso,
-                dimensiones: parada.dimensiones,
+                peso: parada.peso || 'No disponible',
+                dimensiones: parada.dimensiones || 'No disponible',
                 coordenadas: parada.coordenadas,
               };
               if (parada.paqueteId) {
                 this.paqueteId = parada.paqueteId;
+                this.cargarPorId(parada.paqueteId);
               }
               this.cdr.markForCheck();
               return;

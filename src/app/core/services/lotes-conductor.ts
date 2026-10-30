@@ -207,16 +207,20 @@ export class LotesConductorService {
           dirTexto = [via, num, dir.distrito].filter(Boolean).join(', ');
         }
 
+        const pesoKg = pkg.medidas?.peso_kg ?? pkg.peso_kg;
+        const dimensiones = [pkg.medidas?.largo_cm, pkg.medidas?.ancho_cm, pkg.medidas?.alto_cm];
+
         return {
           id: pkg.id,
           tracking: pkg.tracking_id || pkg.tracking,
           destinatario: pkg.destinatario?.nombres || '',
           telefono: pkg.destinatario?.celular || '',
           direccion: dirTexto || 'Dirección de entrega',
-          peso: pkg.medidas?.peso_kg ? `${pkg.medidas.peso_kg} kg` : (pkg.peso_kg ? `${pkg.peso_kg} kg` : '2.4 kg'),
-          dimensiones: pkg.medidas
-            ? `${pkg.medidas.largo_cm}x${pkg.medidas.ancho_cm}x${pkg.medidas.alto_cm} cm`
-            : '30x20x15 cm',
+          peso: pesoKg != null ? `${pesoKg} kg` : 'No disponible',
+          dimensiones: dimensiones.every((valor) => valor != null)
+            ? `${dimensiones.join(' × ')} cm`
+            : 'No disponible',
+          coordenadas: pkg.direccion?.coordenadas ?? null,
           estado: pkg.estado?.codigo || pkg.estado || 'EN_RUTA',
         };
       }),
