@@ -103,6 +103,13 @@ export class OperadorService {
     return this.http.post<RegistroPaqueteResponse>(`${this.baseUrl}/packages`, payload);
   }
 
+  reintentarPaquete(id: number): Observable<RegistroPaqueteResponse & { id_paquete_origen: number }> {
+    return this.http.post<RegistroPaqueteResponse & { id_paquete_origen: number }>(
+      `${this.baseUrl}/packages/${id}/retry`,
+      {},
+    );
+  }
+
   sugerirDirecciones(q: string): Observable<{ data: DireccionSugerencia[] }> {
     const params = new HttpParams().set('q', q.trim());
     return this.http.get<{ data: DireccionSugerencia[] }>(`${this.baseUrl}/geocode/suggest`, { params });

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { finalize } from 'rxjs';
 import { OperadorService } from '../../core/services/operador.service';
 
 type EstadoPaquete =
@@ -100,6 +101,39 @@ export class DetallePaquete {
 
   cargando = false;
   errorMensaje = '';
+
+  reasignando = false;
+  errorReasignacion = '';
+  mensajeReasignacion = '';
+  paqueteReintentadoId: number | null = null;
+
+  reasignarPaquete(): void {
+    const paquete = this.paquete;
+    if (!paquete?.id || paquete.estado !== 'FALLIDO' || this.cargando || this.reasignando || this.paqueteReintentadoId === paquete.id) {
+      return;
+    }
+
+    const paqueteId = paquete.id;
+    this.reasignando = true;
+    this.errorReasignacion = '';
+    this.mensajeReasignacion = '';
+
+    this.operadorService.reintentarPaquete(paqueteId).pipe(
+      finalize(() => {
+        this.reasignando = false;
+        this.cdr.markForCheck();
+      }),
+    ).subscribe({
+      next: (resultado) => {
+        this.paqueteReintentadoId = paqueteId;
+        this.mensajeReasignacion = `Reintento creado con tracking ${resultado.tracking_id}. Pendiente de despacho.`;
+        void this.router.navigate(['/operador/consulta-paquetes', resultado.id]);
+      },
+      error: (err) => {
+        this.errorReasignacion = err.error?.message || 'No se pudo reasignar el paquete. Inténtalo nuevamente.';
+      },
+    });
+  }
 
   // Modal de evidencia fotográfica
   mostrarModalEvidencia = false;

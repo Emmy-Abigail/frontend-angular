@@ -23,6 +23,10 @@
       </span>
     </header>
 
+    <p class="reassign-success" role="status" *ngIf="mensajeReasignacion">
+      {{ mensajeReasignacion }}
+    </p>
+
     <div
       class="detail-grid"
       [ngClass]="{
@@ -307,10 +311,18 @@
       </article>
     </div>
 
-    <!-- Botón de reasignación para FALLIDO (Visily imagen 5) -->
     <div class="reassign-container" *ngIf="p.estado === 'FALLIDO'">
-      <button type="button" class="btn-reassign" (click)="volverAConsulta()">
-        Reasignar
+      <p class="reassign-error" role="alert" *ngIf="errorReasignacion">
+        {{ errorReasignacion }}
+      </p>
+      <button
+        type="button"
+        class="btn-reassign"
+        (click)="reasignarPaquete()"
+        [disabled]="cargando || reasignando || !p.id || paqueteReintentadoId === p.id"
+        [attr.aria-busy]="reasignando"
+      >
+        {{ reasignando ? 'Reasignando…' : 'Reasignar' }}
       </button>
     </div>
 
