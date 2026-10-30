@@ -29,11 +29,8 @@ export class ConductorLogin implements OnInit {
     sessionStorage.setItem('ultimo_login', 'conductor');
 
     this.route.queryParams.subscribe((params) => {
-      if (params['desactivado'] === 'true') {
-        this.cuentaDesactivada = true;
-      } else if (params['sessionExpired'] === 'true') {
-        this.sessionExpired = true;
-      }
+      this.cuentaDesactivada = params['desactivado'] === 'true';
+      this.sessionExpired = !this.cuentaDesactivada && params['sessionExpired'] === 'true';
       this.cdr.markForCheck();
     });
 
@@ -55,6 +52,7 @@ export class ConductorLogin implements OnInit {
 
     this.error = '';
     this.sessionExpired = false;
+    this.cuentaDesactivada = false;
     this.cargando = true;
 
     this.authService

@@ -8,8 +8,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      const requestAuthorization = req.headers.get('Authorization');
+      const currentToken = localStorage.getItem('token');
+      const usesPreviousToken =
+        requestAuthorization?.startsWith('Bearer ') &&
+        requestAuthorization !== `Bearer ${currentToken}`;
+
       // Si el 401 ocurre fuera del endpoint de login, la sesión ha vencido
-      if (error.status === 401 && !req.url.includes('/auth/login') && !req.url.includes('/auth/session')) {
+      if (error.status === 401 && !usesPreviousToken && !req.url.includes('/auth/login') && !req.url.includes('/auth/session')) {
         let isConductor = false;
         let isOperador = false;
         try {
@@ -37,7 +43,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         sessionStorage.removeItem('temp_password');
 
         const errMsg = ((error.error?.message || '') as string).toLowerCase();
-        const isDeactivated = errMsg.includes('inactiv');
+        const isDeactivated = error.error?.error === 'usuario_inactivo' || errMsg.includes('inactiv');
 
         let loginPath = '/login/admin';
         if (isConductor) {
@@ -48,7 +54,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
         router.navigate([loginPath], {
           queryParams: isDeactivated
-            ? { sessionExpired: 'true', desactivado: 'true' }
+            ? { desactivado: 'true' }
             : { sessionExpired: 'true' },
         });
       }

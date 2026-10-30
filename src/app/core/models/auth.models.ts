@@ -34,3 +34,10 @@ export interface LoginResponse {
   expires_at: string;
   user: UserProfile;
 }
+
+export interface ChangePasswordResponse {
+  message: string;
+  token: string;
+  token_type: string;
+  expires_at: string;
+}

@@ -1,9 +1,9 @@
 import { inject, Injectable, signal, computed } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { catchError, Observable, of, Subscription, switchMap, tap, timer } from 'rxjs';
+import { catchError, defer, finalize, Observable, of, Subscription, switchMap, tap, timer } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { LoginRequest, LoginResponse, UserProfile, UserRole } from '../models/auth.models';
+import { ChangePasswordResponse, LoginRequest, LoginResponse, UserProfile } from '../models/auth.models';
 
 @Injectable({
   providedIn: 'root',
@@ -15,6 +15,7 @@ export class AuthService {
   private tokenSignal = signal<string | null>(this.getStoredToken());
   private currentUserSignal = signal<UserProfile | null>(this.getStoredUser());
   private sessionPollSub?: Subscription;
+  private passwordChangeInProgress = false;
 
   readonly token = computed(() => this.tokenSignal());
   readonly currentUser = computed(() => this.currentUserSignal());
@@ -67,18 +68,31 @@ export class AuthService {
   }
 
   checkSessionNow(): void {
-    if (!this.isAuthenticated()) return;
-    this.http
+    this.comprobarSesion().subscribe();
+  }
+
+  private comprobarSesion(): Observable<void | null> {
+    const requestToken = this.token();
+    if (!requestToken || this.passwordChangeInProgress) return of(null);
+
+    return this.http
       .get<void>(`${environment.apiUrl}/auth/session`)
       .pipe(
-        catchError((err) => {
-          if (err.status === 401) {
-            this.cerrarSesionPorDesactivacion();
+        catchError((err: HttpErrorResponse) => {
+          // Una respuesta del token anterior no debe cerrar una sesión renovada.
+          if (
+            err.status === 401 &&
+            !this.passwordChangeInProgress &&
+            requestToken === this.token() &&
+            requestToken === this.getStoredToken()
+          ) {
+            const message = String(err.error?.message ?? '').toLowerCase();
+            const desactivado = err.error?.error === 'usuario_inactivo' || message.includes('inactiv');
+            this.cerrarSesionPorError(desactivado);
           }
           return of(null);
         })
-      )
-      .subscribe();
+      );
   }
 
   private onWindowFocus = (): void => {
@@ -99,18 +113,7 @@ export class AuthService {
 
     // Polling ordenado cada 30 segundos para evitar saturar la consola/red de inspección
     this.sessionPollSub = timer(10000, 30000)
-      .pipe(
-        switchMap(() =>
-          this.http.get<void>(`${environment.apiUrl}/auth/session`).pipe(
-            catchError((err) => {
-              if (err.status === 401) {
-                this.cerrarSesionPorDesactivacion();
-              }
-              return of(null);
-            })
-          )
-        )
-      )
+      .pipe(switchMap(() => this.comprobarSesion()))
       .subscribe();
   }
 
@@ -125,7 +128,7 @@ export class AuthService {
     }
   }
 
-  private cerrarSesionPorDesactivacion(): void {
+  private cerrarSesionPorError(desactivado: boolean): void {
     const rawRole = (this.userRole() || '').toUpperCase();
     const currentUrl = this.router.url;
     const ultimoLogin = sessionStorage.getItem('ultimo_login');
@@ -158,7 +161,7 @@ export class AuthService {
     }
 
     this.router.navigate([targetRoute], {
-      queryParams: { sessionExpired: 'true', desactivado: 'true' },
+      queryParams: desactivado ? { desactivado: 'true' } : { sessionExpired: 'true' },
     });
   }
 
@@ -174,22 +177,35 @@ export class AuthService {
     return this.http.get<{ user: UserProfile }>(`${environment.apiUrl}/auth/me`);
   }
 
-  changePassword(actual: string, nuevo: string): Observable<{ message: string }> {
-    return this.http
-      .patch<{ message: string }>(`${environment.apiUrl}/auth/change-password`, {
-        password_actual: actual,
-        password_nuevo: nuevo,
-      })
-      .pipe(
-        tap(() => {
-          const u = this.currentUserSignal();
-          if (u) {
-            const updated = { ...u, debe_cambiar_password: false };
-            localStorage.setItem('user', JSON.stringify(updated));
-            this.currentUserSignal.set(updated);
-          }
+  changePassword(actual: string, nuevo: string): Observable<ChangePasswordResponse> {
+    return defer(() => {
+      this.passwordChangeInProgress = true;
+      this.stopSessionPolling();
+
+      return this.http
+        .patch<ChangePasswordResponse>(`${environment.apiUrl}/auth/change-password`, {
+          password_actual: actual,
+          password_nuevo: nuevo,
         })
-      );
+        .pipe(
+          tap((response) => {
+            localStorage.setItem('token', response.token);
+            this.tokenSignal.set(response.token);
+
+            const u = this.currentUserSignal();
+            if (u) {
+              const updated = { ...u, debe_cambiar_password: false };
+              localStorage.setItem('user', JSON.stringify(updated));
+              this.currentUserSignal.set(updated);
+            }
+            this.clearTempPassword();
+          }),
+          finalize(() => {
+            this.passwordChangeInProgress = false;
+            this.startSessionPolling();
+          })
+        );
+    });
   }
 
   requestPasswordReset(correo: string): Observable<{ message: string }> {
