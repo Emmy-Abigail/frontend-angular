@@ -73,12 +73,14 @@ export class DetallePaqueteConductor implements OnInit {
   mensajeErrorFallo = '';
 
   motivoFallo = '';
+  motivoOtro = '';
   observacionFallo = '';
 
-  motivosFallo: { label: string; id: number }[] = [
-    { label: 'Cliente ausente', id: 1 },
-    { label: 'Dirección errónea', id: 2 },
-    { label: 'Rechazado', id: 3 },
+  motivosFallo: { label: string; id: number; codigo?: string }[] = [
+    { label: 'Cliente ausente', id: 1, codigo: 'AUSENTE' },
+    { label: 'Dirección errónea', id: 2, codigo: 'DIR_ERRONEA' },
+    { label: 'Rechazado', id: 3, codigo: 'RECHAZADO' },
+    { label: 'Otros', id: 4, codigo: 'OTRO' },
   ];
 
   paquete: Paquete = {
@@ -110,7 +112,7 @@ export class DetallePaqueteConductor implements OnInit {
     this.catalogService.getFailureReasons().subscribe({
       next: (reasons) => {
         if (reasons && reasons.length > 0) {
-          this.motivosFallo = reasons.map((r) => ({ label: r.nombre, id: r.id }));
+          this.motivosFallo = reasons.map((r) => ({ label: r.nombre, id: r.id, codigo: r.codigo }));
         }
       },
     });
@@ -353,6 +355,7 @@ export class DetallePaqueteConductor implements OnInit {
     }
 
     this.motivoFallo = '';
+    this.motivoOtro = '';
     this.observacionFallo = '';
     this.mostrarErrorFallo = false;
     this.mostrarConfirmacionFallo = false;
@@ -361,17 +364,30 @@ export class DetallePaqueteConductor implements OnInit {
 
   seleccionarMotivoFallo(motivo: MotivoFallo): void {
     this.motivoFallo = motivo;
+    if (!this.esMotivoOtro) {
+      this.motivoOtro = '';
+    }
     this.mostrarErrorFallo = false;
   }
 
+  get esMotivoOtro(): boolean {
+    const item = this.motivosFallo.find((m) => m.label === this.motivoFallo);
+    return item?.codigo === 'OTRO' || this.motivoFallo.toLowerCase().startsWith('otro');
+  }
+
   get puedeConfirmarFallo(): boolean {
-    return !!this.motivoFallo && this.observacionFallo.trim().length > 0;
+    if (!this.motivoFallo || !this.observacionFallo.trim()) {
+      return false;
+    }
+    if (this.esMotivoOtro) {
+      const otro = this.motivoOtro.trim();
+      return otro.length >= 5 && otro.length <= 255;
+    }
+    return true;
   }
 
   solicitarConfirmacionFallo(): void {
-    const observacion = this.observacionFallo.trim();
-
-    if (!this.motivoFallo || !observacion) {
+    if (!this.puedeConfirmarFallo) {
       this.mostrarErrorFallo = true;
       return;
     }
@@ -389,9 +405,7 @@ export class DetallePaqueteConductor implements OnInit {
   }
 
   confirmarFalloDefinitivo(): void {
-    const observacion = this.observacionFallo.trim();
-
-    if (!this.motivoFallo || !observacion) {
+    if (!this.puedeConfirmarFallo) {
       this.mostrarConfirmacionFallo = false;
       this.mostrarErrorFallo = true;
       return;
@@ -400,12 +414,14 @@ export class DetallePaqueteConductor implements OnInit {
     this.guardandoFallo = true;
     this.mensajeErrorFallo = '';
     const itemMotivo = this.motivosFallo.find(m => m.label === this.motivoFallo);
-    const motivoId = itemMotivo ? itemMotivo.id : 1;
+    const motivoId = itemMotivo ? itemMotivo.id : (this.esMotivoOtro ? 4 : 1);
     const idParaApi = this.paquete.id || this.paqueteId || this.numeroParada;
+    const motivoOtroEnvio = this.esMotivoOtro ? this.motivoOtro.trim() : undefined;
+    const observacion = this.observacionFallo.trim();
 
-    this.lotesService.registrarFalloApi(idParaApi, motivoId, observacion).subscribe({
+    this.lotesService.registrarFalloApi(idParaApi, motivoId, observacion, motivoOtroEnvio).subscribe({
       next: () => {
-        this.finalizarFalloLocal(observacion);
+        this.finalizarFalloLocal(observacion, motivoOtroEnvio);
       },
       error: (err) => {
         this.guardandoFallo = false;
@@ -415,12 +431,13 @@ export class DetallePaqueteConductor implements OnInit {
     });
   }
 
-  private finalizarFalloLocal(observacion: string): void {
+  private finalizarFalloLocal(observacion: string, motivoOtro?: string): void {
     if (this.motivoFallo) {
+      const motivoTexto = (this.esMotivoOtro && motivoOtro) ? `Otros: ${motivoOtro}` : this.motivoFallo;
       this.lotesService.registrarFallo(
         this.loteId,
         this.numeroParada,
-        this.motivoFallo,
+        motivoTexto,
         observacion,
       );
     }

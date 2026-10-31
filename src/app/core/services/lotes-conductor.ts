@@ -244,11 +244,14 @@ export class LotesConductorService {
   /**
    * Registra la entrega fallida del paquete con el motivo y la observación obligatoria.
    */
-  registrarFalloApi(id: string | number, idMotivo: number, observacion: string): Observable<any> {
+  registrarFalloApi(id: string | number, idMotivo: number, observacion: string, motivoOtro?: string): Observable<any> {
     const formData = new FormData();
     formData.append('estado', 'FALLIDO');
     formData.append('id_motivo', String(idMotivo));
     formData.append('observacion', observacion.trim());
+    if (motivoOtro && motivoOtro.trim()) {
+      formData.append('motivo_otro', motivoOtro.trim());
+    }
 
     return this.http.post<any>(`${this.baseUrl}/packages/${id}/final-status`, formData);
   }

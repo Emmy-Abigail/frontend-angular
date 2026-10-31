@@ -256,7 +256,11 @@ export class DetallePaquete {
               } else if (h.estado_nuevo === 'FALLIDO') {
                 if (h.motivo_fallo) {
                   motivoFalloStr = typeof h.motivo_fallo === 'object'
-                    ? (h.motivo_fallo.nombre || h.motivo_fallo.descripcion || h.motivo_fallo.codigo || 'Cliente ausente')
+                    ? (
+                        h.motivo_fallo.detalle
+                          ? `${h.motivo_fallo.nombre || 'Otros'}: ${h.motivo_fallo.detalle}`
+                          : (h.motivo_fallo.nombre || h.motivo_fallo.descripcion || h.motivo_fallo.codigo || 'Cliente ausente')
+                      )
                     : String(h.motivo_fallo);
                 }
                 observacionConductorStr = h.comentario || '';
@@ -266,7 +270,11 @@ export class DetallePaquete {
 
           if (!motivoFalloStr && res.motivo_fallo) {
             motivoFalloStr = typeof res.motivo_fallo === 'object'
-              ? (res.motivo_fallo.nombre || res.motivo_fallo.descripcion || res.motivo_fallo.codigo || 'Cliente ausente')
+              ? (
+                  res.motivo_fallo.detalle
+                    ? `${res.motivo_fallo.nombre || 'Otros'}: ${res.motivo_fallo.detalle}`
+                    : (res.motivo_fallo.nombre || res.motivo_fallo.descripcion || res.motivo_fallo.codigo || 'Cliente ausente')
+                )
               : String(res.motivo_fallo);
           }
 

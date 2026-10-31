@@ -122,4 +122,47 @@ describe('Especificaciones del paquete del conductor', () => {
     expect(fixture.componentInstance.paquete.id).toBe(7);
     expect(especificaciones()).toEqual(['No disponible', 'No disponible']);
   });
+
+  it('ofrece el motivo Otros y exige descripcion propia de al menos 5 caracteres', () => {
+    cargarLote();
+    http.expectOne('/api/v1/packages/7').flush(detalle);
+    fixture.detectChanges();
+
+    const motivos = fixture.componentInstance.motivosFallo.map(m => m.label);
+    expect(motivos).toContain('Otros');
+
+    fixture.componentInstance.estadoLote = 'EN RUTA';
+    fixture.componentInstance.registrarFallido();
+    fixture.detectChanges();
+
+    // Seleccionar motivo normal
+    fixture.componentInstance.seleccionarMotivoFallo('Cliente ausente');
+    fixture.componentInstance.observacionFallo = 'No contestó el timbre';
+    expect(fixture.componentInstance.puedeConfirmarFallo).toBe(true);
+
+    // Seleccionar motivo Otros
+    fixture.componentInstance.seleccionarMotivoFallo('Otros');
+    expect(fixture.componentInstance.esMotivoOtro).toBe(true);
+    expect(fixture.componentInstance.puedeConfirmarFallo).toBe(false);
+
+    // Motivo corto (< 5 chars)
+    fixture.componentInstance.motivoOtro = 'Zona';
+    expect(fixture.componentInstance.puedeConfirmarFallo).toBe(false);
+
+    // Motivo válido (>= 5 chars)
+    fixture.componentInstance.motivoOtro = 'Edificio en mantenimiento';
+    expect(fixture.componentInstance.puedeConfirmarFallo).toBe(true);
+
+    // Confirmar fallo y verificar llamada a la API
+    fixture.componentInstance.confirmarFalloDefinitivo();
+    const req = http.expectOne('/api/v1/packages/7/final-status');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body instanceof FormData).toBe(true);
+    const body = req.request.body as FormData;
+    expect(body.get('estado')).toBe('FALLIDO');
+    expect(body.get('id_motivo')).toBe('4');
+    expect(body.get('motivo_otro')).toBe('Edificio en mantenimiento');
+    expect(body.get('observacion')).toBe('No contestó el timbre');
+    req.flush({ ok: true });
+  });
 });

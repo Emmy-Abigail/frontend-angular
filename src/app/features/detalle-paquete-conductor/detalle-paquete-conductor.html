@@ -438,6 +438,30 @@
         </div>
       </section>
 
+      @if (esMotivoOtro) {
+        <section class="seccion-fallo seccion-motivo-otro">
+          <label class="titulo-seccion-fallo" for="motivo-otro">
+            <svg viewBox="0 0 24 24" class="icono-mini" aria-hidden="true">
+              <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+            </svg>
+            DESCRIBE EL MOTIVO <span>*</span>
+          </label>
+
+          <input
+            id="motivo-otro"
+            type="text"
+            class="input-fallo-texto"
+            [(ngModel)]="motivoOtro"
+            placeholder="Especifica el motivo (mínimo 5 caracteres)"
+            maxlength="255"
+            (input)="mostrarErrorFallo = false"
+          />
+          @if (motivoOtro.trim().length > 0 && motivoOtro.trim().length < 5) {
+            <span class="ayuda-fallo error-texto">El motivo debe tener al menos 5 caracteres.</span>
+          }
+        </section>
+      }
+
       <!-- Observación obligatoria (Visily Página 22) -->
       <section class="seccion-fallo seccion-observacion-fallo">
         <label class="titulo-seccion-fallo" for="observacion-fallo">
@@ -452,15 +476,19 @@
           id="observacion-fallo"
           class="textarea-fallo"
           [(ngModel)]="observacionFallo"
-          placeholder="Ingrese detalles sobre la recepción, punto de entrega específico."
+          placeholder="Ingrese detalles obligatorios sobre el fallo de entrega."
           rows="3"
           (input)="mostrarErrorFallo = false"
         ></textarea>
       </section>
 
-      @if (mostrarErrorFallo || (motivoFallo && !observacionFallo.trim())) {
+      @if (mostrarErrorFallo || (motivoFallo && !observacionFallo.trim()) || (esMotivoOtro && (!motivoOtro.trim() || motivoOtro.trim().length < 5))) {
         <div class="error-fallo" role="alert">
-          La observación es obligatoria. Por favor ingresa el detalle del fallo.
+          @if (esMotivoOtro && (!motivoOtro.trim() || motivoOtro.trim().length < 5)) {
+            Debes describir el motivo con al menos 5 caracteres y agregar una observación.
+          } @else {
+            La observación es obligatoria. Por favor ingresa el detalle del fallo.
+          }
         </div>
       }
     </main>
@@ -469,7 +497,7 @@
       <button
         class="boton boton-confirmar-fallo"
         type="button"
-        [disabled]="!motivoFallo || !observacionFallo.trim()"
+        [disabled]="!puedeConfirmarFallo"
         (click)="solicitarConfirmacionFallo()"
       >
         Confirmar fallo
@@ -498,6 +526,11 @@
         <p class="modal-subtexto">
           El paquete quedará registrado como fallido. Este estado no se puede cambiar.
         </p>
+        @if (esMotivoOtro && motivoOtro.trim()) {
+          <p class="modal-subtexto modal-detalle-motivo">
+            <strong>Motivo:</strong> {{ motivoOtro }}
+          </p>
+        }
 
         @if (mensajeErrorFallo) {
           <div class="error-fallo" style="margin-bottom: 12px;" role="alert">
