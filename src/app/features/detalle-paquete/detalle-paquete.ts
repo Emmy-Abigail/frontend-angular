@@ -24,6 +24,7 @@ interface PaqueteDetalle {
   lote: string;
   fechaIngreso: string;
   horaIngreso: string;
+  fechaEstimadaEntrega: string;
   documentoRemitente?: string;
   celularRemitente?: string;
   documentoDestinatario?: string;
@@ -330,10 +331,16 @@ export class DetallePaquete {
 
           let fechaIngresoStr = '-';
           let horaIngresoStr = '-';
+          let fechaEstimadaEntregaStr = '-';
           if (res.fecha_ingreso) {
             const d = new Date(res.fecha_ingreso);
             fechaIngresoStr = !isNaN(d.getTime()) ? d.toLocaleDateString('es-PE') : res.fecha_ingreso;
             horaIngresoStr = !isNaN(d.getTime()) ? d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '';
+            if (!isNaN(d.getTime())) {
+              const estimada = new Date(d);
+              estimada.setDate(estimada.getDate() + 2);
+              fechaEstimadaEntregaStr = estimada.toLocaleDateString('es-PE');
+            }
           }
 
           let conductorNombre = res.lote?.conductor?.nombres || res.conductor?.nombres || '';
@@ -434,6 +441,7 @@ export class DetallePaquete {
             estado: estadoCodigo,
             lote: res.lote?.codigo || (res.id_lote ? `L-${res.id_lote}` : '-'),
             fechaIngreso: fechaIngresoStr,
+            fechaEstimadaEntrega: fechaEstimadaEntregaStr,
             horaIngreso: horaIngresoStr,
 
             direccionEntrega: dirTexto || '-',

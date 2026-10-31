@@ -606,6 +606,16 @@
 
     <div class="registration-summary">
       <div class="registration-summary-row">
+        <span>Destinatario</span>
+        <strong>{{ destinatario.nombre }}</strong>
+      </div>
+
+      <div class="registration-summary-row">
+        <span>Dirección</span>
+        <strong>{{ direccionCompleta }}</strong>
+      </div>
+
+      <div class="registration-summary-row">
         <span>Costo</span>
         <strong>S/ {{ totalEstimado | number:'1.2-2' }}</strong>
       </div>
@@ -626,6 +636,11 @@
       <div class="registration-summary-row">
         <span>Fecha de ingreso</span>
         <strong>{{ fechaIngreso }}</strong>
+      </div>
+
+      <div class="registration-summary-row">
+        <span>Entrega estimada</span>
+        <strong>{{ fechaEstimadaEntrega }}</strong>
       </div>
     </div>
 

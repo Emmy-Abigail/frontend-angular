@@ -1251,48 +1251,6 @@
   }
 }
 
-/* Impresión: ocultar la interfaz y mostrar solo el comprobante */
-@media print {
-  body {
-    background: #fff !important;
-  }
-
-  body * {
-    visibility: hidden;
-  }
-
-  .registration-modal-overlay,
-  .registration-modal-overlay * {
-    visibility: visible;
-  }
-
-  .registration-modal-overlay {
-    position: absolute;
-    inset: 0;
-    display: block;
-    overflow: visible;
-    padding: 0;
-    background: #fff;
-    backdrop-filter: none;
-  }
-
-  .registration-modal {
-    width: 100%;
-    max-width: none;
-    max-height: none;
-    overflow: visible;
-    padding: 25px;
-    box-shadow: none;
-  }
-
-  .registration-modal-close,
-  .tracking-copy-button,
-  .registration-modal-actions,
-  .registration-modal-disclaimer {
-    display: none !important;
-  }
-}
-
 /* Sugerencias de direcciones */
 .address-suggestions-dropdown {
   position: absolute;

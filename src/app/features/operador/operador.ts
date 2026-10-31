@@ -63,6 +63,24 @@ export class Operador implements OnInit, AfterViewInit {
     return distrito?.nombre_mostrado ?? '';
   }
 
+  get direccionCompleta(): string {
+    const via = [this.direccion.tipoVia, this.direccion.nombreVia.trim()].filter(Boolean).join(' ');
+    const numero = this.direccion.numero.trim();
+    const mzLote = [
+      this.direccion.manzana.trim() ? `Mz. ${this.direccion.manzana.trim()}` : '',
+      this.direccion.lote.trim() ? `Lt. ${this.direccion.lote.trim()}` : '',
+    ].filter(Boolean).join(' ');
+
+    const partes = [
+      [via, numero].filter(Boolean).join(' '),
+      mzLote,
+      this.nombreDistritoSeleccionado,
+      this.direccion.referencia.trim() ? `Ref: ${this.direccion.referencia.trim()}` : '',
+    ].filter(Boolean);
+
+    return partes.join(', ');
+  }
+
   // Estado de las validaciones y del servidor
   enviado = false;
   guardando = false;
@@ -671,6 +689,13 @@ export class Operador implements OnInit, AfterViewInit {
   codigoSeguimiento = '';
   codigoCopiado = false;
   fechaIngreso = '';
+  private fechaIngresoDate: Date = new Date();
+
+  get fechaEstimadaEntrega(): string {
+    const fecha = new Date(this.fechaIngresoDate);
+    fecha.setDate(fecha.getDate() + 2);
+    return fecha.toLocaleDateString('es-PE');
+  }
 
   vehiculoAsignado = 'Motorizado';
   loteAsignado = 'L-101';
@@ -946,7 +971,8 @@ export class Operador implements OnInit, AfterViewInit {
         this.guardando = false;
         this.codigoSeguimiento = res.tracking_id;
         this.codigoCopiado = false;
-        this.fechaIngreso = res.fecha_ingreso ? new Date(res.fecha_ingreso).toLocaleString('es-PE') : new Date().toLocaleString('es-PE');
+        this.fechaIngresoDate = res.fecha_ingreso ? new Date(res.fecha_ingreso) : new Date();
+        this.fechaIngreso = this.fechaIngresoDate.toLocaleString('es-PE');
         if (res.lote) {
           this.loteAsignado = res.lote.codigo || `L-${res.lote.id}`;
           this.vehiculoAsignado = res.lote.vehiculo || 'Motorizado';
@@ -1022,7 +1048,146 @@ export class Operador implements OnInit, AfterViewInit {
   }
 
   imprimirRegistro(): void {
-    window.print();
+    const escapar = (texto: string): string =>
+      texto.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Comprobante ${escapar(this.codigoSeguimiento)}</title>
+<style>
+  @page { size: 80mm auto; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    min-height: 100%;
+  }
+  body {
+    display: flex;
+    justify-content: center;
+    padding: 24px 12px;
+    background: #e9ecef;
+    font-family: Arial, sans-serif;
+    color: #1a1a1a;
+  }
+  .ticket {
+    width: 320px;
+    padding: 20px 22px;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  }
+  h1 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    text-align: center;
+  }
+  .subtitulo {
+    margin: 0 0 16px;
+    font-size: 13px;
+    text-align: center;
+    color: #555;
+  }
+  .codigo-box {
+    margin: 0 0 18px;
+    padding: 14px;
+    border: 1px dashed #666;
+    text-align: center;
+  }
+  .codigo-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #555;
+  }
+  .codigo-valor {
+    font-family: 'Courier New', monospace;
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+  .fila {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+  }
+  .fila:last-child { border-bottom: 0; }
+  .fila span:first-child { color: #555; }
+  .fila span:last-child { text-align: right; font-weight: bold; }
+  .direccion {
+    margin: 6px 0 0;
+    font-size: 14px;
+  }
+  @media print {
+    body {
+      display: block;
+      padding: 10px 12px;
+      background: #fff;
+    }
+    .ticket {
+      width: 80mm;
+      padding: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    h1 { font-size: 16px; }
+    .subtitulo { font-size: 10px; margin-bottom: 12px; }
+    .codigo-box { padding: 10px; margin-bottom: 14px; }
+    .codigo-label { font-size: 9px; }
+    .codigo-valor { font-size: 18px; }
+    .fila { font-size: 11px; padding: 4px 0; }
+    .direccion { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+  <div class="ticket">
+  <h1>RIVA</h1>
+  <p class="subtitulo">Comprobante de envío</p>
+
+  <div class="codigo-box">
+    <span class="codigo-label">CÓDIGO DE SEGUIMIENTO</span>
+    <span class="codigo-valor">${escapar(this.codigoSeguimiento)}</span>
+  </div>
+
+  <div class="fila">
+    <span>Destinatario</span>
+    <span>${escapar(this.destinatario.nombre)}</span>
+  </div>
+  <p class="direccion">${escapar(this.direccionCompleta)}</p>
+
+  <div class="fila">
+    <span>Costo</span>
+    <span>S/ ${this.totalEstimado.toFixed(2)}</span>
+  </div>
+  <div class="fila">
+    <span>Fecha</span>
+    <span>${escapar(this.fechaIngreso)}</span>
+  </div>
+  <div class="fila">
+    <span>Entrega estimada</span>
+    <span>${escapar(this.fechaEstimadaEntrega)}</span>
+  </div>
+  </div>
+</body>
+</html>`;
+
+    const ventana = window.open('', '_blank', 'width=400,height=600');
+    if (!ventana) {
+      return;
+    }
+    ventana.document.open();
+    ventana.document.write(html);
+    ventana.document.close();
+    ventana.onload = () => {
+      ventana.focus();
+      ventana.print();
+    };
   }
 
   limpiarFormulario(): void {
