@@ -8,7 +8,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   LotesConductorService,
   MotivoFallo,
@@ -37,10 +37,13 @@ interface Paquete {
 })
 export class DetallePaqueteConductor implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private location = inject(Location);
   private lotesService = inject(LotesConductorService);
   private catalogService = inject(CatalogService);
   private cdr = inject(ChangeDetectorRef);
+
+  mensajeErrorAcceso = '';
 
   @ViewChild('inputFoto')
   inputFoto?: ElementRef<HTMLInputElement>;
@@ -151,8 +154,18 @@ export class DetallePaqueteConductor implements OnInit {
           }
           this.cdr.markForCheck();
         },
-        error: () => {
-          if (this.paqueteId) {
+        error: (err) => {
+          const msg = (err?.error?.message || '').toLowerCase();
+          const errCode = err?.error?.error || '';
+          if (
+            err?.status === 403 ||
+            errCode === 'sin_permisos' ||
+            msg.includes('otro conductor') ||
+            msg.includes('permisos') ||
+            msg.includes('otra sede')
+          ) {
+            this.mensajeErrorAcceso = 'No tienes acceso a este lote, no te corresponde';
+          } else if (this.paqueteId) {
             this.cargarPorId(this.paqueteId);
           }
           this.cdr.markForCheck();
@@ -178,6 +191,10 @@ export class DetallePaqueteConductor implements OnInit {
   }
 
   volver(): void {
+    if (this.mensajeErrorAcceso) {
+      this.router.navigate(['/conductor/lotes']);
+      return;
+    }
     this.location.back();
   }
 
@@ -345,6 +362,10 @@ export class DetallePaqueteConductor implements OnInit {
   seleccionarMotivoFallo(motivo: MotivoFallo): void {
     this.motivoFallo = motivo;
     this.mostrarErrorFallo = false;
+  }
+
+  get puedeConfirmarFallo(): boolean {
+    return !!this.motivoFallo && this.observacionFallo.trim().length > 0;
   }
 
   solicitarConfirmacionFallo(): void {

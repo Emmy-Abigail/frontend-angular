@@ -94,7 +94,21 @@ export class Entregas implements OnInit {
       },
       error: (err) => {
         this.cargando = false;
-        this.mensajeError = err.error?.message || 'Error al cargar el detalle del lote.';
+        const msg = (err?.error?.message || '').toLowerCase();
+        const errCode = err?.error?.error || '';
+        if (
+          err?.status === 403 ||
+          errCode === 'sin_permisos' ||
+          msg.includes('otro conductor') ||
+          msg.includes('permisos') ||
+          msg.includes('otra sede')
+        ) {
+          this.mensajeError = 'No tienes acceso a este lote, no te corresponde';
+        } else if (err?.status === 404 || errCode === 'lote_no_encontrado') {
+          this.mensajeError = 'No se encontró el lote solicitado.';
+        } else {
+          this.mensajeError = err.error?.message || 'Error al cargar el detalle del lote.';
+        }
         this.cdr.markForCheck();
       },
     });
@@ -147,6 +161,10 @@ export class Entregas implements OnInit {
   }
 
   volver(): void {
+    if (this.mensajeError) {
+      this.router.navigate(['/conductor/lotes']);
+      return;
+    }
     this.location.back();
   }
 

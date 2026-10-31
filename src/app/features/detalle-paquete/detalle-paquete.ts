@@ -106,6 +106,26 @@ export class DetallePaquete {
   errorReasignacion = '';
   mensajeReasignacion = '';
   paqueteReintentadoId: number | null = null;
+  mostrarModalConfirmacionReasignar = false;
+
+  solicitarReasignacion(): void {
+    if (!this.paquete?.id || this.paquete.estado !== 'FALLIDO' || this.cargando || this.reasignando || this.paqueteReintentadoId === this.paquete.id) {
+      return;
+    }
+    this.errorReasignacion = '';
+    this.mostrarModalConfirmacionReasignar = true;
+    this.cdr.markForCheck();
+  }
+
+  cerrarModalReasignar(): void {
+    this.mostrarModalConfirmacionReasignar = false;
+    this.cdr.markForCheck();
+  }
+
+  confirmarReasignacionDefinitiva(): void {
+    this.cerrarModalReasignar();
+    this.reasignarPaquete();
+  }
 
   reasignarPaquete(): void {
     const paquete = this.paquete;

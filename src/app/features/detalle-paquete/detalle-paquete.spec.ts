@@ -43,7 +43,8 @@ describe('Reasignación desde el detalle del paquete', () => {
   it('llama al reintento una sola vez y abre el paquete nuevo después de crearlo', () => {
     boton().click();
     fixture.detectChanges();
-    fixture.componentInstance.reasignarPaquete();
+    fixture.componentInstance.confirmarReasignacionDefinitiva();
+    fixture.detectChanges();
 
     const request = http.expectOne('/api/v1/packages/13/retry');
     expect(request.request.method).toBe('POST');
@@ -74,6 +75,8 @@ describe('Reasignación desde el detalle del paquete', () => {
 
   it('muestra el error del backend y mantiene el detalle sin navegar', () => {
     boton().click();
+    fixture.detectChanges();
+    fixture.componentInstance.confirmarReasignacionDefinitiva();
     http.expectOne('/api/v1/packages/13/retry').flush(
       { message: 'Este envio ya alcanzo el maximo de 3 reintentos' },
       { status: 409, statusText: 'Conflict' },
@@ -88,6 +91,8 @@ describe('Reasignación desde el detalle del paquete', () => {
 
   it('permite volver a intentar tras un fallo de red y limpia el error anterior', () => {
     boton().click();
+    fixture.detectChanges();
+    fixture.componentInstance.confirmarReasignacionDefinitiva();
     http.expectOne('/api/v1/packages/13/retry').error(new ProgressEvent('error'));
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('No se pudo reasignar');
@@ -95,6 +100,7 @@ describe('Reasignación desde el detalle del paquete', () => {
     boton().click();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
+    fixture.componentInstance.confirmarReasignacionDefinitiva();
     http.expectOne('/api/v1/packages/13/retry').flush(
       { message: 'Servicio de asignacion no disponible' },
       { status: 503, statusText: 'Service Unavailable' },

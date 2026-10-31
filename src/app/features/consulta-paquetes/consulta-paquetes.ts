@@ -97,7 +97,7 @@ export class ConsultaPaquetes {
 
           const remitNombre = typeof pkg.remitente === 'string'
             ? pkg.remitente
-            : (pkg.remitente?.nombres || '-');
+            : (pkg.remitente?.nombres || pkg.remitente?.nombres_razon_social || pkg.remitente_nombres || pkg.remitente?.nombre || '-');
 
           const distritoNombre = pkg.destino?.distrito || (typeof pkg.destino === 'string' ? pkg.destino : '-');
 
@@ -135,9 +135,11 @@ export class ConsultaPaquetes {
         paquete.destinatario.toLowerCase().includes(texto) ||
         paquete.destino.toLowerCase().includes(texto);
 
+      const estadoFiltroNorm = this.estadoSeleccionado.replace(/\s+/g, '_').toUpperCase();
+      const estadoPaqueteNorm = paquete.estado.replace(/\s+/g, '_').toUpperCase();
       const coincideEstado =
         this.estadoSeleccionado === 'TODOS' ||
-        paquete.estado === this.estadoSeleccionado;
+        estadoPaqueteNorm === estadoFiltroNorm;
 
       const coincideDesde =
         !this.fechaDesde || paquete.fechaIngreso >= this.fechaDesde;

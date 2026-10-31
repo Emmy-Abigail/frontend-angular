@@ -318,12 +318,36 @@
       <button
         type="button"
         class="btn-reassign"
-        (click)="reasignarPaquete()"
+        (click)="solicitarReasignacion()"
         [disabled]="cargando || reasignando || !p.id || paqueteReintentadoId === p.id"
         [attr.aria-busy]="reasignando"
       >
         {{ reasignando ? 'Reasignando…' : 'Reasignar' }}
       </button>
+    </div>
+
+    <!-- Modal flotante de confirmación de reasignación -->
+    <div class="reassign-modal-overlay" *ngIf="mostrarModalConfirmacionReasignar" (click)="cerrarModalReasignar()">
+      <div class="reassign-modal-card" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="modal-reasignar-titulo">
+        <header class="reassign-modal-header">
+          <h3 id="modal-reasignar-titulo">Confirmar Reasignación de Paquete</h3>
+          <button type="button" class="close-btn" (click)="cerrarModalReasignar()" aria-label="Cerrar">&times;</button>
+        </header>
+        <div class="reassign-modal-body">
+          <p>¿Confirmas que deseas reasignar el paquete <strong>{{ p.tracking }}</strong>?</p>
+          <p class="modal-subtexto">
+            El paquete será derivado a un lote disponible con espacio para su vehículo o se creará un nuevo lote en almacén si no hay cupo.
+          </p>
+        </div>
+        <footer class="reassign-modal-footer">
+          <button type="button" class="btn-cancelar-modal" (click)="cerrarModalReasignar()" [disabled]="reasignando">
+            Cancelar
+          </button>
+          <button type="button" class="btn-confirmar-modal" (click)="confirmarReasignacionDefinitiva()" [disabled]="reasignando">
+            {{ reasignando ? 'Reasignando...' : 'Confirmar Reasignación' }}
+          </button>
+        </footer>
+      </div>
     </div>
 
     <!-- Modal de evidencia fotográfica -->

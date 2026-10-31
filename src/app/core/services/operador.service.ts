@@ -130,7 +130,10 @@ export class OperadorService {
   }): Observable<any> {
     let params = new HttpParams();
     if (filtro?.q) params = params.set('q', filtro.q);
-    if (filtro?.estado && filtro.estado !== 'TODOS') params = params.set('estado', filtro.estado);
+    if (filtro?.estado && filtro.estado !== 'TODOS') {
+      const estadoNorm = filtro.estado.trim().replace(/\s+/g, '_').toUpperCase();
+      params = params.set('estado', estadoNorm);
+    }
     if (filtro?.desde) params = params.set('desde', filtro.desde);
     if (filtro?.hasta) params = params.set('hasta', filtro.hasta);
     if (filtro?.page) params = params.set('page', String(filtro.page));

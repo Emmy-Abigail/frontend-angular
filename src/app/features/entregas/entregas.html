@@ -1,5 +1,26 @@
 
-@if (lote.estado === 'Asignado') {
+@if (mensajeError) {
+  <section class="pantalla-error-lote">
+    <div class="tarjeta-error-acceso">
+      <div class="icono-error-contenedor">
+        <svg viewBox="0 0 24 24" class="icono-error" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" />
+          <line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <circle cx="12" cy="16" r="1" fill="currentColor" />
+        </svg>
+      </div>
+      <h2>Acceso no permitido</h2>
+      <p class="descripcion-error">{{ mensajeError }}</p>
+      <button type="button" class="btn-volver-lotes" (click)="volver()">
+        Volver a Mis Lotes
+      </button>
+    </div>
+  </section>
+} @else if (cargando) {
+  <div class="cargando-lote">
+    <p>Cargando información del lote...</p>
+  </div>
+} @else if (lote.estado === 'Asignado') {
   <section class="detalle-lote">
 
     <!-- Encabezado del lote asignado -->

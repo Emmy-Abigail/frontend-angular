@@ -1154,3 +1154,84 @@
     animation: none;
   }
 }
+
+/* Pantalla y tarjeta de error de acceso */
+.pantalla-error-lote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 24px 16px;
+  background: #f8fafc;
+}
+
+.tarjeta-error-acceso {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 32px 24px;
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+}
+
+.icono-error-contenedor {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fef2f2;
+  color: #ef4444;
+  margin-bottom: 16px;
+}
+
+.icono-error {
+  width: 28px;
+  height: 28px;
+}
+
+.tarjeta-error-acceso h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 8px;
+}
+
+.descripcion-error {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+.btn-volver-lotes {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px 20px;
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-volver-lotes:hover {
+  background: #0369a1;
+}
+
+.cargando-lote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  font-size: 14px;
+  color: #64748b;
+}

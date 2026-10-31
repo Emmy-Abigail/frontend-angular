@@ -166,8 +166,7 @@ export class LotesConductorService {
           fechaAsignacion: fechaAsig,
           paradas,
         };
-      }),
-      catchError(() => of(null))
+      })
     );
   }
 
