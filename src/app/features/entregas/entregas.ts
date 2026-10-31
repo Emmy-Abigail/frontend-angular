@@ -3,7 +3,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LotesConductorService, ParadaLote } from '../../core/services/lotes-conductor';
 
-type EstadoLote = 'Asignado' | 'En ruta';
+type EstadoLote = 'Asignado' | 'En ruta' | 'Cerrado' | 'Completado';
 type EstadoParada = 'Pendiente' | 'Entregado' | 'Fallido';
 
 export interface Parada {
@@ -116,7 +116,13 @@ export class Entregas implements OnInit {
 
   private sincronizarEstado(): void {
     const estadoGuardado = this.lotesService.obtenerEstado(this.lote.id);
-    this.lote.estado = estadoGuardado === 'EN_RUTA' ? 'En ruta' : 'Asignado';
+    if (estadoGuardado === 'CERRADO' || estadoGuardado === 'COMPLETADO') {
+      this.lote.estado = 'Cerrado';
+    } else if (estadoGuardado === 'EN_RUTA') {
+      this.lote.estado = 'En ruta';
+    } else {
+      this.lote.estado = 'Asignado';
+    }
 
     const entregadas = new Set(
       this.lotesService.obtenerParadasEntregadas(this.lote.id),
@@ -138,15 +144,25 @@ export class Entregas implements OnInit {
       this.lotesService.obtenerCantidadParadasCompletadas(
         this.lote.id,
       );
+
+    if (this.estaLoteCompletado && this.lote.estado === 'Asignado') {
+      this.lote.estado = 'Cerrado';
+    }
   }
 
   get cantidadTotalParadas(): number {
     return this.lote.paradas.length;
   }
 
+  get estaLoteCompletado(): boolean {
+    return (
+      this.cantidadTotalParadas > 0 &&
+      this.paradasCompletadas >= this.cantidadTotalParadas
+    );
+  }
+
   get porcentajeCompletado(): number {
     if (
-      this.lote.estado !== 'En ruta' ||
       this.cantidadTotalParadas === 0
     ) {
       return 0;
@@ -161,17 +177,19 @@ export class Entregas implements OnInit {
   }
 
   volver(): void {
-    if (this.mensajeError) {
-      this.router.navigate(['/conductor/lotes']);
-      return;
-    }
-    this.location.back();
+    this.router.navigate(['/conductor/mis-lotes']);
+  }
+
+  irAMisLotes(): void {
+    this.router.navigate(['/conductor/mis-lotes']);
   }
 
   iniciarRuta(): void {
     if (
       this.lote.paradas.length === 0 ||
-      this.lote.estado === 'En ruta'
+      this.lote.estado === 'En ruta' ||
+      this.lote.estado === 'Cerrado' ||
+      this.estaLoteCompletado
     ) {
       return;
     }

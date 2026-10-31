@@ -50,6 +50,7 @@ export class ConsultaPaquetes {
   mensajeError = '';
   totalItems = 0;
   totalPaginasServidor = 1;
+  private readonly cacheRemitentes = new Map<number | string, string>();
 
   constructor() {
     this.cargarPaquetes();
@@ -95,11 +96,34 @@ export class ConsultaPaquetes {
             ? pkg.destinatario
             : (pkg.destinatario?.nombres || '-');
 
-          const remitNombre = typeof pkg.remitente === 'string'
+          let remitNombre = typeof pkg.remitente === 'string' && pkg.remitente !== '-'
             ? pkg.remitente
-            : (pkg.remitente?.nombres || pkg.remitente?.nombres_razon_social || pkg.remitente_nombres || pkg.remitente?.nombre || '-');
+            : (pkg.remitente?.nombres || pkg.remitente?.nombres_razon_social || pkg.remitente?.razon_social || pkg.remitente?.nombre || pkg.remitente_nombres || pkg.remitente_nombre || '-');
+
+          const cacheKey = pkg.id ?? pkg.tracking_id ?? pkg.tracking;
+          if (remitNombre === '-' && cacheKey && this.cacheRemitentes.has(cacheKey)) {
+            remitNombre = this.cacheRemitentes.get(cacheKey)!;
+          }
 
           const distritoNombre = pkg.destino?.distrito || (typeof pkg.destino === 'string' ? pkg.destino : '-');
+
+          // Si el listado general no devolvió remitente, enriquecer con el detalle
+          if (remitNombre === '-' && pkg.id) {
+            this.operadorService.obtenerPaquete(pkg.id).subscribe({
+              next: (detalle) => {
+                const nombreDetalle = detalle?.remitente?.nombres || detalle?.remitente?.nombres_razon_social || detalle?.remitente?.razon_social || detalle?.remitente?.nombre || '';
+                if (nombreDetalle) {
+                  this.cacheRemitentes.set(cacheKey, nombreDetalle);
+                  const encontrado = this.paquetes.find(p => p.id === pkg.id || p.tracking === (pkg.tracking_id || pkg.tracking));
+                  if (encontrado) {
+                    encontrado.remitente = nombreDetalle;
+                    this.cdr.markForCheck();
+                  }
+                }
+              },
+              error: () => {},
+            });
+          }
 
           return {
             id: pkg.id,

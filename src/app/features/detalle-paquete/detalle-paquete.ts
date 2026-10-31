@@ -114,23 +114,49 @@ export class DetallePaquete {
   direccionGuardada = false;
   errorDireccion = '';
   mensajeDireccionGuardada = '';
+  motivoFalloCodigo = '';
 
-  formDireccion = {
+  get esRechazadoPorDestinatario(): boolean {
+    if (this.paquete?.estado !== 'FALLIDO') return false;
+    const motivo = (this.paquete?.motivoFallo || '').toLowerCase();
+    const codigo = (this.motivoFalloCodigo || '').toUpperCase();
+    return codigo === 'RECHAZADO' || motivo.includes('rechaz');
+  }
+
+  formDireccion: {
+    tipo_via: string;
+    nombre_via: string;
+    numero: string;
+    manzana: string;
+    lote: string;
+    referencia: string;
+    ubigeo_distrito?: string;
+  } = {
     tipo_via: 'Av.',
     nombre_via: '',
     numero: '',
     manzana: '',
     lote: '',
     referencia: '',
+    ubigeo_distrito: '',
   };
 
-  direccionOriginal = {
+  direccionOriginal: {
+    tipo_via: string;
+    nombre_via: string;
+    numero: string;
+    manzana: string;
+    lote: string;
+    referencia: string;
+    ubigeo_distrito?: string;
+  } = {
     tipo_via: '',
     nombre_via: '',
     numero: '',
     manzana: '',
     lote: '',
     referencia: '',
+    ubigeo_distrito: '',
   };
 
   guardarCorreccionDireccion(): void {
@@ -186,8 +212,17 @@ export class DetallePaquete {
     if (!this.paquete?.id || this.paquete.estado !== 'FALLIDO' || this.cargando || this.reasignando || this.paqueteReintentadoId === this.paquete.id) {
       return;
     }
+    if (this.esRechazadoPorDestinatario) {
+      this.errorReasignacion = 'Los paquetes rechazados por el destinatario no admiten reasignación.';
+      this.cdr.markForCheck();
+      return;
+    }
     if (this.requiereCorregirDireccion && !this.direccionGuardada) {
       this.errorReasignacion = 'Debes corregir y guardar la dirección antes de reasignar.';
+      const elem = document.querySelector('.card-corregir-direccion');
+      if (elem) {
+        elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       this.cdr.markForCheck();
       return;
     }
@@ -212,6 +247,12 @@ export class DetallePaquete {
       return;
     }
 
+    if (this.esRechazadoPorDestinatario) {
+      this.errorReasignacion = 'Los paquetes rechazados por el destinatario no admiten reasignación.';
+      this.cdr.markForCheck();
+      return;
+    }
+
     if (this.requiereCorregirDireccion && !this.direccionGuardada) {
       this.errorReasignacion = 'Debes corregir y guardar la dirección antes de reasignar.';
       this.cdr.markForCheck();
@@ -224,11 +265,12 @@ export class DetallePaquete {
     this.mensajeReasignacion = '';
 
     const payload: any = {};
-    if (this.requiereCorregirDireccion) {
+    if (this.requiereCorregirDireccion || this.direccionGuardada) {
       const dirPayload: any = {
         tipo_via: this.formDireccion.tipo_via,
         nombre_via: this.formDireccion.nombre_via.trim(),
       };
+      if (this.formDireccion.ubigeo_distrito) dirPayload.ubigeo_distrito = this.formDireccion.ubigeo_distrito;
       if (this.formDireccion.numero?.trim()) dirPayload.numero = this.formDireccion.numero.trim();
       if (this.formDireccion.manzana?.trim()) dirPayload.manzana = this.formDireccion.manzana.trim();
       if (this.formDireccion.lote?.trim()) dirPayload.lote = this.formDireccion.lote.trim();
@@ -308,7 +350,6 @@ export class DetallePaquete {
             dirTexto = [via, num, dir.distrito].filter(Boolean).join(', ');
           }
 
-          this.requiereCorregirDireccion = !!res.requiere_corregir_direccion;
           this.direccionGuardada = false;
           this.mensajeDireccionGuardada = '';
           this.errorDireccion = '';
@@ -321,6 +362,7 @@ export class DetallePaquete {
               manzana: res.direccion.manzana || '',
               lote: res.direccion.lote || '',
               referencia: res.direccion.referencia || '',
+              ubigeo_distrito: res.direccion.ubigeo_distrito || res.ubigeo_destino || res.destino?.ubigeo || '',
             };
             this.direccionOriginal = { ...this.formDireccion };
           }
@@ -352,6 +394,7 @@ export class DetallePaquete {
           let fechaEntregaStr = '';
           let comentarioEntregaStr = '';
           let motivoFalloStr = '';
+          let motivoFalloCodigo = '';
           let observacionConductorStr = '';
           let operadorNombre = '';
           let tieneEvidencia = false;
@@ -376,13 +419,14 @@ export class DetallePaquete {
                 tieneEvidencia = !!h.tiene_evidencia;
               } else if (h.estado_nuevo === 'FALLIDO') {
                 if (h.motivo_fallo) {
-                  motivoFalloStr = typeof h.motivo_fallo === 'object'
-                    ? (
-                        h.motivo_fallo.detalle
-                          ? `${h.motivo_fallo.nombre || 'Otros'}: ${h.motivo_fallo.detalle}`
-                          : (h.motivo_fallo.nombre || h.motivo_fallo.descripcion || h.motivo_fallo.codigo || 'Cliente ausente')
-                      )
-                    : String(h.motivo_fallo);
+                  if (typeof h.motivo_fallo === 'object') {
+                    motivoFalloCodigo = h.motivo_fallo.codigo || motivoFalloCodigo;
+                    motivoFalloStr = h.motivo_fallo.detalle
+                      ? `${h.motivo_fallo.nombre || 'Otros'}: ${h.motivo_fallo.detalle}`
+                      : (h.motivo_fallo.nombre || h.motivo_fallo.descripcion || h.motivo_fallo.codigo || 'Cliente ausente');
+                  } else {
+                    motivoFalloStr = String(h.motivo_fallo);
+                  }
                 }
                 observacionConductorStr = h.comentario || '';
               }
@@ -390,14 +434,21 @@ export class DetallePaquete {
           }
 
           if (!motivoFalloStr && res.motivo_fallo) {
-            motivoFalloStr = typeof res.motivo_fallo === 'object'
-              ? (
-                  res.motivo_fallo.detalle
-                    ? `${res.motivo_fallo.nombre || 'Otros'}: ${res.motivo_fallo.detalle}`
-                    : (res.motivo_fallo.nombre || res.motivo_fallo.descripcion || res.motivo_fallo.codigo || 'Cliente ausente')
-                )
-              : String(res.motivo_fallo);
+            if (typeof res.motivo_fallo === 'object') {
+              motivoFalloCodigo = res.motivo_fallo.codigo || motivoFalloCodigo;
+              motivoFalloStr = res.motivo_fallo.detalle
+                ? `${res.motivo_fallo.nombre || 'Otros'}: ${res.motivo_fallo.detalle}`
+                : (res.motivo_fallo.nombre || res.motivo_fallo.descripcion || res.motivo_fallo.codigo || 'Cliente ausente');
+            } else {
+              motivoFalloStr = String(res.motivo_fallo);
+            }
           }
+
+          this.motivoFalloCodigo = motivoFalloCodigo;
+          this.requiereCorregirDireccion =
+            !!res.requiere_corregir_direccion ||
+            motivoFalloCodigo === 'DIRECCION_ERRONEA' ||
+            motivoFalloStr.toLowerCase().includes('direcci');
 
           // Cargar vista previa de la evidencia si existe
           if (tieneEvidencia && res.id) {

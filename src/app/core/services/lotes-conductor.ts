@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, map, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-export type EstadoLoteConductor = 'ASIGNADO' | 'EN_RUTA';
+export type EstadoLoteConductor = 'ASIGNADO' | 'EN_RUTA' | 'CERRADO' | 'COMPLETADO';
 
 export type MotivoFallo = string;
 
@@ -75,7 +75,10 @@ export class LotesConductorService {
 
         return items.map((lote: any) => {
           const idStr = String(lote.id);
-          const estado: EstadoLoteConductor = lote.estado === 'EN_RUTA' ? 'EN_RUTA' : 'ASIGNADO';
+          const estado: EstadoLoteConductor =
+            lote.estado === 'CERRADO' || lote.estado === 'COMPLETADO'
+              ? 'CERRADO'
+              : (lote.estado === 'EN_RUTA' ? 'EN_RUTA' : 'ASIGNADO');
           this.estadosLotes[idStr] = estado;
 
           let horaStr = '08:30';
@@ -112,7 +115,10 @@ export class LotesConductorService {
         const paradasList = res.paradas ?? summary.paradas ?? [];
 
         const idStr = String(summary.id ?? id);
-        const estadoLote: EstadoLoteConductor = summary.estado === 'EN_RUTA' ? 'EN_RUTA' : 'ASIGNADO';
+        const estadoLote: EstadoLoteConductor =
+          summary.estado === 'CERRADO' || summary.estado === 'COMPLETADO'
+            ? 'CERRADO'
+            : (summary.estado === 'EN_RUTA' ? 'EN_RUTA' : 'ASIGNADO');
         this.estadosLotes[idStr] = estadoLote;
 
         const paradas: ParadaLote[] = paradasList.map((p: any, index: number) => {

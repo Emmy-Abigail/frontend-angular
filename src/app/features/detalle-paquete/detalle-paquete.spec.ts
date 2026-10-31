@@ -156,4 +156,58 @@ describe('Reasignación desde el detalle del paquete', () => {
     expect(req.request.body.direccion.nombre_via).toBe('Nueva');
     req.flush({ id: 25, tracking_id: 'NUEVO25', estado: 'EN_ALMACEN', id_paquete_origen: 15 });
   });
+
+  it('no ofrece la opción de reasignar cuando falló por Rechazado por destinatario', () => {
+    params.next(convertToParamMap({ tracking: '16' }));
+    http.expectOne('/api/v1/packages/16').flush({
+      id: 16,
+      tracking_id: 'FALLIDO16',
+      estado: { codigo: 'FALLIDO' },
+      historial: [
+        {
+          estado_nuevo: 'FALLIDO',
+          motivo_fallo: {
+            codigo: 'RECHAZADO',
+            nombre: 'Rechazado por destinatario',
+          },
+        },
+      ],
+    });
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.esRechazadoPorDestinatario).toBe(true);
+    expect(boton()).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Rechazado por destinatario');
+    fixture.componentInstance.solicitarReasignacion();
+    expect(fixture.componentInstance.mostrarModalConfirmacionReasignar).toBe(false);
+  });
+
+  it('detecta corrección requerida cuando motivo_fallo es Dirección errónea', () => {
+    params.next(convertToParamMap({ tracking: '17' }));
+    http.expectOne('/api/v1/packages/17').flush({
+      id: 17,
+      tracking_id: 'FALLIDO17',
+      estado: { codigo: 'FALLIDO' },
+      direccion: {
+        tipo_via: 'Jr.',
+        nombre_via: 'Baca Flor',
+        numero: '551',
+      },
+      historial: [
+        {
+          estado_nuevo: 'FALLIDO',
+          motivo_fallo: {
+            codigo: 'DIRECCION_ERRONEA',
+            nombre: 'Dirección errónea',
+          },
+        },
+      ],
+    });
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.requiereCorregirDireccion).toBe(true);
+    expect(fixture.componentInstance.esRechazadoPorDestinatario).toBe(false);
+    expect(boton()).not.toBeNull();
+    expect(boton().disabled).toBe(true);
+  });
 });

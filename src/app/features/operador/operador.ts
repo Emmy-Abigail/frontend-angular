@@ -1023,11 +1023,13 @@ export class Operador implements OnInit, AfterViewInit {
 
   cerrarModalRegistro(): void {
     this.modalRegistroAbierto = false;
+    this.limpiarFormulario();
     this.cdr.markForCheck();
   }
 
   verPaquete(): void {
     this.modalRegistroAbierto = false;
+    this.limpiarFormulario();
     this.cdr.markForCheck();
     void this.router.navigate(['/operador/consulta-paquetes']);
   }

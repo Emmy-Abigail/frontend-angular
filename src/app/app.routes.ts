@@ -182,6 +182,11 @@ export const routes: Routes = [
         pathMatch: 'full',
       },
       {
+        path: 'lotes',
+        redirectTo: 'mis-lotes',
+        pathMatch: 'full',
+      },
+      {
         path: 'mis-lotes',
         component: MisLotes,
       },
@@ -206,6 +211,12 @@ export const routes: Routes = [
         component: DetallePaqueteConductor,
       },
     ],
+  },
+
+  {
+    path: 'conductor/lotes',
+    redirectTo: 'conductor/mis-lotes',
+    pathMatch: 'full',
   },
 
   // Ruta para páginas inexistentes

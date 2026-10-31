@@ -551,8 +551,7 @@
 <!-- Modal de confirmación de registro (Visily Página 2) -->
 <div
   class="registration-modal-overlay"
-  *ngIf="modalRegistroAbierto"
-  (click)="cerrarModalRegistro()">
+  *ngIf="modalRegistroAbierto">
 
   <section
     class="registration-modal"
@@ -560,14 +559,6 @@
     aria-modal="true"
     aria-labelledby="registration-modal-title"
     (click)="$event.stopPropagation()">
-
-    <button
-      type="button"
-      class="registration-modal-close"
-      aria-label="Cerrar ventana"
-      (click)="cerrarModalRegistro()">
-      ×
-    </button>
 
     <div class="registration-modal-heading">
       <div class="registration-success-icon" aria-hidden="true">

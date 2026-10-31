@@ -159,16 +159,26 @@
       }
     </section>
 
-    <!-- Acción para iniciar ruta -->
+    <!-- Acción para iniciar ruta o volver a lotes si ya finalizó -->
     <div class="acciones-lote">
-      <button
-        class="btn-iniciar-ruta"
-        type="button"
-        (click)="iniciarRuta()"
-        [disabled]="lote.paradas.length === 0"
-      >
-        Iniciar ruta
-      </button>
+      @if (!estaLoteCompletado) {
+        <button
+          class="btn-iniciar-ruta"
+          type="button"
+          (click)="iniciarRuta()"
+          [disabled]="lote.paradas.length === 0"
+        >
+          Iniciar ruta
+        </button>
+      } @else {
+        <button
+          class="btn-iniciar-ruta btn-volver-lotes"
+          type="button"
+          (click)="irAMisLotes()"
+        >
+          Volver a mis lotes
+        </button>
+      }
     </div>
   </section>
 
@@ -452,6 +462,18 @@
           </article>
         }
       </div>
+
+      @if (estaLoteCompletado) {
+        <div class="acciones-lote" style="margin-top: 24px;">
+          <button
+            class="btn-iniciar-ruta btn-volver-lotes"
+            type="button"
+            (click)="irAMisLotes()"
+          >
+            Volver a mis lotes
+          </button>
+        </div>
+      }
     </section>
   </section>
 }

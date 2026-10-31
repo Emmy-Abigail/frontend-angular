@@ -195,7 +195,7 @@ export class DetallePaqueteConductor implements OnInit {
 
   volver(): void {
     if (this.mensajeErrorAcceso) {
-      this.router.navigate(['/conductor/lotes']);
+      this.router.navigate(['/conductor/mis-lotes']);
       return;
     }
     this.location.back();
