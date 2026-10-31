@@ -311,6 +311,109 @@
       </article>
     </div>
 
+    <!-- Formulario para corregir dirección cuando el paquete falló por dirección errónea -->
+    <div class="card-corregir-direccion" *ngIf="p.estado === 'FALLIDO' && requiereCorregirDireccion">
+      <div class="alerta-direccion-requerida">
+        <svg viewBox="0 0 24 24" class="icono-alerta-dir" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+          <line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="16" r="1" fill="currentColor"/>
+        </svg>
+        <div>
+          <h4>Corrección de dirección requerida</h4>
+          <p>Este paquete falló por dirección errónea. Edita y guarda la dirección corregida antes de reasignarlo.</p>
+        </div>
+      </div>
+
+      <div class="form-corregir-grid">
+        <div class="campo-corregir">
+          <label for="tipo_via_corr">Tipo de vía</label>
+          <select id="tipo_via_corr" [(ngModel)]="formDireccion.tipo_via" (change)="direccionGuardada = false">
+            <option value="Av.">Avenida (Av.)</option>
+            <option value="Jr.">Jirón (Jr.)</option>
+            <option value="Calle">Calle</option>
+            <option value="Pje.">Pasaje (Pje.)</option>
+            <option value="Prol.">Prolongación (Prol.)</option>
+            <option value="Carretera">Carretera</option>
+          </select>
+        </div>
+
+        <div class="campo-corregir campo-via">
+          <label for="nombre_via_corr">Nombre de la vía *</label>
+          <input
+            id="nombre_via_corr"
+            type="text"
+            [(ngModel)]="formDireccion.nombre_via"
+            placeholder="Ej. Carlos Bacaflor"
+            (input)="direccionGuardada = false; errorDireccion = ''"
+          />
+        </div>
+
+        <div class="campo-corregir campo-num">
+          <label for="numero_corr">Número</label>
+          <input
+            id="numero_corr"
+            type="text"
+            [(ngModel)]="formDireccion.numero"
+            placeholder="Ej. 551"
+            (input)="direccionGuardada = false; errorDireccion = ''"
+          />
+        </div>
+
+        <div class="campo-corregir campo-mz">
+          <label for="manzana_corr">Manzana</label>
+          <input
+            id="manzana_corr"
+            type="text"
+            [(ngModel)]="formDireccion.manzana"
+            placeholder="Ej. B"
+            (input)="direccionGuardada = false; errorDireccion = ''"
+          />
+        </div>
+
+        <div class="campo-corregir campo-lt">
+          <label for="lote_corr">Lote</label>
+          <input
+            id="lote_corr"
+            type="text"
+            [(ngModel)]="formDireccion.lote"
+            placeholder="Ej. 12"
+            (input)="direccionGuardada = false; errorDireccion = ''"
+          />
+        </div>
+
+        <div class="campo-corregir campo-ref">
+          <label for="referencia_corr">Referencia (opcional)</label>
+          <input
+            id="referencia_corr"
+            type="text"
+            [(ngModel)]="formDireccion.referencia"
+            placeholder="Ej. Frente al parque, casa blanca de rejas negras"
+            (input)="direccionGuardada = false; errorDireccion = ''"
+          />
+        </div>
+      </div>
+
+      <div class="mensaje-error-dir" *ngIf="errorDireccion">
+        {{ errorDireccion }}
+      </div>
+
+      <div class="mensaje-exito-dir" *ngIf="direccionGuardada">
+        {{ mensajeDireccionGuardada }}
+      </div>
+
+      <div class="acciones-corregir">
+        <button
+          type="button"
+          class="btn-guardar-direccion"
+          (click)="guardarCorreccionDireccion()"
+          [disabled]="reasignando"
+        >
+          {{ direccionGuardada ? 'Dirección guardada' : 'Guardar dirección' }}
+        </button>
+      </div>
+    </div>
+
     <div class="reassign-container" *ngIf="p.estado === 'FALLIDO'">
       <p class="reassign-error" role="alert" *ngIf="errorReasignacion">
         {{ errorReasignacion }}
@@ -319,12 +422,11 @@
         type="button"
         class="btn-reassign"
         (click)="solicitarReasignacion()"
-        [disabled]="cargando || reasignando || !p.id || paqueteReintentadoId === p.id"
+        [disabled]="cargando || reasignando || !p.id || paqueteReintentadoId === p.id || (requiereCorregirDireccion && !direccionGuardada)"
         [attr.aria-busy]="reasignando"
       >
         {{ reasignando ? 'Reasignando…' : 'Reasignar' }}
-      </button>
-    </div>
+      </button>    </div>
 
     <!-- Modal flotante de confirmación de reasignación -->
     <div class="reassign-modal-overlay" *ngIf="mostrarModalConfirmacionReasignar" (click)="cerrarModalReasignar()">

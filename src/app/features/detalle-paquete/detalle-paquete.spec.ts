@@ -119,4 +119,41 @@ describe('Reasignación desde el detalle del paquete', () => {
     fixture.componentInstance.reasignarPaquete();
     http.expectNone('/api/v1/packages/14/retry');
   });
+
+  it('exige corregir la direccion antes de reasignar cuando fallo por direccion erronea', () => {
+    params.next(convertToParamMap({ tracking: '15' }));
+    http.expectOne('/api/v1/packages/15').flush({
+      id: 15,
+      tracking_id: 'FALLIDO15',
+      estado: { codigo: 'FALLIDO' },
+      requiere_corregir_direccion: true,
+      direccion: {
+        tipo_via: 'Av.',
+        nombre_via: 'Antigua',
+        numero: '100',
+        distrito: 'Lima',
+      },
+    });
+    fixture.detectChanges();
+
+    expect(boton().disabled).toBe(true);
+
+    fixture.componentInstance.formDireccion.nombre_via = 'Nueva';
+    fixture.componentInstance.guardarCorreccionDireccion();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.direccionGuardada).toBe(true);
+    expect(boton().disabled).toBe(false);
+
+    boton().click();
+    fixture.detectChanges();
+    fixture.componentInstance.confirmarReasignacionDefinitiva();
+    fixture.detectChanges();
+
+    const req = http.expectOne('/api/v1/packages/15/retry');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body.direccion).toBeDefined();
+    expect(req.request.body.direccion.nombre_via).toBe('Nueva');
+    req.flush({ id: 25, tracking_id: 'NUEVO25', estado: 'EN_ALMACEN', id_paquete_origen: 15 });
+  });
 });

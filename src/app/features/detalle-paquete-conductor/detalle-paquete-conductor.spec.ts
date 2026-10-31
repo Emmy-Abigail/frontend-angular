@@ -165,4 +165,17 @@ describe('Especificaciones del paquete del conductor', () => {
     expect(body.get('observacion')).toBe('No contestó el timbre');
     req.flush({ ok: true });
   });
+
+  it('no muestra los formularios ni acciones de entrega si el paquete ya esta finalizado', () => {
+    cargarLote();
+    http.expectOne('/api/v1/packages/7').flush({
+      ...detalle,
+      estado: { codigo: 'ENTREGADO' },
+    });
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.estaFinalizado).toBe(true);
+    expect(fixture.nativeElement.querySelector('.tarjeta-estado-finalizado')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.boton-fallido')).toBeNull();
+  });
 });

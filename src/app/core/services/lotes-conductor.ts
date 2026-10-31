@@ -122,6 +122,15 @@ export class LotesConductorService {
           if (estadoPkg === 'Entregado') {
             if (!this.paradasEntregadas[idStr]) this.paradasEntregadas[idStr] = new Set();
             this.paradasEntregadas[idStr].add(numero);
+          } else if (estadoPkg === 'Fallido') {
+            if (!this.paradasFallidas[idStr]) this.paradasFallidas[idStr] = new Map();
+            if (!this.paradasFallidas[idStr].has(numero)) {
+              this.paradasFallidas[idStr].set(numero, {
+                motivo: p.motivo_fallo?.nombre || 'Fallido',
+                observacion: p.comentario || '',
+                fecha: new Date(),
+              });
+            }
           }
 
           const dir = p.direccion;
@@ -316,7 +325,9 @@ export class LotesConductorService {
   }
 
   obtenerCantidadParadasCompletadas(id: string): number {
-    return this.paradasEntregadas[id]?.size ?? 0;
+    const entregadas = this.paradasEntregadas[id]?.size ?? 0;
+    const fallidas = this.paradasFallidas[id]?.size ?? 0;
+    return entregadas + fallidas;
   }
 
   estaEntregada(id: string, numeroParada: number): boolean {

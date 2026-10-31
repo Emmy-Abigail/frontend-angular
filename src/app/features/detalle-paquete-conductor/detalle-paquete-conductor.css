@@ -1335,3 +1335,73 @@
   color: #1e293b;
   font-size: 13px;
 }
+
+/* Tarjeta de estado finalizado */
+.tarjeta-estado-finalizado {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  margin: 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.tarjeta-estado-finalizado.finalizado-entregado {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.tarjeta-estado-finalizado.finalizado-entregado .icono-finalizado {
+  color: #16a34a;
+  background: #dcfce7;
+}
+
+.tarjeta-estado-finalizado.finalizado-fallido {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.tarjeta-estado-finalizado.finalizado-fallido .icono-finalizado {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+.icono-finalizado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.icono-finalizado svg {
+  width: 24px;
+  height: 24px;
+}
+
+.info-finalizado h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.info-finalizado p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.acciones-volver {
+  justify-content: center;
+  padding: 16px;
+}
+
+.btn-volver-al-lote {
+  width: 100%;
+  max-width: 400px;
+}

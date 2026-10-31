@@ -26,6 +26,7 @@ interface Paquete {
   peso: string;
   dimensiones: string;
   coordenadas?: { lat: number; lng: number } | null;
+  estado?: string;
 }
 
 @Component({
@@ -223,8 +224,33 @@ export class DetallePaqueteConductor implements OnInit {
   // Flujo de Registro de Entrega con Evidencia Fotográfica
   // ----------------------------------------------------
 
+  get estaFinalizado(): boolean {
+    const estadoNorm = (this.paquete?.estado || '').toUpperCase();
+    if (estadoNorm === 'ENTREGADO' || estadoNorm === 'FALLIDO') {
+      return true;
+    }
+    if (this.loteId && this.numeroParada) {
+      if (this.lotesService.estaEntregada(this.loteId, this.numeroParada) ||
+          this.lotesService.estaFallida(this.loteId, this.numeroParada)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  get estadoFinalizado(): 'ENTREGADO' | 'FALLIDO' | null {
+    const estadoNorm = (this.paquete?.estado || '').toUpperCase();
+    if (estadoNorm === 'ENTREGADO') return 'ENTREGADO';
+    if (estadoNorm === 'FALLIDO') return 'FALLIDO';
+    if (this.loteId && this.numeroParada) {
+      if (this.lotesService.estaEntregada(this.loteId, this.numeroParada)) return 'ENTREGADO';
+      if (this.lotesService.estaFallida(this.loteId, this.numeroParada)) return 'FALLIDO';
+    }
+    return null;
+  }
+
   registrarEntrega(): void {
-    if (this.estadoLote !== 'EN RUTA') {
+    if (this.estadoLote !== 'EN RUTA' || this.estaFinalizado) {
       return;
     }
 
@@ -343,7 +369,7 @@ export class DetallePaqueteConductor implements OnInit {
   // ----------------------------------------------------
 
   registrarFallido(): void {
-    if (this.estadoLote !== 'EN RUTA') {
+    if (this.estadoLote !== 'EN RUTA' || this.estaFinalizado) {
       return;
     }
 

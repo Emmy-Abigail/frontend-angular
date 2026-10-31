@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -56,7 +57,7 @@ interface PaqueteDetalle {
 @Component({
   selector: 'app-detalle-paquete',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './detalle-paquete.html',
   styleUrl: './detalle-paquete.css',
 })
@@ -108,8 +109,85 @@ export class DetallePaquete {
   paqueteReintentadoId: number | null = null;
   mostrarModalConfirmacionReasignar = false;
 
+  requiereCorregirDireccion = false;
+  direccionGuardada = false;
+  errorDireccion = '';
+  mensajeDireccionGuardada = '';
+
+  formDireccion = {
+    tipo_via: 'Av.',
+    nombre_via: '',
+    numero: '',
+    manzana: '',
+    lote: '',
+    referencia: '',
+  };
+
+  direccionOriginal = {
+    tipo_via: '',
+    nombre_via: '',
+    numero: '',
+    manzana: '',
+    lote: '',
+    referencia: '',
+  };
+
+  guardarCorreccionDireccion(): void {
+    this.errorDireccion = '';
+    this.mensajeDireccionGuardada = '';
+
+    const nombreVia = this.formDireccion.nombre_via.trim();
+    if (!nombreVia) {
+      this.errorDireccion = 'El nombre de la vía es obligatorio.';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const tieneNumero = !!this.formDireccion.numero?.trim();
+    const tieneMzLt = !!this.formDireccion.manzana?.trim() || !!this.formDireccion.lote?.trim();
+    if (!tieneNumero && !tieneMzLt) {
+      this.errorDireccion = 'Debes ingresar el número o la manzana/lote.';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const cambio =
+      this.formDireccion.tipo_via !== this.direccionOriginal.tipo_via ||
+      this.formDireccion.nombre_via.trim() !== this.direccionOriginal.nombre_via.trim() ||
+      (this.formDireccion.numero || '').trim() !== (this.direccionOriginal.numero || '').trim() ||
+      (this.formDireccion.manzana || '').trim() !== (this.direccionOriginal.manzana || '').trim() ||
+      (this.formDireccion.lote || '').trim() !== (this.direccionOriginal.lote || '').trim() ||
+      (this.formDireccion.referencia || '').trim() !== (this.direccionOriginal.referencia || '').trim();
+
+    if (!cambio) {
+      this.errorDireccion = 'Debes corregir al menos un campo de la dirección antes de continuar.';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.direccionGuardada = true;
+    this.mensajeDireccionGuardada = 'Dirección actualizada correctamente. Ahora puedes proceder a reasignar el paquete.';
+
+    if (this.paquete) {
+      const via = [this.formDireccion.tipo_via, this.formDireccion.nombre_via.trim()].filter(Boolean).join(' ');
+      const num = this.formDireccion.numero?.trim()
+        ? `N° ${this.formDireccion.numero.trim()}`
+        : (this.formDireccion.manzana?.trim() ? `Mz. ${this.formDireccion.manzana.trim()} Lt. ${this.formDireccion.lote?.trim() || ''}` : '');
+      this.paquete.direccionEntrega = [via, num, this.paquete.destino].filter(Boolean).join(', ');
+      if (this.formDireccion.referencia?.trim()) {
+        this.paquete.referenciaEntrega = this.formDireccion.referencia.trim();
+      }
+    }
+    this.cdr.markForCheck();
+  }
+
   solicitarReasignacion(): void {
     if (!this.paquete?.id || this.paquete.estado !== 'FALLIDO' || this.cargando || this.reasignando || this.paqueteReintentadoId === this.paquete.id) {
+      return;
+    }
+    if (this.requiereCorregirDireccion && !this.direccionGuardada) {
+      this.errorReasignacion = 'Debes corregir y guardar la dirección antes de reasignar.';
+      this.cdr.markForCheck();
       return;
     }
     this.errorReasignacion = '';
@@ -133,12 +211,31 @@ export class DetallePaquete {
       return;
     }
 
+    if (this.requiereCorregirDireccion && !this.direccionGuardada) {
+      this.errorReasignacion = 'Debes corregir y guardar la dirección antes de reasignar.';
+      this.cdr.markForCheck();
+      return;
+    }
+
     const paqueteId = paquete.id;
     this.reasignando = true;
     this.errorReasignacion = '';
     this.mensajeReasignacion = '';
 
-    this.operadorService.reintentarPaquete(paqueteId).pipe(
+    const payload: any = {};
+    if (this.requiereCorregirDireccion) {
+      const dirPayload: any = {
+        tipo_via: this.formDireccion.tipo_via,
+        nombre_via: this.formDireccion.nombre_via.trim(),
+      };
+      if (this.formDireccion.numero?.trim()) dirPayload.numero = this.formDireccion.numero.trim();
+      if (this.formDireccion.manzana?.trim()) dirPayload.manzana = this.formDireccion.manzana.trim();
+      if (this.formDireccion.lote?.trim()) dirPayload.lote = this.formDireccion.lote.trim();
+      if (this.formDireccion.referencia?.trim()) dirPayload.referencia = this.formDireccion.referencia.trim();
+      payload.direccion = dirPayload;
+    }
+
+    this.operadorService.reintentarPaquete(paqueteId, payload).pipe(
       finalize(() => {
         this.reasignando = false;
         this.cdr.markForCheck();
@@ -208,6 +305,23 @@ export class DetallePaquete {
             const via = [dir.tipo_via, dir.nombre_via].filter(Boolean).join(' ');
             const num = dir.numero ? `N° ${dir.numero}` : (dir.manzana ? `Mz. ${dir.manzana} Lt. ${dir.lote}` : '');
             dirTexto = [via, num, dir.distrito].filter(Boolean).join(', ');
+          }
+
+          this.requiereCorregirDireccion = !!res.requiere_corregir_direccion;
+          this.direccionGuardada = false;
+          this.mensajeDireccionGuardada = '';
+          this.errorDireccion = '';
+
+          if (res.direccion && typeof res.direccion === 'object') {
+            this.formDireccion = {
+              tipo_via: res.direccion.tipo_via || 'Av.',
+              nombre_via: res.direccion.nombre_via || '',
+              numero: res.direccion.numero || '',
+              manzana: res.direccion.manzana || '',
+              lote: res.direccion.lote || '',
+              referencia: res.direccion.referencia || '',
+            };
+            this.direccionOriginal = { ...this.formDireccion };
           }
 
           const estadoCodigo = (res.estado?.codigo || res.estado || 'EN_ALMACEN')

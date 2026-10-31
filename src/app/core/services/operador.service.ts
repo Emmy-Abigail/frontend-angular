@@ -103,10 +103,10 @@ export class OperadorService {
     return this.http.post<RegistroPaqueteResponse>(`${this.baseUrl}/packages`, payload);
   }
 
-  reintentarPaquete(id: number): Observable<RegistroPaqueteResponse & { id_paquete_origen: number }> {
+  reintentarPaquete(id: number, payload: { direccion?: any; destinatario?: any } = {}): Observable<RegistroPaqueteResponse & { id_paquete_origen: number }> {
     return this.http.post<RegistroPaqueteResponse & { id_paquete_origen: number }>(
       `${this.baseUrl}/packages/${id}/retry`,
-      {},
+      payload,
     );
   }
 

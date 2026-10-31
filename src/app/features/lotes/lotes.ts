@@ -157,7 +157,7 @@ export class Lotes implements OnInit {
             capacidadPeso: this.obtenerCapacidadPeso(l.vehiculo?.nombre || l.vehiculo, l.capacidad_peso_kg),
             horaInicio,
             fechaCreacion: fechaCreacionStr,
-            completo: cant >= maxP,
+            completo: cant >= maxP || (this.obtenerCapacidadPeso(l.vehiculo?.nombre || l.vehiculo, l.capacidad_peso_kg) > 0 && Number(l.peso_total_kg || 0) >= this.obtenerCapacidadPeso(l.vehiculo?.nombre || l.vehiculo, l.capacidad_peso_kg)),
             responsable: l.conductor?.nombres || l.responsable || 'Sin conductor',
             placa: l.conductor?.placa || l.placa || '-',
             estadoDespacho: estadoDesp,

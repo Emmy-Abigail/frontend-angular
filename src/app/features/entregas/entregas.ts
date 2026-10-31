@@ -131,7 +131,7 @@ export class Entregas implements OnInit {
         ? 'Entregado'
         : fallidas.has(parada.numero)
           ? 'Fallido'
-          : 'Pendiente',
+          : (parada.estado === 'Entregado' || parada.estado === 'Fallido' ? parada.estado : 'Pendiente'),
     }));
 
     this.paradasCompletadas =

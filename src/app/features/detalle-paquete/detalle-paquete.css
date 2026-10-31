@@ -826,3 +826,146 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Corrección de dirección para reasignación */
+.card-corregir-direccion {
+  background: #ffffff;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.alerta-direccion-requerida {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #fff7ed;
+  border: 1px solid #ffedd5;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+}
+
+.icono-alerta-dir {
+  width: 22px;
+  height: 22px;
+  color: #ea580c;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.alerta-direccion-requerida h4 {
+  margin: 0 0 2px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #9a3412;
+}
+
+.alerta-direccion-requerida p {
+  margin: 0;
+  font-size: 13px;
+  color: #c2410c;
+}
+
+.form-corregir-grid {
+  display: grid;
+  grid-template-columns: 140px 1fr 100px 90px 90px;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.form-corregir-grid .campo-ref {
+  grid-column: 1 / -1;
+}
+
+.campo-corregir {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo-corregir label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.campo-corregir input,
+.campo-corregir select {
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #1e293b;
+  outline: none;
+  background: #ffffff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.campo-corregir input:focus,
+.campo-corregir select:focus {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+
+.mensaje-error-dir {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  color: #dc2626;
+  font-size: 13px;
+}
+
+.mensaje-exito-dir {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  color: #16a34a;
+  font-size: 13px;
+}
+
+.acciones-corregir {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.btn-guardar-direccion {
+  padding: 8px 18px;
+  background: #ea580c;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-guardar-direccion:hover:not(:disabled) {
+  background: #c2410c;
+}
+
+.btn-guardar-direccion:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .form-corregir-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .form-corregir-grid .campo-via {
+    grid-column: 1 / -1;
+  }
+  .form-corregir-grid .campo-ref {
+    grid-column: 1 / -1;
+  }
+}
