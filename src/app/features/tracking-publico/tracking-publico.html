@@ -1,25 +1,19 @@
 <section class="tracking">
-
   <div class="tracking-container">
 
     <div class="tracking-header">
-
       <h2>Rastrea tu envío</h2>
 
       <p>
         Ingresa tu código de seguimiento para consultar el estado de tu envío.
       </p>
-
     </div>
-
 
     <form
       class="tracking-form"
       (ngSubmit)="consultarEnvio()"
     >
-
       <div class="form-group">
-
         <label for="codigo">
           Código de seguimiento
         </label>
@@ -28,95 +22,110 @@
           id="codigo"
           name="codigo"
           type="text"
-          placeholder="Ej. ENV-2026-00125"
+          placeholder="Ej. 7K9M2X5ABC"
+          maxlength="10"
+          autocomplete="off"
           [(ngModel)]="codigo"
         />
-
       </div>
 
-
       @if (error) {
-
         <p class="error-message">
           {{ error }}
         </p>
-
       }
 
-
-      <button type="submit">
-        Consultar envío
+      <button type="submit" [disabled]="cargando">
+        {{ cargando ? 'Consultando...' : 'Consultar envío' }}
       </button>
-
     </form>
 
-
-    @if (mostrarResultado) {
-
+    @if (resultado; as envio) {
       <div class="resultado">
 
         <div class="resultado-header">
-
           <div>
             <span class="resultado-label">
               Código de seguimiento
             </span>
 
             <strong>
-              ENV-2026-00125
+              {{ envio.tracking_id }}
             </strong>
           </div>
 
           <span class="estado">
-            En Ruta
+            {{ envio.estado.nombre }}
           </span>
-
         </div>
-
 
         <div class="resultado-datos">
 
           <div>
-            <span>
-              Origen
-            </span>
-
+            <span>Destino</span>
             <strong>
-              Lima
+              {{ envio.destino.distrito || 'No disponible' }}
             </strong>
           </div>
 
-
           <div>
-            <span>
-              Destino
-            </span>
-
+            <span>Fecha de ingreso</span>
             <strong>
-              Miraflores
+              {{ envio.fecha_ingreso || 'No disponible' }}
             </strong>
           </div>
 
-
           <div>
-            <span>
-              Última actualización
-            </span>
-
+            <span>Estado actual</span>
             <strong>
-              16/09/2026
+              {{ envio.estado.nombre }}
             </strong>
           </div>
 
         </div>
 
-      </div>
+        <div class="tracking-timeline">
+          <h3>Historial del envío</h3>
 
+          @if (envio.linea_de_tiempo.length > 0) {
+            <div class="timeline-list">
+
+              @for (evento of envio.linea_de_tiempo; track $index) {
+                <div class="timeline-item">
+
+                  <div class="timeline-marker"></div>
+
+                  <div class="timeline-content">
+                    <strong>
+                      {{ evento.nombre }}
+                    </strong>
+
+                    <span class="timeline-date">
+                      {{ evento.fecha }}
+                    </span>
+
+                    @if (evento.motivo) {
+                      <p>
+                        Motivo: {{ evento.motivo }}
+                      </p>
+                    }
+                  </div>
+
+                </div>
+              }
+
+            </div>
+          } @else {
+            <p class="timeline-empty">
+              Todavía no hay movimientos registrados para este envío.
+            </p>
+          }
+        </div>
+
+      </div>
     }
 
-
     <div class="tracking-help">
-
       <p>
         ¿No tienes un código de seguimiento?
       </p>
@@ -124,9 +133,7 @@
       <a routerLink="/cotizar">
         Cotiza un nuevo envío
       </a>
-
     </div>
 
   </div>
-
 </section>
