@@ -165,6 +165,13 @@ export class Dashboard implements OnInit {
     this.consultarMetricas();
   }
 
+  seleccionarOctubre(): void {
+    this.periodoSeleccionado = 'PERSONALIZADO';
+    this.desde = '2026-10-01';
+    this.hasta = '2026-10-31';
+    this.consultarMetricas();
+  }
+
   get esRangoInvalido(): boolean {
     if (!this.desde || !this.hasta) return false;
     return this.desde > this.hasta;

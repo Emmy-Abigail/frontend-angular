@@ -300,6 +300,18 @@
   color: #0F172A;
 }
 
+.btn-shortcut-primary {
+  background-color: #2563EB;
+  border-color: #2563EB;
+  color: #FFFFFF;
+}
+
+.btn-shortcut-primary:hover {
+  background-color: #1D4ED8;
+  border-color: #1D4ED8;
+  color: #FFFFFF;
+}
+
 /* Loading State */
 .loading-container {
   display: flex;

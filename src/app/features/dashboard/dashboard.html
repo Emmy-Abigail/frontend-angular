@@ -141,6 +141,26 @@
     <p>Cargando métricas del dashboard...</p>
   </div>
 
+  <!-- Estado de Error de Servidor o Red -->
+  <section *ngIf="errorMensaje && !esRangoInvalido && !metricas && !cargando" class="state-card-container state-card-error">
+    <div class="error-icon-circle">
+      <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#EF4444" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+    </div>
+    <h2 class="state-card-title">Error al cargar las métricas</h2>
+    <p class="state-card-subtitle">
+      {{ errorMensaje }}
+    </p>
+    <div class="empty-actions">
+      <button type="button" class="btn-shortcut" (click)="consultarMetricas()">
+        Reintentar
+      </button>
+    </div>
+  </section>
+
   <!-- Estado Vacío (0 paquetes registrados) -->
   <ng-container *ngIf="!cargando && !esRangoInvalido && metricas && metricas.kpis.paquetes_registrados === 0">
     <!-- Top 3 KPI Cards con ceros y guiones -->
@@ -184,6 +204,9 @@
         </button>
         <button type="button" class="btn-shortcut" (click)="cambiarPeriodo('7_DIAS')">
           Ver últimos 7 días
+        </button>
+        <button type="button" class="btn-shortcut btn-shortcut-primary" (click)="seleccionarOctubre()">
+          Ver datos de prueba (Octubre 2026)
         </button>
       </div>
     </section>
