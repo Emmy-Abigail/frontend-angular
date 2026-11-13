@@ -42,6 +42,14 @@ export class OperadorLayout {
       return 'Inicio / Consulta de Paquetes';
     }
 
+    if (url.startsWith('/operador/lotes')) {
+      return 'Inicio / Gestión de Lotes';
+    }
+
+    if (url.startsWith('/operador/dashboard')) {
+      return 'Inicio / Dashboard';
+    }
+
     return 'Inicio / Registro de Paquete';
   }
 

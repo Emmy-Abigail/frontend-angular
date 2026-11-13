@@ -1,71 +1,858 @@
-<section class="dashboard">
+<div class="dashboard-container">
 
-  <div class="dashboard-header">
-    <div>
-      <h2>Dashboard</h2>
-      <p>Resumen general de los envíos.</p>
+  <!-- Header y Filtros -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <nav class="breadcrumb-nav">
+        <span>Inicio</span>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">Dashboard</span>
+      </nav>
+      <h1 class="dashboard-title">
+        Dashboard
+        <span *ngIf="isOperador()" class="title-sede-separator">·</span>
+        <span *ngIf="isOperador()" class="title-sede">{{ sedeOperadorNombre() }}</span>
+      </h1>
     </div>
 
-    <a
-      class="paquetes-button"
-      routerLink="/admin/paquetes"
-    >
-      Ver paquetes
-    </a>
-  </div>
-
-  <div class="stats-grid">
-
-    <article class="stat-card">
-      <span class="stat-label">Paquetes en almacén</span>
-      <strong>24</strong>
-    </article>
-
-    <article class="stat-card">
-      <span class="stat-label">Asignados</span>
-      <strong>12</strong>
-    </article>
-
-    <article class="stat-card">
-      <span class="stat-label">En ruta</span>
-      <strong>18</strong>
-    </article>
-
-    <article class="stat-card">
-      <span class="stat-label">Entregados</span>
-      <strong>86</strong>
-    </article>
-
-    <article class="stat-card">
-      <span class="stat-label">Fallidos</span>
-      <strong>5</strong>
-    </article>
-
-  </div>
-
-  <section class="dashboard-section">
-
-    <h3>Actividad reciente</h3>
-
-    <div class="activity-list">
-
-      <div class="activity-item">
-        <strong>ENV-2026-00125</strong>
-        <span>En ruta</span>
+    <!-- Barra de Filtros -->
+    <div class="filters-bar">
+      <!-- Selector de Período -->
+      <div class="periodo-group" role="group" aria-label="Filtro de período">
+        <button
+          type="button"
+          class="btn-periodo"
+          [class.active]="periodoSeleccionado === 'HOY'"
+          (click)="cambiarPeriodo('HOY')"
+        >
+          Hoy
+        </button>
+        <button
+          type="button"
+          class="btn-periodo"
+          [class.active]="periodoSeleccionado === '7_DIAS'"
+          (click)="cambiarPeriodo('7_DIAS')"
+        >
+          Últimos 7 días
+        </button>
+        <button
+          type="button"
+          class="btn-periodo"
+          [class.active]="periodoSeleccionado === 'ESTE_MES'"
+          (click)="cambiarPeriodo('ESTE_MES')"
+        >
+          Este mes
+        </button>
+        <button
+          type="button"
+          class="btn-periodo"
+          [class.active]="periodoSeleccionado === 'PERSONALIZADO'"
+          (click)="cambiarPeriodo('PERSONALIZADO')"
+        >
+          Personalizado
+        </button>
       </div>
 
-      <div class="activity-item">
-        <strong>ENV-2026-00124</strong>
-        <span>Entregado</span>
+      <!-- Selector / Visualizador de Rango de Fechas -->
+      <div class="date-range-wrapper">
+        <button
+          type="button"
+          class="btn-date-range"
+          [class.input-error]="esRangoInvalido"
+          (click)="togglePickerFechas()"
+          title="Seleccionar rango de fechas"
+        >
+          <span>{{ formatearDisplay(desde) }} – {{ formatearDisplay(hasta) }}</span>
+          <svg class="icon-calendar" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        </button>
+
+        <!-- Dropdown Popover de Fechas Personalizadas -->
+        <div *ngIf="mostrarPickerFechas" class="date-picker-popover">
+          <div class="popover-row">
+            <label>Desde:</label>
+            <input type="date" [(ngModel)]="desde" (ngModelChange)="consultarMetricas()" />
+          </div>
+          <div class="popover-row">
+            <label>Hasta:</label>
+            <input type="date" [(ngModel)]="hasta" (ngModelChange)="consultarMetricas()" />
+          </div>
+          <div class="popover-actions">
+            <button type="button" class="btn-popover-close" (click)="aplicarFechasPersonalizadas()">
+              Listo
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div class="activity-item">
-        <strong>ENV-2026-00123</strong>
-        <span>Asignado</span>
-      </div>
+      <!-- Selector de Sede: Dropdown para Admin, Badge Fijo para Operador -->
+      <div class="sede-filter-wrapper">
+        <!-- Admin: Dropdown -->
+        <div *ngIf="isAdmin()" class="select-sede-container">
+          <select
+            class="select-sede"
+            [value]="idSedeSeleccionada ?? ''"
+            (change)="cambiarSede($event)"
+            aria-label="Filtrar por sede"
+          >
+            <option value="">Todas las sedes</option>
+            <option *ngFor="let s of sedes" [value]="s.id">
+              {{ s.nombre }}
+            </option>
+          </select>
+        </div>
 
+        <!-- Operador: Badge Fijo No Editable -->
+        <div *ngIf="isOperador()" class="badge-sede-fija">
+          {{ sedeOperadorNombre() }}
+        </div>
+      </div>
     </div>
+  </header>
 
+  <!-- Mensaje de error debajo del input de fecha si es inválido -->
+  <div *ngIf="esRangoInvalido" class="date-range-error-hint">
+    La fecha de inicio debe ser anterior a la fecha final.
+  </div>
+
+  <!-- Estado de Rango Inválido (Card Principal) -->
+  <section *ngIf="esRangoInvalido" class="state-card-container state-card-error">
+    <div class="error-icon-circle">
+      <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#EF4444" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+    </div>
+    <h2 class="state-card-title">El rango de fechas no es válido</h2>
+    <p class="state-card-subtitle">
+      La fecha de inicio ({{ formatearDisplay(desde) }}) es posterior a la fecha final ({{ formatearDisplay(hasta) }}).<br />
+      Corrige las fechas para ver las métricas.
+    </p>
   </section>
 
-</section>
+  <!-- Estado de Carga -->
+  <div *ngIf="cargando && !esRangoInvalido" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando métricas del dashboard...</p>
+  </div>
+
+  <!-- Estado Vacío (0 paquetes registrados) -->
+  <ng-container *ngIf="!cargando && !esRangoInvalido && metricas && metricas.kpis.paquetes_registrados === 0">
+    <!-- Top 3 KPI Cards con ceros y guiones -->
+    <div class="kpi-grid">
+      <article class="kpi-card">
+        <span class="kpi-label">Paquetes registrados</span>
+        <strong class="kpi-value">0</strong>
+        <span class="kpi-subtext">en el rango elegido</span>
+      </article>
+
+      <article class="kpi-card">
+        <span class="kpi-label">Entregas exitosas</span>
+        <strong class="kpi-value">—</strong>
+        <span class="kpi-subtext">sin entregas en el período</span>
+      </article>
+
+      <article class="kpi-card">
+        <span class="kpi-label">Tiempo promedio de entrega</span>
+        <strong class="kpi-value">—</strong>
+        <span class="kpi-subtext">sin entregas en el período</span>
+      </article>
+    </div>
+
+    <!-- Card Grande de Estado Vacío -->
+    <section class="state-card-container state-card-empty">
+      <div class="empty-icon-wrapper">
+        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#94A3B8" stroke-width="1.8">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+      </div>
+      <h2 class="state-card-title">No hay envíos en este período</h2>
+      <p class="state-card-subtitle">
+        Entre el {{ formatearDisplay(desde) }} y el {{ formatearDisplay(hasta) }}
+        {{ isOperador() ? 'tu sede no registró ni entregó paquetes.' : 'no se registraron ni entregaron paquetes.' }}
+      </p>
+      <div class="empty-actions">
+        <button type="button" class="btn-shortcut" (click)="cambiarPeriodo('ESTE_MES')">
+          Ver este mes
+        </button>
+        <button type="button" class="btn-shortcut" (click)="cambiarPeriodo('7_DIAS')">
+          Ver últimos 7 días
+        </button>
+      </div>
+    </section>
+  </ng-container>
+
+  <!-- Contenido Normal con Datos -->
+  <ng-container *ngIf="!cargando && !esRangoInvalido && metricas && metricas.kpis.paquetes_registrados > 0">
+
+    <!-- Top 3 KPI Cards -->
+    <div class="kpi-grid">
+      <article class="kpi-card">
+        <span class="kpi-label">Paquetes registrados</span>
+        <strong class="kpi-value">{{ metricas.kpis.paquetes_registrados | number }}</strong>
+        <span class="kpi-subtext">en el rango elegido</span>
+      </article>
+
+      <article class="kpi-card">
+        <span class="kpi-label">Entregas exitosas</span>
+        <strong class="kpi-value">
+          {{ metricas.kpis.entregas_exitosas_pct !== null ? metricas.kpis.entregas_exitosas_pct + '%' : '—' }}
+        </strong>
+        <span class="kpi-subtext">
+          {{ metricas.kpis.entregas_exitosas_qty | number }} entregados de {{ metricas.kpis.finalizados_qty | number }} finalizados
+        </span>
+      </article>
+
+      <article class="kpi-card">
+        <span class="kpi-label">Tiempo promedio de entrega</span>
+        <strong class="kpi-value">
+          {{ metricas.kpis.tiempo_promedio_horas !== null ? metricas.kpis.tiempo_promedio_horas + ' h' : '—' }}
+        </strong>
+        <span class="kpi-subtext">desde el registro hasta que se marca Entregado</span>
+      </article>
+    </div>
+
+    <!-- Métrica 4: Flujo de Paquetes (Barra Apilada Horizontal) -->
+    <section class="card flujo-card">
+      <div class="card-header">
+        <h2 class="card-title">Flujo de paquetes</h2>
+        <span class="card-header-note">
+          estado actual de los {{ metricas.flujo_paquetes.total | number }} paquetes registrados
+        </span>
+      </div>
+
+      <!-- Barra Apilada -->
+      <div class="stacked-bar-container" role="progressbar" [attr.aria-valuenow]="metricas.flujo_paquetes.total">
+        <div
+          class="bar-segment bar-almacen"
+          [style.width.%]="metricas.flujo_paquetes.en_almacen.porcentaje"
+          [title]="'En Almacén: ' + metricas.flujo_paquetes.en_almacen.cantidad + ' (' + metricas.flujo_paquetes.en_almacen.porcentaje + '%)'"
+        ></div>
+        <div
+          class="bar-segment bar-asignado"
+          [style.width.%]="metricas.flujo_paquetes.asignado.porcentaje"
+          [title]="'Asignado: ' + metricas.flujo_paquetes.asignado.cantidad + ' (' + metricas.flujo_paquetes.asignado.porcentaje + '%)'"
+        ></div>
+        <div
+          class="bar-segment bar-ruta"
+          [style.width.%]="metricas.flujo_paquetes.en_ruta.porcentaje"
+          [title]="'En Ruta: ' + metricas.flujo_paquetes.en_ruta.cantidad + ' (' + metricas.flujo_paquetes.en_ruta.porcentaje + '%)'"
+        ></div>
+        <div
+          class="bar-segment bar-entregado"
+          [style.width.%]="metricas.flujo_paquetes.entregado.porcentaje"
+          [title]="'Entregado: ' + metricas.flujo_paquetes.entregado.cantidad + ' (' + metricas.flujo_paquetes.entregado.porcentaje + '%)'"
+        ></div>
+        <div
+          class="bar-segment bar-fallido"
+          [style.width.%]="metricas.flujo_paquetes.fallido.porcentaje"
+          [title]="'Fallido: ' + metricas.flujo_paquetes.fallido.cantidad + ' (' + metricas.flujo_paquetes.fallido.porcentaje + '%)'"
+        ></div>
+      </div>
+
+      <!-- Leyenda de la Barra -->
+      <div class="stacked-bar-legend">
+        <span class="legend-item">
+          <span class="legend-dot dot-almacen"></span>
+          En Almacén {{ metricas.flujo_paquetes.en_almacen.cantidad }} ({{ metricas.flujo_paquetes.en_almacen.porcentaje }}%)
+        </span>
+        <span class="legend-item">
+          <span class="legend-dot dot-asignado"></span>
+          Asignado {{ metricas.flujo_paquetes.asignado.cantidad }} ({{ metricas.flujo_paquetes.asignado.porcentaje }}%)
+        </span>
+        <span class="legend-item">
+          <span class="legend-dot dot-ruta"></span>
+          En Ruta {{ metricas.flujo_paquetes.en_ruta.cantidad }} ({{ metricas.flujo_paquetes.en_ruta.porcentaje }}%)
+        </span>
+        <span class="legend-item">
+          <span class="legend-dot dot-entregado"></span>
+          Entregado {{ metricas.flujo_paquetes.entregado.cantidad }} ({{ metricas.flujo_paquetes.entregado.porcentaje }}%)
+        </span>
+        <span class="legend-item">
+          <span class="legend-dot dot-fallido"></span>
+          Fallido {{ metricas.flujo_paquetes.fallido.cantidad }} ({{ metricas.flujo_paquetes.fallido.porcentaje }}%)
+        </span>
+      </div>
+    </section>
+
+    <!-- Métrica 5: Ranking de Sedes (Solo Administrador cuando "Todas las sedes" está seleccionado) -->
+    <section *ngIf="isAdmin() && !idSedeSeleccionada && metricas.ranking_sedes && metricas.ranking_sedes.length > 0" class="card ranking-sedes-card">
+      <div class="card-header">
+        <h2 class="card-title">Ranking de sedes</h2>
+        <label class="toggle-mas-baja">
+          <input type="checkbox" [(ngModel)]="soloMasBaja" />
+          <span>Sede más baja</span>
+        </label>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th (click)="ordenarSedesPor('nombre_sede')">
+                SEDE
+                <span class="sort-icon">{{ columnaOrdenSedes === 'nombre_sede' ? (ordenSedesAsc ? '▲' : '▼') : '' }}</span>
+              </th>
+              <th (click)="ordenarSedesPor('paquetes_registrados')">
+                PAQUETES REGISTRADOS
+                <span class="sort-icon">{{ columnaOrdenSedes === 'paquetes_registrados' ? (ordenSedesAsc ? '▲' : '▼') : '' }}</span>
+              </th>
+              <th (click)="ordenarSedesPor('entregas_exitosas_pct')">
+                ENTREGAS EXITOSAS
+                <span class="sort-icon">{{ columnaOrdenSedes === 'entregas_exitosas_pct' ? (ordenSedesAsc ? '▲' : '▼') : '' }}</span>
+              </th>
+              <th (click)="ordenarSedesPor('fallidos_qty')">
+                FALLIDOS
+                <span class="sort-icon">{{ columnaOrdenSedes === 'fallidos_qty' ? (ordenSedesAsc ? '▲' : '▼') : '' }}</span>
+              </th>
+              <th (click)="ordenarSedesPor('tiempo_promedio_horas')">
+                TIEMPO PROMEDIO
+                <span class="sort-icon">{{ columnaOrdenSedes === 'tiempo_promedio_horas' ? (ordenSedesAsc ? '▲' : '▼') : '' }}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of sedesRankingOrdenadas" [class.highlight-row]="soloMasBaja && s.es_mas_baja">
+              <td>
+                <span class="sede-nombre-cell">{{ s.nombre_sede }}</span>
+                <span *ngIf="soloMasBaja && s.es_mas_baja" class="badge-mas-baja">MÁS BAJA</span>
+              </td>
+              <td>{{ s.paquetes_registrados | number }}</td>
+              <td>
+                <span *ngIf="s.datos_insuficientes" class="badge-insuficiente">Datos insuficientes</span>
+                <span *ngIf="!s.datos_insuficientes">
+                  {{ s.entregas_exitosas_pct !== null ? s.entregas_exitosas_pct + '%' : '—' }}
+                </span>
+              </td>
+              <td>{{ s.fallidos_qty | number }}</td>
+              <td>{{ s.tiempo_promedio_horas !== null ? s.tiempo_promedio_horas + ' h' : '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Grid de Dos Columnas: Métricas 6, 7, 8 y Desempeño Operador -->
+    <div class="two-column-grid">
+
+      <!-- Columna Izquierda: Fallidos por Motivo y Entregas por Vehículo -->
+      <div class="grid-column">
+
+        <!-- Métrica 6: Fallidos por Motivo -->
+        <section class="card fallidos-card">
+          <div class="card-header">
+            <h2 class="card-title">Fallidos por motivo</h2>
+            <span class="card-header-note">{{ metricas.fallidos_motivo.total_fallidos }} fallidos</span>
+          </div>
+
+          <!-- Barras de Motivos -->
+          <div class="motivos-list">
+            <div *ngFor="let m of metricas.fallidos_motivo.motivos" class="motivo-row">
+              <span class="motivo-label">{{ m.motivo }}</span>
+              <div class="motivo-bar-bg">
+                <div class="motivo-bar-fill" [style.width.%]="m.porcentaje"></div>
+              </div>
+              <span class="motivo-count">{{ m.cantidad }}</span>
+            </div>
+          </div>
+
+          <!-- Box de Direcciones Corregidas -->
+          <div class="direcciones-corregidas-box">
+            <span>
+              Direcciones corregidas:
+              <strong>{{ metricas.fallidos_motivo.direcciones_corregidas.reintentados }}</strong> de
+              <strong>{{ metricas.fallidos_motivo.direcciones_corregidas.total_fallidos_direccion }}</strong> reintentados
+              ·
+              <strong>{{ metricas.fallidos_motivo.direcciones_corregidas.entregados }}</strong> entregados
+            </span>
+          </div>
+
+          <!-- Sección de Últimos Fallidos (Operador) -->
+          <div *ngIf="isOperador() && metricas.fallidos_motivo.ultimos_fallidos && metricas.fallidos_motivo.ultimos_fallidos.length > 0" class="ultimos-fallidos-section">
+            <div class="ultimos-header">
+              <span class="ultimos-title">ÚLTIMOS FALLIDOS</span>
+              <button type="button" class="btn-ver-todos" (click)="abrirModalFallidos()">
+                Ver todos &rsaquo;
+              </button>
+            </div>
+
+            <table class="ultimos-table">
+              <tbody>
+                <tr *ngFor="let f of metricas.fallidos_motivo.ultimos_fallidos">
+                  <td>
+                    <button type="button" class="tracking-link-btn" (click)="irADetallePaquete(f.tracking_id)">
+                      {{ f.tracking_id }}
+                    </button>
+                  </td>
+                  <td>{{ f.destino }}</td>
+                  <td>{{ f.motivo }}</td>
+                  <td class="text-right">{{ f.fecha }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Métrica 8: Entregas por Tipo de Vehículo (Dona) -->
+        <section class="card vehiculos-card">
+          <div class="card-header">
+            <h2 class="card-title">Entregas por tipo de vehículo</h2>
+            <span class="card-header-note">
+              {{ isOperador() ? 'paquetes de tu sede' : (idSedeSeleccionada ? 'paquetes de esta sede' : 'todas las sedes') }}
+            </span>
+          </div>
+
+          <div class="donut-chart-wrapper">
+            <!-- Gráfico de Dona SVG -->
+            <div class="donut-svg-container">
+              <svg viewBox="0 0 100 100" class="donut-svg">
+                <!-- Círculo base de fondo -->
+                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#F1F5F9" stroke-width="16"></circle>
+
+                <!-- Segmentos SVG -->
+                <circle
+                  *ngFor="let slice of donutSlices"
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="transparent"
+                  [attr.stroke]="slice.color"
+                  stroke-width="16"
+                  [attr.stroke-dasharray]="slice.strokeDasharray"
+                  [attr.stroke-dashoffset]="slice.strokeDashoffset"
+                  transform="rotate(-90 50 50)"
+                  class="donut-segment"
+                ></circle>
+              </svg>
+            </div>
+
+            <!-- Leyenda y Detalle de Vehículos -->
+            <div class="donut-legend">
+              <div class="donut-legend-item">
+                <div class="legend-color-box box-motorizado"></div>
+                <div class="legend-text">
+                  <span class="legend-name">Motorizado</span>
+                  <span class="legend-val">
+                    {{ metricas.entregas_vehiculo.motorizado.cantidad }} entregas ·
+                    {{ metricas.entregas_vehiculo.motorizado.porcentaje }}%
+                  </span>
+                </div>
+              </div>
+
+              <div class="donut-legend-item">
+                <div class="legend-color-box box-auto"></div>
+                <div class="legend-text">
+                  <span class="legend-name">Auto</span>
+                  <span class="legend-val">
+                    {{ metricas.entregas_vehiculo.auto.cantidad }} entregas ·
+                    {{ metricas.entregas_vehiculo.auto.porcentaje }}%
+                  </span>
+                </div>
+              </div>
+
+              <div class="donut-legend-item">
+                <div class="legend-color-box box-camion"></div>
+                <div class="legend-text">
+                  <span class="legend-name">Camión</span>
+                  <span class="legend-val">
+                    {{ metricas.entregas_vehiculo.camion.cantidad }} entregas ·
+                    {{ metricas.entregas_vehiculo.camion.porcentaje }}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Columna Derecha: Top 5 Conductores y Desempeño Operador -->
+      <div class="grid-column">
+
+        <!-- Métrica 7: Top 5 Conductores -->
+        <section class="card top-conductores-card">
+          <div class="card-header">
+            <h2 class="card-title">Top 5 conductores</h2>
+            <!-- Tabs por vehículo -->
+            <div class="tabs-vehiculo" role="tablist">
+              <button
+                type="button"
+                class="tab-btn"
+                [class.active]="tabVehiculoConductor === 'TODOS'"
+                (click)="cambiarTabVehiculo('TODOS')"
+              >
+                Todos
+              </button>
+              <button
+                type="button"
+                class="tab-btn"
+                [class.active]="tabVehiculoConductor === 'MOTORIZADO'"
+                (click)="cambiarTabVehiculo('MOTORIZADO')"
+              >
+                Motorizado
+              </button>
+              <button
+                type="button"
+                class="tab-btn"
+                [class.active]="tabVehiculoConductor === 'AUTO'"
+                (click)="cambiarTabVehiculo('AUTO')"
+              >
+                Auto
+              </button>
+              <button
+                type="button"
+                class="tab-btn"
+                [class.active]="tabVehiculoConductor === 'CAMION'"
+                (click)="cambiarTabVehiculo('CAMION')"
+              >
+                Camión
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table top-conductores-table">
+              <thead>
+                <tr>
+                  <th class="th-rank">RANKING</th>
+                  <th>CONDUCTOR</th>
+                  <th class="th-entregas text-right">PAQUETES ENTREGADOS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of conductoresFiltrados; let idx = index">
+                  <!-- Columna Ranking con Medalla SVG para 1, 2 y 3 -->
+                  <td class="td-rank">
+                    <!-- Medalla Oro 1 -->
+                    <div *ngIf="idx === 0" class="medal-wrapper medal-gold" title="1er Lugar">
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="#EAB308" stroke="#CA8A04" stroke-width="1">
+                        <circle cx="12" cy="14" r="7"></circle>
+                        <path d="M8 2l4 6 4-6" fill="none" stroke="#EAB308" stroke-width="2"></path>
+                        <text x="12" y="17" text-anchor="middle" font-size="9" font-weight="bold" fill="#713F12">1</text>
+                      </svg>
+                    </div>
+
+                    <!-- Medalla Plata 2 -->
+                    <div *ngIf="idx === 1" class="medal-wrapper medal-silver" title="2do Lugar">
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="#94A3B8" stroke="#64748B" stroke-width="1">
+                        <circle cx="12" cy="14" r="7"></circle>
+                        <path d="M8 2l4 6 4-6" fill="none" stroke="#94A3B8" stroke-width="2"></path>
+                        <text x="12" y="17" text-anchor="middle" font-size="9" font-weight="bold" fill="#1E293B">2</text>
+                      </svg>
+                    </div>
+
+                    <!-- Medalla Bronce 3 -->
+                    <div *ngIf="idx === 2" class="medal-wrapper medal-bronze" title="3er Lugar">
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="#D97706" stroke="#B45309" stroke-width="1">
+                        <circle cx="12" cy="14" r="7"></circle>
+                        <path d="M8 2l4 6 4-6" fill="none" stroke="#D97706" stroke-width="2"></path>
+                        <text x="12" y="17" text-anchor="middle" font-size="9" font-weight="bold" fill="#451A03">3</text>
+                      </svg>
+                    </div>
+
+                    <!-- 4 y 5: Número normal -->
+                    <span *ngIf="idx > 2" class="rank-number">{{ idx + 1 }}</span>
+                  </td>
+
+                  <!-- Conductor y Vehículo/Placa -->
+                  <td>
+                    <div class="conductor-name">{{ c.nombre }}</div>
+                    <div class="conductor-subinfo">{{ c.tipo_vehiculo_label }} · {{ c.placa }}</div>
+                  </td>
+
+                  <!-- Paquetes Entregados -->
+                  <td class="td-entregas text-right">
+                    <strong>{{ c.entregas_qty }}</strong>
+                  </td>
+                </tr>
+
+                <tr *ngIf="conductoresFiltrados.length === 0">
+                  <td colspan="3" class="text-center text-muted">
+                    No hay conductores registrados con entregas en este filtro.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card-footer-note">
+            {{ isOperador() ? 'Paquetes de tu sede entregados' : 'Paquetes entregados' }}
+          </div>
+        </section>
+
+        <!-- Operador: Tu desempeño (Card) -->
+        <section *ngIf="isOperador() && metricas.desempeno_operador" class="card desempeno-card">
+          <div class="card-header">
+            <h2 class="card-title">Tu desempeño</h2>
+          </div>
+
+          <div class="desempeno-list">
+            <div class="desempeno-row">
+              <span class="desempeno-label">Registrados</span>
+              <strong class="desempeno-value">
+                {{ metricas.desempeno_operador.registrados | number }}
+              </strong>
+            </div>
+
+            <div class="desempeno-row">
+              <span class="desempeno-label">Bien registrados</span>
+              <strong class="desempeno-value">
+                {{ metricas.desempeno_operador.bien_registrados_pct !== null ? metricas.desempeno_operador.bien_registrados_pct + '%' : '—' }}
+              </strong>
+            </div>
+
+            <div class="desempeno-row">
+              <span class="desempeno-label">Errores de dirección</span>
+              <strong class="desempeno-value">
+                {{ metricas.desempeno_operador.errores_direccion_qty | number }}
+              </strong>
+            </div>
+
+            <div class="desempeno-row">
+              <span class="desempeno-label">Entregas exitosas</span>
+              <strong class="desempeno-value">
+                {{ metricas.desempeno_operador.entregas_exitosas_pct !== null ? metricas.desempeno_operador.entregas_exitosas_pct + '%' : '—' }}
+              </strong>
+            </div>
+
+            <div class="desempeno-row">
+              <span class="desempeno-label">Tiempo de asignación</span>
+              <strong class="desempeno-value">
+                {{ metricas.desempeno_operador.tiempo_asignacion_horas !== null ? metricas.desempeno_operador.tiempo_asignacion_horas + ' h' : '—' }}
+              </strong>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- Métrica 9: Tabla de Operadores (Solo Administrador) -->
+    <section *ngIf="isAdmin() && metricas.operadores" class="card operadores-card">
+      <div class="card-header card-header-flex">
+        <h2 class="card-title">Operadores</h2>
+
+        <!-- Buscador por nombre -->
+        <div class="search-input-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="text"
+            class="search-input"
+            [(ngModel)]="busquedaOperador"
+            (ngModelChange)="paginaOperador = 1"
+            placeholder="Buscar por nombre..."
+          />
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table operadores-table">
+          <thead>
+            <tr>
+              <th (click)="ordenarOperadoresPor('nombre')">
+                OPERADOR
+                <span class="sort-icon">{{ columnaOrdenOperador === 'nombre' ? (ordenOperadorAsc ? '▲' : '▼') : '' }}</span>
+              </th>
+              <th (click)="ordenarOperadoresPor('sede')">
+                SEDE
+                <span class="sort-icon">{{ columnaOrdenOperador === 'sede' ? (ordenOperadorAsc ? '▲' : '▼') : '' }}</span>
+              </th>
+              <th (click)="ordenarOperadoresPor('registrados')">
+                REGISTRADOS
+                <span class="sort-icon">{{ columnaOrdenOperador === 'registrados' ? (ordenOperadorAsc ? '▲' : '▼') : '' }}</span>
+              </th>
+              <th (click)="ordenarOperadoresPor('bien_registrados_pct')">
+                BIEN REGISTRADOS
+                <span class="sort-icon">{{ columnaOrdenOperador === 'bien_registrados_pct' ? (ordenOperadorAsc ? '▲' : '▼') : '' }}</span>
+              </th>
+              <th (click)="ordenarOperadoresPor('errores_direccion_qty')">
+                ERRORES DE DIRECCIÓN
+                <span class="sort-icon">{{ columnaOrdenOperador === 'errores_direccion_qty' ? (ordenOperadorAsc ? '▲' : '▼') : '' }}</span>
+              </th>
+              <th (click)="ordenarOperadoresPor('entregas_exitosas_pct')">
+                ENTREGAS EXITOSAS
+                <span class="sort-icon">{{ columnaOrdenOperador === 'entregas_exitosas_pct' ? (ordenOperadorAsc ? '▲' : '▼') : '' }}</span>
+              </th>
+              <th (click)="ordenarOperadoresPor('tiempo_asignacion_horas')">
+                TIEMPO DE ASIGNACIÓN
+                <span class="sort-icon">{{ columnaOrdenOperador === 'tiempo_asignacion_horas' ? (ordenOperadorAsc ? '▲' : '▼') : '' }}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let op of operadoresPaginados">
+              <td><strong>{{ op.nombre }}</strong></td>
+              <td>{{ op.sede }}</td>
+              <td>{{ op.registrados | number }}</td>
+              <td>
+                {{ op.bien_registrados_pct !== null ? op.bien_registrados_pct + '%' : '—' }}
+              </td>
+              <td>{{ op.errores_direccion_qty | number }}</td>
+              <td>
+                {{ op.entregas_exitosas_pct !== null ? op.entregas_exitosas_pct + '%' : '—' }}
+              </td>
+              <td>
+                {{ op.tiempo_asignacion_horas !== null ? op.tiempo_asignacion_horas + ' h' : '—' }}
+              </td>
+            </tr>
+
+            <tr *ngIf="operadoresFiltrados.length === 0">
+              <td colspan="7" class="text-center text-muted">
+                No se encontraron operadores con ese criterio.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación de Operadores -->
+      <div *ngIf="operadoresFiltrados.length > 0" class="table-pagination">
+        <span class="pagination-info">
+          Mostrando {{ (paginaOperador - 1) * porPaginaOperador + 1 }}–{{ (paginaOperador * porPaginaOperador > operadoresFiltrados.length ? operadoresFiltrados.length : paginaOperador * porPaginaOperador) }} de {{ operadoresFiltrados.length }} operadores
+        </span>
+
+        <div class="pagination-buttons">
+          <button
+            type="button"
+            class="btn-page"
+            [disabled]="paginaOperador <= 1"
+            (click)="cambiarPaginaOperador(paginaOperador - 1)"
+            aria-label="Página anterior"
+          >
+            ‹
+          </button>
+
+          <button
+            *ngFor="let p of [].constructor(totalPaginasOperadores); let i = index"
+            type="button"
+            class="btn-page"
+            [class.active]="paginaOperador === i + 1"
+            (click)="cambiarPaginaOperador(i + 1)"
+          >
+            {{ i + 1 }}
+          </button>
+
+          <button
+            type="button"
+            class="btn-page"
+            [disabled]="paginaOperador >= totalPaginasOperadores"
+            (click)="cambiarPaginaOperador(paginaOperador + 1)"
+            aria-label="Página siguiente"
+          >
+            ›
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </ng-container>
+
+  <!-- Modal: Entregas Fallidas (Operador "Ver todos") -->
+  <div *ngIf="modalFallidosAbierto" class="modal-backdrop" (click)="cerrarModalFallidos()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">Entregas fallidas</h2>
+          <p class="modal-subtitle">
+            {{ sedeActualLabel }} · {{ formatearDisplay(desde) }} – {{ formatearDisplay(hasta) }} · {{ fallidosTotal }} fallidos
+          </p>
+        </div>
+        <button
+          type="button"
+          class="btn-modal-close"
+          (click)="cerrarModalFallidos()"
+          aria-label="Cerrar modal"
+        >
+          &times;
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div *ngIf="cargandoFallidos" class="modal-loading">
+          <div class="spinner"></div>
+          <p>Cargando entregas fallidas...</p>
+        </div>
+
+        <div *ngIf="!cargandoFallidos" class="table-responsive">
+          <table class="data-table modal-fallidos-table">
+            <thead>
+              <tr>
+                <th>TRACKING</th>
+                <th>DESTINO</th>
+                <th>MOTIVO</th>
+                <th>FECHA DEL FALLO</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let f of fallidosList">
+                <td>
+                  <button type="button" class="tracking-link-btn" (click)="irADetallePaquete(f.tracking_id)">
+                    {{ f.tracking_id }}
+                  </button>
+                </td>
+                <td>{{ f.destino }}</td>
+                <td>{{ f.motivo }}</td>
+                <td>{{ f.fecha_fallo }}</td>
+              </tr>
+
+              <tr *ngIf="fallidosList.length === 0">
+                <td colspan="4" class="text-center text-muted">
+                  No hay entregas fallidas en este período.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div *ngIf="fallidosTotal > 0" class="modal-footer">
+        <span class="pagination-info">
+          Mostrando {{ rangoFallidosTexto }}
+        </span>
+
+        <div class="pagination-buttons">
+          <button
+            type="button"
+            class="btn-page"
+            [disabled]="fallidosPagina <= 1"
+            (click)="cambiarPaginaFallidos(fallidosPagina - 1)"
+            aria-label="Página anterior"
+          >
+            ‹
+          </button>
+
+          <button
+            *ngFor="let p of [].constructor(fallidosTotalPaginas); let i = index"
+            type="button"
+            class="btn-page"
+            [class.active]="fallidosPagina === i + 1"
+            (click)="cambiarPaginaFallidos(i + 1)"
+          >
+            {{ i + 1 }}
+          </button>
+
+          <button
+            type="button"
+            class="btn-page"
+            [disabled]="fallidosPagina >= fallidosTotalPaginas"
+            (click)="cambiarPaginaFallidos(fallidosPagina + 1)"
+            aria-label="Página siguiente"
+          >
+            ›
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

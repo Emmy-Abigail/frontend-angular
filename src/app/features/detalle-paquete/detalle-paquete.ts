@@ -4,6 +4,8 @@ import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { OperadorService } from '../../core/services/operador.service';
+import { CatalogService } from '../../core/services/catalog.service';
+import { District } from '../../core/models/catalog.models';
 
 type EstadoPaquete =
   | 'EN RUTA'
@@ -65,6 +67,11 @@ interface PaqueteDetalle {
 export class DetallePaquete {
   private readonly operadorService = inject(OperadorService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly catalogService = inject(CatalogService);
+
+  distritos: District[] = [];
+  reintentosRestantes: number | null = null;
+  nuevoCostoEstimado: number | null = null;
 
   paquete: PaqueteDetalle | null = null;
 
@@ -159,6 +166,69 @@ export class DetallePaquete {
     ubigeo_distrito: '',
   };
 
+  cargarDistritos(): void {
+    if (this.distritos.length > 0) return;
+    this.catalogService.getGeography().subscribe({
+      next: (deps) => {
+        this.distritos = (deps || []).flatMap((d) => d.provincias.flatMap((p) => p.distritos));
+        this.cdr.markForCheck();
+      },
+      error: () => {},
+    });
+  }
+
+  onDistritoChange(): void {
+    this.direccionGuardada = false;
+    this.errorDireccion = '';
+    const d = this.distritos.find((item) => item.ubigeo === this.formDireccion.ubigeo_distrito);
+    if (d && this.paquete) {
+      this.paquete.destino = d.nombre_mostrado;
+    }
+    this.cotizarNuevaDireccion();
+  }
+
+  cotizarNuevaDireccion(): void {
+    const ubigeo = this.formDireccion.ubigeo_distrito;
+    if (!ubigeo || !this.paquete) return;
+
+    let peso = 1;
+    if (this.paquete.pesoReal) {
+      const match = this.paquete.pesoReal.match(/[\d.]+/);
+      if (match) peso = parseFloat(match[0]);
+    }
+
+    let largo = 10;
+    let ancho = 10;
+    let alto = 10;
+    if (this.paquete.medidas) {
+      const parts = this.paquete.medidas.split('x').map((s) => parseFloat(s.trim()));
+      if (parts.length >= 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
+        largo = parts[0];
+        ancho = parts[1];
+        alto = parts[2];
+      }
+    }
+
+    this.operadorService
+      .cotizar({
+        ubigeo_destino: ubigeo,
+        peso_kg: peso,
+        largo_cm: largo,
+        ancho_cm: ancho,
+        alto_cm: alto,
+      })
+      .subscribe({
+        next: (res) => {
+          this.nuevoCostoEstimado = parseFloat(res.monto);
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.nuevoCostoEstimado = null;
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
   guardarCorreccionDireccion(): void {
     this.errorDireccion = '';
     this.mensajeDireccionGuardada = '';
@@ -184,7 +254,7 @@ export class DetallePaquete {
       (this.formDireccion.numero || '').trim() !== (this.direccionOriginal.numero || '').trim() ||
       (this.formDireccion.manzana || '').trim() !== (this.direccionOriginal.manzana || '').trim() ||
       (this.formDireccion.lote || '').trim() !== (this.direccionOriginal.lote || '').trim() ||
-      (this.formDireccion.referencia || '').trim() !== (this.direccionOriginal.referencia || '').trim();
+      (this.formDireccion.referencia || '').trim() !== (this.direccionOriginal.referencia || '').trim() || (this.formDireccion.ubigeo_distrito || '') !== (this.direccionOriginal.ubigeo_distrito || '');
 
     if (!cambio) {
       this.errorDireccion = 'Debes corregir al menos un campo de la dirección antes de continuar.';
@@ -214,6 +284,11 @@ export class DetallePaquete {
     }
     if (this.esRechazadoPorDestinatario) {
       this.errorReasignacion = 'Los paquetes rechazados por el destinatario no admiten reasignación.';
+      this.cdr.markForCheck();
+      return;
+    }
+    if (this.reintentosRestantes !== null && this.reintentosRestantes <= 0) {
+      this.errorReasignacion = 'Este envío ya alcanzó el máximo de 3 reintentos.';
       this.cdr.markForCheck();
       return;
     }
@@ -354,6 +429,7 @@ export class DetallePaquete {
           this.mensajeDireccionGuardada = '';
           this.errorDireccion = '';
 
+          this.reintentosRestantes = res.reintentos_restantes !== undefined ? res.reintentos_restantes : null;
           if (res.direccion && typeof res.direccion === 'object') {
             this.formDireccion = {
               tipo_via: res.direccion.tipo_via || 'Av.',

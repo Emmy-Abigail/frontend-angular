@@ -330,6 +330,20 @@
       </div>
 
       <div class="form-corregir-grid">
+        <div class="campo-corregir campo-distrito">
+          <label for="distrito_corr">Distrito</label>
+          <select
+            id="distrito_corr"
+            [(ngModel)]="formDireccion.ubigeo_distrito"
+            (focus)="cargarDistritos()"
+            (change)="onDistritoChange()"
+          >
+            <option value="">Seleccionar distrito...</option>
+            <option *ngFor="let d of distritos" [value]="d.ubigeo">
+              {{ d.nombre_mostrado }}
+            </option>
+          </select>
+        </div>
         <div class="campo-corregir">
           <label for="tipo_via_corr">Tipo de vía</label>
           <select id="tipo_via_corr" [(ngModel)]="formDireccion.tipo_via" (change)="direccionGuardada = false">
@@ -423,11 +437,14 @@
       <p class="reassign-error" role="alert" *ngIf="errorReasignacion">
         {{ errorReasignacion }}
       </p>
+      <p class="reassign-max-reached" role="alert" *ngIf="reintentosRestantes !== null && reintentosRestantes <= 0" style="color: #991b1b; background: #fef2f2; border: 1px solid #fecaca; padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
+        Este envío ya alcanzó el máximo de 3 reintentos.
+      </p>
       <button
         type="button"
         class="btn-reassign"
         (click)="solicitarReasignacion()"
-        [disabled]="cargando || reasignando || !p.id || paqueteReintentadoId === p.id || (requiereCorregirDireccion && !direccionGuardada)"
+        [disabled]="cargando || reasignando || !p.id || paqueteReintentadoId === p.id || (requiereCorregirDireccion && !direccionGuardada) || (reintentosRestantes !== null && reintentosRestantes <= 0)"
         [attr.aria-busy]="reasignando"
       >
         {{ reasignando ? 'Reasignando…' : 'Reasignar' }}
@@ -454,7 +471,10 @@
         <div class="reassign-modal-body">
           <p>¿Confirmas que deseas reasignar el paquete <strong>{{ p.tracking }}</strong>?</p>
           <div *ngIf="requiereCorregirDireccion && direccionGuardada" class="modal-subtexto-dir" style="margin: 12px 0; padding: 10px 14px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; font-size: 13px; color: #166534;">
-            <strong>Dirección corregida:</strong> {{ p.direccionEntrega }}
+            <div><strong>Dirección corregida:</strong> {{ p.direccionEntrega }}</div>
+            <div *ngIf="nuevoCostoEstimado !== null" style="margin-top: 6px; font-weight: 600; color: #0f172a;">
+              Nuevo costo estimado: S/ {{ nuevoCostoEstimado | number:'1.2-2' }}
+            </div>
           </div>
           <p class="modal-subtexto">
             El paquete será derivado a un lote disponible con espacio para su vehículo o se creará un nuevo lote en almacén si no hay cupo.

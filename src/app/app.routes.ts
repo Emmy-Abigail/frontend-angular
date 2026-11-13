@@ -131,6 +131,10 @@ export const routes: Routes = [
         path: 'lotes',
         component: Lotes,
       },
+      {
+        path: 'dashboard',
+        component: Dashboard,
+      },
     ],
   },
 
