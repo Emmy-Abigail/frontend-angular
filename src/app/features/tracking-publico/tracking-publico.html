@@ -1,22 +1,17 @@
+
 <section class="tracking">
   <div class="tracking-container">
 
     <div class="tracking-header">
       <h2>Rastrea tu envío</h2>
-
       <p>
         Ingresa tu código de seguimiento para consultar el estado de tu envío.
       </p>
     </div>
 
-    <form
-      class="tracking-form"
-      (ngSubmit)="consultarEnvio()"
-    >
+    <form class="tracking-form" (ngSubmit)="consultarEnvio()">
       <div class="form-group">
-        <label for="codigo">
-          Código de seguimiento
-        </label>
+        <label for="codigo">Código de seguimiento</label>
 
         <input
           id="codigo"
@@ -30,9 +25,7 @@
       </div>
 
       @if (error) {
-        <p class="error-message">
-          {{ error }}
-        </p>
+        <p class="error-message">{{ error }}</p>
       }
 
       <button type="submit" [disabled]="cargando">
@@ -44,95 +37,121 @@
       <div class="resultado">
 
         <div class="resultado-header">
-          <div>
-            <span class="resultado-label">
-              Código de seguimiento
-            </span>
-
-            <strong>
-              {{ envio.tracking_id }}
-            </strong>
+          <div class="resultado-identificacion">
+            <span class="resultado-label">Código de seguimiento</span>
+            <strong>{{ envio.tracking_id }}</strong>
           </div>
 
-          <span class="estado">
-            {{ envio.estado.nombre }}
-          </span>
+          <div class="resultado-acciones">
+            <span
+              class="estado"
+              [class.estado-en-almacen]="envio.estado.codigo === 'EN_ALMACEN'"
+              [class.estado-asignado]="envio.estado.codigo === 'ASIGNADO'"
+              [class.estado-en-ruta]="envio.estado.codigo === 'EN_RUTA'"
+              [class.estado-entregado]="envio.estado.codigo === 'ENTREGADO'"
+              [class.estado-fallido]="esFallido"
+            >
+              {{ envio.estado.nombre }}
+            </span>
+
+            <button
+              class="actualizar-button"
+              type="button"
+              (click)="actualizarSeguimiento()"
+              [disabled]="cargando"
+            >
+              {{ cargando ? 'Actualizando...' : 'Actualizar' }}
+            </button>
+          </div>
         </div>
 
         <div class="resultado-datos">
-
           <div>
-            <span>Destino</span>
+            <span>Distrito de destino</span>
             <strong>
               {{ envio.destino.distrito || 'No disponible' }}
             </strong>
           </div>
 
           <div>
-            <span>Fecha de ingreso</span>
-            <strong>
-              {{ envio.fecha_ingreso || 'No disponible' }}
-            </strong>
+            <span>Fecha de despacho</span>
+            <strong>{{ fechaDespacho }}</strong>
           </div>
-
-          <div>
-            <span>Estado actual</span>
-            <strong>
-              {{ envio.estado.nombre }}
-            </strong>
-          </div>
-
         </div>
 
         <div class="tracking-timeline">
           <h3>Historial del envío</h3>
 
-          @if (envio.linea_de_tiempo.length > 0) {
-            <div class="timeline-list">
+          @if (esFallido) {
+            <div class="fallido-aviso">
+              <strong>Envío fallido</strong>
 
               @for (evento of envio.linea_de_tiempo; track $index) {
-                <div class="timeline-item">
+                @if (evento.estado === 'FALLIDO' && evento.motivo) {
+                  <p>Motivo: {{ evento.motivo }}</p>
+                }
+              }
+            </div>
+          }
 
-                  <div class="timeline-marker"></div>
+          <div class="timeline-list">
+            @for (etapa of etapasSeguimiento; track etapa.codigo) {
+              <div
+                class="timeline-item"
+                [class.completada]="etapa.completada"
+                [class.actual]="etapa.actual"
+                [class.etapa-en-almacen]="etapa.codigo === 'EN_ALMACEN'"
+                [class.etapa-asignado]="etapa.codigo === 'ASIGNADO'"
+                [class.etapa-en-ruta]="etapa.codigo === 'EN_RUTA'"
+                [class.etapa-entregado]="etapa.codigo === 'ENTREGADO'"
+                [class.etapa-fallido]="esFallido && etapa.codigo === 'ENTREGADO'"
+              >
+                <div class="timeline-marker">
+                  @if (esFallido && etapa.codigo === 'ENTREGADO') {
+                    <span>×</span>
+                  } @else if (etapa.completada) {
+                    <span>✓</span>
+                  }
+                </div>
 
-                  <div class="timeline-content">
-                    <strong>
-                      {{ evento.nombre }}
-                    </strong>
+                <div class="timeline-content">
+                  <div class="timeline-title">
+                    <strong>{{ etapa.nombre }}</strong>
 
-                    <span class="timeline-date">
-                      {{ evento.fecha }}
-                    </span>
-
-                    @if (evento.motivo) {
-                      <p>
-                        Motivo: {{ evento.motivo }}
-                      </p>
+                    @if (esFallido && etapa.codigo === 'ENTREGADO') {
+                      <span class="timeline-status fallido">Fallido</span>
+                    } @else if (etapa.actual && !esFallido) {
+                      <span class="timeline-status">Estado actual</span>
+                    } @else if (etapa.completada) {
+                      <span class="timeline-status">Completado</span>
+                    } @else {
+                      <span class="timeline-status pendiente">Pendiente</span>
                     }
                   </div>
 
+                  @if (etapa.evento) {
+                    <span class="timeline-date">
+                      {{ formatearFecha(etapa.evento.fecha) }}
+                    </span>
+                  }
                 </div>
-              }
-
-            </div>
-          } @else {
-            <p class="timeline-empty">
-              Todavía no hay movimientos registrados para este envío.
-            </p>
-          }
+              </div>
+            }
+          </div>
         </div>
+
+        @if (fechaConsulta) {
+          <p class="tracking-consultado">
+            Consultado el {{ formatearFecha(fechaConsulta) }}
+          </p>
+        }
 
       </div>
     }
 
     <div class="tracking-help">
-      <p>
-        ¿No tienes un código de seguimiento?
-      </p>
-
-      <a routerLink="/cotizar">
-        Cotiza un nuevo envío
-      </a>
+      <p>¿No tienes un código de seguimiento?</p>
+      <a routerLink="/cotizar">Cotiza un nuevo envío</a>
     </div>
 
   </div>

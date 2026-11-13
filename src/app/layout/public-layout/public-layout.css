@@ -1,9 +1,10 @@
+
 .header {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 100;
   border-bottom: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(8px);
   padding: 18px 0;
 }
@@ -12,12 +13,14 @@
   width: 90%;
   max-width: var(--content-max-width);
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .header .container {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 20px;
 }
 
 .header h1 {
@@ -35,6 +38,7 @@
 nav {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: var(--space-8);
 }
 
@@ -44,16 +48,55 @@ nav a {
   font-weight: var(--fw-medium);
   color: var(--color-text-secondary);
   transition: color var(--transition-fast);
+  white-space: nowrap;
 }
 
 nav a:hover {
   color: var(--color-primary);
 }
 
+/* Botón hamburguesa: oculto en escritorio */
+.menu-toggle {
+  display: none;
+  width: 42px;
+  height: 42px;
+  padding: 9px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #ffffff;
+  cursor: pointer;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
+.menu-toggle span {
+  display: block;
+  width: 21px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-text);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.menu-toggle span:nth-child(1).open {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.menu-toggle span:nth-child(2).open {
+  opacity: 0;
+}
+
+.menu-toggle span:nth-child(3).open {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
 .main {
   min-height: 70vh;
   padding: 60px 0;
   background: var(--color-bg);
+  box-sizing: border-box;
 }
 
 .footer {
@@ -61,6 +104,7 @@ nav a:hover {
   padding: 24px 0;
   text-align: center;
   background: var(--color-surface);
+  box-sizing: border-box;
 }
 
 .footer p {
@@ -69,17 +113,70 @@ nav a:hover {
   color: var(--color-text-muted);
 }
 
-@media (max-width: 700px) {
+/* Tablet y móvil */
+@media (max-width: 850px) {
+  .header {
+    padding: 14px 0;
+  }
+
   .header .container {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
+    position: relative;
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+  .header h1 {
+    font-size: clamp(17px, 4vw, 21px);
+  }
+
+  .menu-toggle {
+    display: flex;
   }
 
   nav {
+    display: none;
     width: 100%;
-    justify-content: space-between;
-    gap: var(--space-4);
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding-top: 12px;
+  }
+
+  nav.menu-open {
+    display: flex;
+  }
+
+  nav a {
+    padding: 13px 8px;
+    border-top: 1px solid var(--color-border);
+    font-size: 14px;
+  }
+
+  .main {
+    padding: 30px 0;
+  }
+}
+
+/* Móviles pequeños */
+@media (max-width: 360px) {
+  .container {
+    width: 92%;
+  }
+
+  .header h1 {
+    font-size: 16px;
+  }
+
+  .menu-toggle {
+    width: 38px;
+    height: 38px;
+  }
+
+  .footer {
+    padding: 20px 0;
+  }
+
+  .footer p {
+    font-size: 12px;
   }
 }
