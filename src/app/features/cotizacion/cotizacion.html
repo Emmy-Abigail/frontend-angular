@@ -1,163 +1,177 @@
-<section class="cotizacion">
 
+<section class="cotizacion">
   <div class="cotizacion-container">
 
-    <div class="cotizacion-header">
-
+    <header class="cotizacion-header">
       <h2>Cotiza tu envío</h2>
+      <p>Completa los datos de tu envío y conoce su precio estimado.</p>
+    </header>
 
-      <p>
-        Ingresa los datos de tu envío y obtén una cotización.
-      </p>
+    <form class="cotizacion-form" (ngSubmit)="calcularCotizacion()">
 
-    </div>
+      <div class="form-row route-row">
+        <div class="form-group">
+          <label for="origen">Distrito de origen</label>
+          <select
+            id="origen"
+            name="origen"
+            [(ngModel)]="origen"
+            (ngModelChange)="limpiarResultado()"
+            (blur)="marcarTocado('origen')"
+          >
+            <option value="">Selecciona el origen</option>
+            @for (distrito of distritos; track distrito.ubigeo) {
+              <option [value]="distrito.ubigeo">
+                {{ distrito.nombre_mostrado }}
+              </option>
+            }
+          </select>
 
-
-    <form
-      class="cotizacion-form"
-      (ngSubmit)="calcularCotizacion()"
-    >
-
-      <div class="form-group">
-
-        <label for="origen">
-          Origen
-        </label>
-
-        <input
-          id="origen"
-          name="origen"
-          type="text"
-          placeholder="Ingresa el lugar de origen"
-          [(ngModel)]="origen"
-        />
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label for="destino">
-          Destino
-        </label>
-
-        <input
-          id="destino"
-          name="destino"
-          type="text"
-          placeholder="Ingresa el lugar de destino"
-          [(ngModel)]="destino"
-        />
-
-      </div>
-
-
-      <div class="form-row">
+          @if (mostrarError('origen')) {
+            <small class="field-error">Selecciona el distrito de origen.</small>
+          }
+        </div>
 
         <div class="form-group">
+          <label for="destino">Distrito de destino</label>
+          <select
+            id="destino"
+            name="destino"
+            [(ngModel)]="destino"
+            (ngModelChange)="limpiarResultado()"
+            (blur)="marcarTocado('destino')"
+          >
+            <option value="">Selecciona el destino</option>
+            @for (distrito of distritos; track distrito.ubigeo) {
+              <option [value]="distrito.ubigeo">
+                {{ distrito.nombre_mostrado }}
+              </option>
+            }
+          </select>
 
-          <label for="peso">
-            Peso (kg)
-          </label>
+          @if (mostrarError('destino')) {
+            <small class="field-error">Selecciona el distrito de destino.</small>
+          }
+        </div>
+      </div>
 
+      <div class="section-divider"></div>
+
+      <div class="form-row package-row">
+
+        <div class="form-group">
+          <label for="peso">Peso (kg)</label>
           <input
             id="peso"
             name="peso"
             type="number"
             min="0.1"
+            max="50"
             step="0.1"
             placeholder="Ej. 2.5"
             [(ngModel)]="peso"
+            (ngModelChange)="limpiarResultado()"
+            (blur)="marcarTocado('peso')"
           />
 
+          @if (mostrarError('peso')) {
+            <small class="field-error">Entre 0.1 y 50 kg.</small>
+          }
         </div>
-
 
         <div class="form-group">
+          <label for="largo">Largo (cm)</label>
+          <input
+            id="largo"
+            name="largo"
+            type="number"
+            min="10"
+            max="150"
+            placeholder="Largo"
+            [(ngModel)]="largo"
+            (ngModelChange)="limpiarResultado()"
+            (blur)="marcarTocado('largo')"
+          />
 
-          <label for="tipo">
-            Tipo de envío
-          </label>
+          @if (mostrarError('largo')) {
+            <small class="field-error">Entre 10 y 150 cm.</small>
+          }
+        </div>
 
-          <select
-            id="tipo"
-            name="tipo"
-            [(ngModel)]="tipo"
-          >
+        <div class="form-group">
+          <label for="ancho">Ancho (cm)</label>
+          <input
+            id="ancho"
+            name="ancho"
+            type="number"
+            min="10"
+            max="150"
+            placeholder="Ancho"
+            [(ngModel)]="ancho"
+            (ngModelChange)="limpiarResultado()"
+            (blur)="marcarTocado('ancho')"
+          />
 
-            <option value="">
-              Selecciona una opción
-            </option>
+          @if (mostrarError('ancho')) {
+            <small class="field-error">Entre 10 y 150 cm.</small>
+          }
+        </div>
 
-            <option value="documento">
-              Documento
-            </option>
+        <div class="form-group">
+          <label for="alto">Alto (cm)</label>
+          <input
+            id="alto"
+            name="alto"
+            type="number"
+            min="10"
+            max="150"
+            placeholder="Alto"
+            [(ngModel)]="alto"
+            (ngModelChange)="limpiarResultado()"
+            (blur)="marcarTocado('alto')"
+          />
 
-            <option value="paquete">
-              Paquete
-            </option>
-
-            <option value="fragil">
-              Paquete frágil
-            </option>
-
-          </select>
-
+          @if (mostrarError('alto')) {
+            <small class="field-error">Entre 10 y 150 cm.</small>
+          }
         </div>
 
       </div>
 
-
       @if (error) {
-
-        <p class="error-message">
-          {{ error }}
-        </p>
-
+        <p class="error-message">{{ error }}</p>
       }
 
-
-      <button type="submit">
-        Calcular cotización
+      <button type="submit" [disabled]="cargando">
+        @if (cargando) {
+          Calculando...
+        } @else {
+          Cotizar envío
+        }
       </button>
-
     </form>
 
+    @if (resultado) {
+      <section class="resultado">
+        <span class="resultado-label">Precio estimado</span>
 
-    @if (mostrarResultado) {
+        <strong>S/ {{ montoFormateado }}</strong>
 
-      <div class="resultado">
-
-        <span>
-          Cotización estimada
-        </span>
-
-        <strong>
-          S/ {{ cotizacion.toFixed(2) }}
-        </strong>
+        <div class="entrega-estimada">
+          Entrega estimada: 24 a 48 horas
+        </div>
 
         <p>
-          Esta cotización es referencial y corresponde a una demostración
-          del sistema.
+          Precio referencial. El monto final se confirma al registrar
+          el envío en una sede.
         </p>
-
-      </div>
-
+      </section>
     }
 
-
     <div class="navigation-links">
-
-      <p>
-        ¿Ya tienes un envío?
-      </p>
-
-      <a routerLink="/seguimiento">
-        Rastrear envío
-      </a>
-
+      <p>¿Ya tienes un envío?</p>
+      <a routerLink="/seguimiento">Rastrear envío</a>
     </div>
 
   </div>
-
 </section>

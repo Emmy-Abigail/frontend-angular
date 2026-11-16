@@ -1,57 +1,58 @@
-<header class="header">
 
+<header class="header">
   <div class="container">
 
     <h1>
-      <a routerLink="/">
+      <a routerLink="/" (click)="cerrarMenu()">
         Gestión de Envíos
       </a>
     </h1>
 
-    <nav>
+    <button
+      class="menu-toggle"
+      type="button"
+      (click)="toggleMenu()"
+      [attr.aria-expanded]="menuAbierto()"
+      aria-label="Abrir o cerrar menú de navegación"
+    >
+      <span [class.open]="menuAbierto()"></span>
+      <span [class.open]="menuAbierto()"></span>
+      <span [class.open]="menuAbierto()"></span>
+    </button>
 
-      <a routerLink="/">
+    <nav [class.menu-open]="menuAbierto()">
+      <a routerLink="/" (click)="cerrarMenu()">
         Inicio
       </a>
 
-      <a routerLink="/cotizar">
+      <a routerLink="/cotizar" (click)="cerrarMenu()">
         Cotizar envío
       </a>
 
-      <a routerLink="/seguimiento">
+      <a routerLink="/seguimiento" (click)="cerrarMenu()">
         Rastrear envío
       </a>
 
-      <a routerLink="/login/admin">
+      <a routerLink="/login/admin" (click)="cerrarMenu()">
         Acceso Personal
       </a>
 
-      <a routerLink="/login/conductor">
+      <a routerLink="/login/conductor" (click)="cerrarMenu()">
         Acceso Conductor
       </a>
-
     </nav>
 
   </div>
-
 </header>
 
-
 <main class="main">
-
   <router-outlet />
-
 </main>
 
-
 <footer class="footer">
-
   <div class="container">
-
     <p>
       © 2026 Sistema de Gestión de Envíos
     </p>
-
   </div>
-
 </footer>

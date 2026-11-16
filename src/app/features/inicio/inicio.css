@@ -1,3 +1,4 @@
+
 .inicio {
   min-height: calc(100vh - 70px);
   padding: 40px 30px;
@@ -177,6 +178,7 @@
   color: #ffffff;
 }
 
+/* Tablet */
 @media (max-width: 1000px) {
   .inicio {
     padding: 40px 20px;
@@ -199,21 +201,23 @@
   }
 }
 
+/* Móvil: distribución vertical */
 @media (max-width: 850px) {
   .inicio {
     min-height: auto;
-    padding: 50px 20px;
+    padding: 35px 20px;
   }
 
   .inicio-container {
     flex-direction: column;
-    gap: 40px;
+    gap: 30px;
   }
 
   .inicio-left-card,
   .inicio-content {
     width: 100%;
     max-width: 520px;
+    flex-shrink: 1;
   }
 
   .inicio-content {
@@ -234,9 +238,14 @@
   }
 }
 
-@media (max-width: 500px) {
+/* Móvil vertical */
+@media (max-width: 500px) and (orientation: portrait) {
   .inicio {
-    padding: 30px 12px;
+    padding: 25px 12px 35px;
+  }
+
+  .inicio-container {
+    gap: 28px;
   }
 
   .inicio-left-card {
@@ -244,28 +253,187 @@
   }
 
   .inicio-image-wrapper {
-    height: 280px;
+    height: 250px;
   }
 
   .inicio-features {
     padding: 14px 12px;
+    border-top: none;
+    gap: 14px;
+  }
+
+  .feature-item {
+    gap: 10px;
+  }
+
+  .feature-text h3 {
+    font-size: 16px;
+  }
+
+  .feature-text p {
+    font-size: 12px;
+    line-height: 1.3;
   }
 
   .inicio-content h2 {
     font-size: 36px;
+    line-height: 1.05;
   }
 
   .inicio-content p {
     font-size: 15px;
+    line-height: 1.35;
+    margin-bottom: 25px;
   }
 
   .inicio-actions {
     flex-direction: column;
     width: 100%;
+    gap: 12px;
   }
 
   .primary-button,
   .secondary-button {
     width: 100%;
+    min-width: 0;
+    padding: 14px 20px;
+  }
+}
+
+/* Móvil horizontal: imagen a la izquierda y beneficios a la derecha */
+@media (max-width: 850px) and (orientation: landscape) {
+  .inicio {
+    padding: 25px 20px;
+  }
+
+  .inicio-container {
+    gap: 28px;
+  }
+
+  .inicio-left-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: stretch;
+    max-width: 650px;
+    padding: 10px;
+    gap: 0;
+  }
+
+  .inicio-image-wrapper {
+    height: 100%;
+    min-height: 190px;
+    background: #ffffff;
+  }
+
+  .inicio-features {
+    justify-content: center;
+    padding: 12px 10px;
+    border: 1px solid #e5e7eb;
+    gap: 12px;
+  }
+
+  .feature-item {
+    gap: 8px;
+  }
+
+  .feature-icon {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+  }
+
+  .feature-text h3 {
+    font-size: 14px;
+  }
+
+  .feature-text p {
+    font-size: 11px;
+    line-height: 1.25;
+  }
+
+  .inicio-content {
+    max-width: 650px;
+    text-align: center;
+  }
+
+  .inicio-content h2 {
+    font-size: clamp(30px, 5vw, 38px);
+  }
+
+  .inicio-content p {
+    font-size: 14px;
+    margin: 0 auto 18px;
+  }
+
+  .inicio-actions {
+    justify-content: center;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .primary-button,
+  .secondary-button {
+    min-width: 0;
+    padding: 11px 14px;
+    font-size: 12px;
+  }
+}
+
+/* Teléfonos horizontales muy pequeños */
+@media (max-width: 500px) and (orientation: landscape) {
+  .inicio {
+    padding: 18px 12px 25px;
+  }
+
+  .inicio-container {
+    gap: 22px;
+  }
+
+  .inicio-left-card {
+    padding: 7px;
+  }
+
+  .inicio-image-wrapper {
+    min-height: 155px;
+  }
+
+  .inicio-features {
+    padding: 8px 6px;
+    gap: 9px;
+  }
+
+  .feature-icon {
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    border-radius: 6px;
+  }
+
+  .feature-icon svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .feature-text h3 {
+    font-size: 12px;
+  }
+
+  .feature-text p {
+    font-size: 10px;
+  }
+
+  .inicio-content h2 {
+    font-size: 30px;
+  }
+
+  .inicio-content p {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .primary-button,
+  .secondary-button {
+    padding: 9px 10px;
+    font-size: 11px;
   }
 }

@@ -1,3 +1,4 @@
+
 .tracking {
   padding: 20px 20px 60px;
 }
@@ -22,6 +23,8 @@
   margin: 0;
   color: var(--color-text-secondary);
 }
+
+/* FORMULARIO */
 
 .tracking-form {
   background: var(--color-surface);
@@ -75,11 +78,11 @@
 
 .resultado {
   margin-top: 25px;
+  padding: 28px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  padding: 25px;
 }
 
 .resultado-header {
@@ -87,45 +90,110 @@
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  padding-bottom: 20px;
+  padding-bottom: 22px;
   border-bottom: 1px solid var(--color-border);
 }
 
+.resultado-identificacion {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
 .resultado-label {
-  display: block;
-  margin-bottom: 8px;
   color: var(--color-text-secondary);
   font-size: var(--fs-sm);
 }
 
 .resultado-header strong {
-  font-size: var(--fs-lg);
+  font-size: var(--fs-xl);
   color: var(--color-text);
+  letter-spacing: 0.03em;
   overflow-wrap: anywhere;
 }
 
+.resultado-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* COLORES DE LA ETIQUETA DEL ESTADO */
+
 .estado {
   display: inline-block;
-  padding: 8px 14px;
-  border-radius: var(--radius-sm);
-  background: var(--color-primary);
-  color: var(--color-text-inverse);
+  padding: 9px 15px;
+  border-radius: 20px;
   font-size: var(--fs-sm);
   font-weight: var(--fw-semibold);
   text-align: center;
+  white-space: nowrap;
 }
+
+.estado-en-almacen {
+  background: #fff0e6;
+  color: #ea580c;
+}
+
+.estado-asignado {
+  background: #eaf3ff;
+  color: #2563eb;
+}
+
+.estado-en-ruta {
+  background: #f3e8ff;
+  color: #9333ea;
+}
+
+.estado-entregado {
+  background: #e8f8ee;
+  color: #15803d;
+}
+
+.estado-fallido {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.actualizar-button {
+  padding: 9px 15px;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-primary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.actualizar-button:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+.actualizar-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* DATOS DEL PAQUETE */
 
 .resultado-datos {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-5);
-  padding-top: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  padding: 23px 0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .resultado-datos div {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
   min-width: 0;
 }
 
@@ -138,14 +206,13 @@
   font-size: var(--fs-md);
   color: var(--color-text);
   overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
 }
 
 /* HISTORIAL */
 
 .tracking-timeline {
-  margin-top: 30px;
-  padding-top: 25px;
-  border-top: 1px solid var(--color-border);
+  margin-top: 26px;
 }
 
 .tracking-timeline h3 {
@@ -162,36 +229,87 @@
 .timeline-item {
   position: relative;
   display: flex;
-  gap: 15px;
-  padding-bottom: 25px;
+  gap: 16px;
+  min-height: 76px;
+  padding-bottom: 24px;
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+  min-height: auto;
 }
 
 .timeline-item:not(:last-child)::before {
   content: '';
   position: absolute;
-  left: 6px;
-  top: 15px;
+  left: 8px;
+  top: 19px;
   bottom: 0;
   width: 2px;
   background: var(--color-border);
 }
 
+.timeline-item.completada:not(:last-child)::before {
+  background: #16a34a;
+}
+
+/* MARCADORES */
+
 .timeline-marker {
   position: relative;
   z-index: 1;
+  display: flex;
   flex-shrink: 0;
-  width: 14px;
-  height: 14px;
-  margin-top: 3px;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border: 2px solid #cbd5e1;
   border-radius: 50%;
-  background: var(--color-primary);
+  background: var(--color-surface);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  box-sizing: border-box;
 }
+
+.timeline-item.completada .timeline-marker {
+  border-color: #16a34a;
+  background: #16a34a;
+}
+
+.timeline-item.actual .timeline-marker {
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.13);
+}
+
+/* ENTREGA FALLIDA */
+
+.timeline-item.etapa-fallido .timeline-marker {
+  border-color: #dc2626;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 15px;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.13);
+}
+
+/* CONTENIDO */
 
 .timeline-content {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
   min-width: 0;
+  flex: 1;
+  padding-bottom: 2px;
+}
+
+.timeline-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .timeline-content strong {
@@ -199,19 +317,51 @@
   font-size: var(--fs-md);
 }
 
+.timeline-item:not(.completada):not(.etapa-fallido) .timeline-content strong {
+  color: var(--color-text-secondary);
+  font-weight: var(--fw-medium);
+}
+
+.timeline-status {
+  color: #15803d;
+  font-size: 12px;
+  font-weight: var(--fw-semibold);
+}
+
+.timeline-status.pendiente {
+  color: var(--color-text-muted);
+  font-weight: var(--fw-medium);
+}
+
+.timeline-item.etapa-fallido .timeline-content strong,
+.timeline-item.etapa-fallido .timeline-status {
+  color: #dc2626;
+}
+
 .timeline-date {
   color: var(--color-text-secondary);
   font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
 
-.timeline-content p {
-  margin: 4px 0 0;
-  color: var(--color-text-secondary);
-  font-size: var(--fs-sm);
+/* AVISO DE ENVÍO FALLIDO */
+
+.fallido-aviso {
+  margin-bottom: 24px;
+  padding: 15px 17px;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
+  background: #fef2f2;
+  color: #991b1b;
 }
 
-.timeline-empty {
-  color: var(--color-text-secondary);
+.fallido-aviso strong {
+  font-size: var(--fs-md);
+}
+
+.fallido-aviso p {
+  margin: 7px 0 0;
   font-size: var(--fs-sm);
 }
 
@@ -238,6 +388,18 @@
   text-decoration: underline;
 }
 
+/* FECHA DE CONSULTA */
+
+.tracking-consultado {
+  margin: 28px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
 /* RESPONSIVE */
 
 @media (max-width: 600px) {
@@ -255,11 +417,25 @@
   }
 
   .resultado-header {
-    flex-direction: column;
     align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .resultado-acciones {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .resultado-datos {
     grid-template-columns: 1fr;
+    gap: 18px;
   }
+
+  .timeline-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+.timeline-status.fallido {
+  color: #dc2626;
 }
