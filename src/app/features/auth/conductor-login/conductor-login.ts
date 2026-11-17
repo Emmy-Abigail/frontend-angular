@@ -1,12 +1,14 @@
+
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { timeout } from 'rxjs';
 import { AuthService } from '../../../core/services/auth';
+import { ThemeToggle } from '../../../shared/theme-toggle/theme-toggle';
 
 @Component({
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, ThemeToggle],
   selector: 'app-conductor-login',
   styleUrl: './conductor-login.css',
   templateUrl: './conductor-login.html',
@@ -30,11 +32,14 @@ export class ConductorLogin implements OnInit {
 
     this.route.queryParams.subscribe((params) => {
       this.cuentaDesactivada = params['desactivado'] === 'true';
-      this.sessionExpired = !this.cuentaDesactivada && params['sessionExpired'] === 'true';
+      this.sessionExpired =
+        !this.cuentaDesactivada && params['sessionExpired'] === 'true';
+
       this.cdr.markForCheck();
     });
 
     const user = this.authService.currentUser();
+
     if (this.authService.isAuthenticated() && user?.rol === 'CONDUCTOR') {
       this.router.navigate(['/conductor/mis-lotes']);
     }
@@ -66,10 +71,12 @@ export class ConductorLogin implements OnInit {
           this.cargando = false;
           this.cdr.markForCheck();
 
-          // Restringir estrictamente al rol CONDUCTOR
+          // Restringir estrictamente al rol CONDUCTOR.
           if (response.user.rol !== 'CONDUCTOR') {
             this.authService.cerrarSesion();
-            this.error = 'Acceso denegado: este portal es exclusivo para conductores. Administradores y operadores deben ingresar por el portal administrativo (/login/admin).';
+            this.error =
+              'Acceso denegado: este portal es exclusivo para conductores. Administradores y operadores deben ingresar por el portal administrativo (/login/admin).';
+
             this.cdr.markForCheck();
             return;
           }
@@ -82,16 +89,19 @@ export class ConductorLogin implements OnInit {
         },
         error: (err) => {
           this.cargando = false;
+
           if (err.name === 'TimeoutError') {
             this.error = 'El servidor tardó demasiado en responder.';
           } else if (err.status === 401) {
             this.error =
               'El correo electrónico o contraseña que ha proporcionado no son correctos. Inténtelo de nuevo.';
           } else if (err.status === 422) {
-            this.error = err.error?.message || 'Los datos ingresados no son válidos.';
+            this.error =
+              err.error?.message || 'Los datos ingresados no son válidos.';
           } else {
             this.error = 'Ocurrió un error al conectar con el servidor.';
           }
+
           this.cdr.markForCheck();
         },
       });

@@ -554,7 +554,7 @@
 
 .motivo-row {
   display: grid;
-  grid-template-columns: 130px 1fr 35px;
+  grid-template-columns: minmax(180px, 190px) minmax(0, 1fr) 35px;
   align-items: center;
   gap: 0.75rem;
   font-size: 0.8125rem;
@@ -562,7 +562,8 @@
 
 .motivo-label {
   color: #334155;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.3;
 }
 
 .motivo-bar-bg {
@@ -1071,4 +1072,396 @@
   padding: 0.85rem 1.5rem;
   border-top: 1px solid #E2E8F0;
   background-color: #F8FAFC;
+}
+
+
+/* =========================================================
+   MODO OSCURO - DASHBOARD ADMINISTRADOR Y OPERADOR
+   ========================================================= */
+
+:host-context(html[data-theme='dark']) .dashboard-container {
+  color: #e2e8f0;
+}
+
+/* Header y breadcrumb */
+:host-context(html[data-theme='dark']) .breadcrumb-nav {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .breadcrumb-separator {
+  color: #64748b;
+}
+
+:host-context(html[data-theme='dark']) .breadcrumb-current,
+:host-context(html[data-theme='dark']) .dashboard-title {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .title-sede {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .title-sede-separator {
+  color: #64748b;
+}
+
+/* Filtros de período */
+:host-context(html[data-theme='dark']) .periodo-group,
+:host-context(html[data-theme='dark']) .tabs-vehiculo {
+  background-color: #0f172a;
+  border: 1px solid #334155;
+}
+
+:host-context(html[data-theme='dark']) .btn-periodo,
+:host-context(html[data-theme='dark']) .tab-btn {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .btn-periodo:hover,
+:host-context(html[data-theme='dark']) .tab-btn:hover {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .btn-periodo.active,
+:host-context(html[data-theme='dark']) .tab-btn.active {
+  background-color: #334155;
+  color: #93c5fd;
+  box-shadow: none;
+}
+
+/* Selector de fechas */
+:host-context(html[data-theme='dark']) .btn-date-range {
+  background-color: #1e293b;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .btn-date-range:hover {
+  border-color: #64748b;
+}
+
+:host-context(html[data-theme='dark']) .icon-calendar {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .date-picker-popover {
+  background-color: #1e293b;
+  border-color: #475569;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+}
+
+:host-context(html[data-theme='dark']) .popover-row label {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .popover-row input[type="date"] {
+  background-color: #0f172a;
+  border-color: #475569;
+  color: #e2e8f0;
+  color-scheme: dark;
+}
+
+:host-context(html[data-theme='dark']) .popover-row input[type="date"]:focus {
+  border-color: #60a5fa;
+}
+
+/* Filtro de sede */
+:host-context(html[data-theme='dark']) .select-sede {
+  background-color: #1e293b;
+  border-color: #475569;
+  color: #e2e8f0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%2394a3b8' viewBox='0 0 24 24'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+:host-context(html[data-theme='dark']) .select-sede option {
+  background-color: #1e293b;
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .badge-sede-fija {
+  background-color: #1e293b;
+  border-color: #475569;
+  color: #cbd5e1;
+}
+
+/* Estados de error y vacío */
+:host-context(html[data-theme='dark']) .state-card-container {
+  background-color: #1e293b;
+  border-color: #334155;
+  box-shadow: none;
+}
+
+:host-context(html[data-theme='dark']) .error-icon-circle {
+  background-color: #451a1a;
+}
+
+:host-context(html[data-theme='dark']) .state-card-title {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .state-card-subtitle {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .btn-shortcut {
+  background-color: #263449;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .btn-shortcut:hover {
+  background-color: #334155;
+  border-color: #64748b;
+  color: #ffffff;
+}
+
+/* Carga */
+:host-context(html[data-theme='dark']) .loading-container,
+:host-context(html[data-theme='dark']) .modal-loading {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .spinner {
+  border-color: #334155;
+  border-top-color: #60a5fa;
+}
+
+/* KPI y tarjetas generales */
+:host-context(html[data-theme='dark']) .kpi-card,
+:host-context(html[data-theme='dark']) .card {
+  background-color: #1e293b;
+  border-color: #334155;
+  box-shadow: none;
+}
+
+:host-context(html[data-theme='dark']) .kpi-label,
+:host-context(html[data-theme='dark']) .card-header-note {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .kpi-value,
+:host-context(html[data-theme='dark']) .card-title {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .kpi-subtext,
+:host-context(html[data-theme='dark']) .card-footer-note {
+  color: #94a3b8;
+}
+
+/* Flujo de paquetes */
+:host-context(html[data-theme='dark']) .stacked-bar-container {
+  background-color: #0f172a;
+}
+
+:host-context(html[data-theme='dark']) .stacked-bar-legend {
+  color: #cbd5e1;
+}
+
+/* Ranking de sedes */
+:host-context(html[data-theme='dark']) .toggle-mas-baja {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .badge-mas-baja {
+  background-color: #451a1a;
+  border-color: #7f1d1d;
+  color: #fca5a5;
+}
+
+:host-context(html[data-theme='dark']) .badge-insuficiente {
+  background-color: #334155;
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .highlight-row {
+  background-color: #3b2028 !important;
+}
+
+/* Motivos de entregas fallidas */
+:host-context(html[data-theme='dark']) .motivo-label {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .motivo-bar-bg {
+  background-color: #0f172a;
+}
+
+:host-context(html[data-theme='dark']) .motivo-count {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .direcciones-corregidas-box {
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .direcciones-corregidas-box strong {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .ultimos-fallidos-section {
+  border-top-color: #334155;
+}
+
+:host-context(html[data-theme='dark']) .ultimos-title {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .ultimos-table td {
+  color: #cbd5e1;
+  border-bottom-color: #334155;
+}
+
+:host-context(html[data-theme='dark']) .btn-ver-todos,
+:host-context(html[data-theme='dark']) .tracking-link-btn {
+  color: #93c5fd;
+}
+
+/* Gráfico de dona */
+:host-context(html[data-theme='dark']) .legend-name {
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .legend-val {
+  color: #94a3b8;
+}
+
+/* Desempeño del operador */
+:host-context(html[data-theme='dark']) .desempeno-row {
+  border-bottom-color: #334155;
+}
+
+:host-context(html[data-theme='dark']) .desempeno-label {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .desempeno-value {
+  color: #f1f5f9;
+}
+
+/* Tablas generales */
+:host-context(html[data-theme='dark']) .data-table th {
+  color: #94a3b8;
+  border-bottom-color: #334155;
+}
+
+:host-context(html[data-theme='dark']) .data-table th:hover {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .data-table td {
+  color: #cbd5e1;
+  border-bottom-color: #334155;
+}
+
+:host-context(html[data-theme='dark']) .data-table tbody tr:hover {
+  background-color: #263449;
+}
+
+:host-context(html[data-theme='dark']) .sort-icon {
+  color: #60a5fa;
+}
+
+:host-context(html[data-theme='dark']) .text-muted {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .conductor-name,
+:host-context(html[data-theme='dark']) .sede-nombre-cell {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .conductor-subinfo {
+  color: #94a3b8;
+}
+
+/* Buscador de operadores */
+:host-context(html[data-theme='dark']) .search-input {
+  background-color: #0f172a;
+  border-color: #475569;
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .search-input::placeholder {
+  color: #64748b;
+}
+
+:host-context(html[data-theme='dark']) .search-input:focus {
+  border-color: #60a5fa;
+}
+
+:host-context(html[data-theme='dark']) .search-icon {
+  color: #94a3b8;
+}
+
+/* Paginación */
+:host-context(html[data-theme='dark']) .table-pagination {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .btn-page {
+  background-color: #1e293b;
+  border-color: #475569;
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .btn-page:hover:not(:disabled) {
+  background-color: #334155;
+  border-color: #64748b;
+  color: #ffffff;
+}
+
+:host-context(html[data-theme='dark']) .btn-page.active {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+/* Modal de entregas fallidas */
+:host-context(html[data-theme='dark']) .modal-backdrop {
+  background-color: rgba(2, 6, 23, 0.75);
+}
+
+:host-context(html[data-theme='dark']) .modal-dialog {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+:host-context(html[data-theme='dark']) .modal-header {
+  border-bottom-color: #334155;
+}
+
+:host-context(html[data-theme='dark']) .modal-title {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .modal-subtitle {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .btn-modal-close {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .btn-modal-close:hover {
+  color: #f1f5f9;
+  background-color: #334155;
+}
+
+:host-context(html[data-theme='dark']) .modal-body {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .modal-footer {
+  background-color: #0f172a;
+  border-top-color: #334155;
+}
+
+/* Ajustes de controles nativos */
+:host-context(html[data-theme='dark']) .dashboard-container input,
+:host-context(html[data-theme='dark']) .dashboard-container select {
+  color-scheme: dark;
 }

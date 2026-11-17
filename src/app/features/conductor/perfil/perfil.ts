@@ -1,11 +1,13 @@
+
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth';
+import { ThemeToggle } from '../../../shared/theme-toggle/theme-toggle';
 
 @Component({
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ThemeToggle],
   selector: 'app-perfil-conductor',
   styleUrl: './perfil.css',
   templateUrl: './perfil.html',

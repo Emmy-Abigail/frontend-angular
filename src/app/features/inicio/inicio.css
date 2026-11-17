@@ -2,7 +2,7 @@
 .inicio {
   min-height: calc(100vh - 70px);
   padding: 40px 30px;
-  background: #f5f7fa;
+  background: var(--color-bg);
   display: flex;
   align-items: center;
   box-sizing: border-box;
@@ -21,8 +21,8 @@
 .inicio-left-card {
   width: 465px;
   flex-shrink: 0;
-  background: #ffffff;
-  border: 1px dashed #d5d9df;
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border-strong);
   padding: 16px;
   box-sizing: border-box;
 }
@@ -30,7 +30,7 @@
 .inicio-image-wrapper {
   width: 100%;
   height: 390px;
-  background: #fafafa;
+  background: var(--color-surface-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -45,8 +45,8 @@
 }
 
 .inicio-features {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-top: none;
   padding: 14px 30px 12px;
   display: flex;
@@ -85,7 +85,7 @@
 
 .feature-text h3 {
   margin: 0;
-  color: #252525;
+  color: var(--color-text);
   font-family: Arial, sans-serif;
   font-size: 16px;
   line-height: 1.2;
@@ -95,7 +95,7 @@
 
 .feature-text p {
   margin: 3px 0 0;
-  color: #777d85;
+  color: var(--color-text-secondary);
   font-family: Arial, sans-serif;
   font-size: 12px;
   line-height: 1.2;
@@ -113,7 +113,7 @@
 
 .inicio-content h2 {
   margin: 0 0 12px;
-  color: #25272b;
+  color: var(--color-text);
   font-family: Arial, sans-serif;
   font-size: 48px;
   line-height: 0.98;
@@ -129,7 +129,7 @@
 .inicio-content p {
   max-width: 380px;
   margin: 0 0 35px;
-  color: #73777c;
+  color: var(--color-text-secondary);
   font-family: Arial, sans-serif;
   font-size: 17px;
   line-height: 1.15;
@@ -168,7 +168,7 @@
 }
 
 .secondary-button {
-  background: #ffffff;
+  background: var(--color-surface);
   color: #3794df;
   border: 1px solid #3794df;
 }
@@ -322,13 +322,13 @@
   .inicio-image-wrapper {
     height: 100%;
     min-height: 190px;
-    background: #ffffff;
+    background: var(--color-surface);
   }
 
   .inicio-features {
     justify-content: center;
     padding: 12px 10px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--color-border);
     gap: 12px;
   }
 

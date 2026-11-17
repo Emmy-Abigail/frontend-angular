@@ -1,6 +1,6 @@
+
 <div class="page-container">
 
-  <!-- Encabezado de página según Visily Pantalla 12 -->
   <div class="page-header">
     <div class="header-text">
       <h1 class="page-title">Personal Registrado</h1>
@@ -8,7 +8,6 @@
     </div>
   </div>
 
-  <!-- Barra de Filtros y Acción -->
   <div class="toolbar-row">
     <div class="filters-left">
       <div class="filter-item">
@@ -37,7 +36,6 @@
     </div>
   </div>
 
-  <!-- Tabla de Personal Registrado -->
   <div class="table-container">
 
     @if (cargando) {
@@ -57,7 +55,7 @@
               <th>NOMBRE</th>
               <th>DNI</th>
               <th>CORREO</th>
-              <th>ROLE</th>
+              <th>ROL</th>
               <th>SEDE/VEHÍCULO</th>
               <th>ESTADO</th>
               <th class="col-action">ACCIÓN</th>
@@ -66,7 +64,7 @@
           <tbody>
             @for (user of usuariosFiltrados; track user.id) {
               <tr>
-                <td class="col-nombre font-semibold">{{ user.nombres }}</td>
+                <td class="col-nombre">{{ user.nombres }}</td>
                 <td class="col-dni">{{ user.dni || '—' }}</td>
                 <td class="col-correo">{{ user.correo }}</td>
                 <td>
@@ -82,7 +80,13 @@
                   {{ user.sede_nombre || user.tipo_vehiculo || '—' }}
                 </td>
                 <td class="col-estado">
-                  {{ user.activo ? 'Activo' : 'Inactivo' }}
+                  <span
+                    class="status-pill"
+                    [class.status-active]="user.activo"
+                    [class.status-inactive]="!user.activo"
+                  >
+                    {{ user.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
                 </td>
                 <td class="col-action">
                   <button
@@ -111,7 +115,6 @@
 
 </div>
 
-<!-- Modal Flotante de Confirmación para Desactivar / Activar Usuario (Visily Pantalla 13) -->
 @if (usuarioConfirmarEstado) {
   <div class="modal-backdrop">
     <div class="modal-card">
@@ -137,17 +140,22 @@
       </h2>
 
       <p class="modal-confirm-subtitle">
-        {{ usuarioConfirmarEstado.user.nombres }} · {{ usuarioConfirmarEstado.user.rol === 'OPERADOR' ? 'Operador' : 'Conductor' }} · {{ usuarioConfirmarEstado.user.sede_nombre || usuarioConfirmarEstado.user.tipo_vehiculo || 'Asignado' }}
+        {{ usuarioConfirmarEstado.user.nombres }} ·
+        {{ usuarioConfirmarEstado.user.rol === 'OPERADOR' ? 'Operador' : 'Conductor' }} ·
+        {{ usuarioConfirmarEstado.user.sede_nombre || usuarioConfirmarEstado.user.tipo_vehiculo || 'Asignado' }}
       </p>
 
-      <p class="modal-confirm-description" style="font-size: 0.875rem; color: #64748b; margin-top: 0.5rem; text-align: center;">
-        {{ usuarioConfirmarEstado.accion === 'desactivar' ? 'El usuario perderá el acceso temporal al sistema hasta que sea reactivado.' : 'El usuario podrá volver a iniciar sesión y acceder a sus funciones con normalidad.' }}
+      <p class="modal-confirm-description">
+        {{ usuarioConfirmarEstado.accion === 'desactivar'
+          ? 'El usuario perderá el acceso temporal al sistema hasta que sea reactivado.'
+          : 'El usuario podrá volver a iniciar sesión y acceder a sus funciones con normalidad.' }}
       </p>
 
       <div class="modal-confirm-actions">
         <button type="button" class="btn-cancel" (click)="cerrarModalConfirmacion()">
           Cancelar
         </button>
+
         <button type="button" class="btn-confirm" (click)="confirmarAccionEstado()">
           Confirmar
         </button>
@@ -156,4 +164,3 @@
     </div>
   </div>
 }
-

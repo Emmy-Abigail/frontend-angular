@@ -1,3 +1,8 @@
+
+/* =========================================
+   CONTENEDOR GENERAL
+   ========================================= */
+
 .mobile-viewport {
   min-height: 100vh;
   display: flex;
@@ -10,13 +15,17 @@
 }
 
 .mobile-shell {
+  position: relative;
   width: 100%;
   max-width: 380px;
   display: flex;
   flex-direction: column;
 }
 
-/* Status Bar */
+/* =========================================
+   BARRA DE ESTADO SIMULADA
+   ========================================= */
+
 .status-bar {
   display: flex;
   justify-content: space-between;
@@ -37,7 +46,21 @@
   gap: 6px;
 }
 
-/* Marca y Camión */
+/* =========================================
+   SELECTOR DE TEMA
+   ========================================= */
+
+.global-theme-toggle {
+  position: absolute;
+  top: 42px;
+  right: 8px;
+  z-index: 10;
+}
+
+/* =========================================
+   MARCA Y CAMIÓN
+   ========================================= */
+
 .mobile-brand {
   display: flex;
   flex-direction: column;
@@ -65,7 +88,10 @@
   color: #94a3b8;
 }
 
-/* Tarjeta de Login */
+/* =========================================
+   TARJETA DE LOGIN
+   ========================================= */
+
 .login-card {
   background-color: #212631;
   border: 1px solid #333c4d;
@@ -96,7 +122,10 @@
   letter-spacing: 0.5px;
 }
 
-/* Alertas Dark */
+/* =========================================
+   ALERTAS
+   ========================================= */
+
 .dark-alert {
   position: relative;
   background-color: #2a2417;
@@ -138,7 +167,10 @@
   color: #e2e8f0;
 }
 
-/* Formulario */
+/* =========================================
+   FORMULARIO
+   ========================================= */
+
 .mobile-form {
   display: flex;
   flex-direction: column;
@@ -199,6 +231,10 @@
   text-decoration: underline;
 }
 
+/* =========================================
+   CAMPO DE CONTRASEÑA Y VISIBILIDAD
+   ========================================= */
+
 .input-with-eye {
   position: relative;
   display: flex;
@@ -225,6 +261,10 @@
 .eye-btn:hover {
   color: #94a3b8;
 }
+
+/* =========================================
+   BOTÓN DE INGRESO
+   ========================================= */
 
 .btn-login-mobile {
   height: 44px;
@@ -253,7 +293,10 @@
   cursor: not-allowed;
 }
 
-/* Footer */
+/* =========================================
+   FOOTER
+   ========================================= */
+
 .mobile-footer {
   margin-top: 24px;
   text-align: center;
@@ -271,4 +314,118 @@
 .footer-sub {
   font-size: 10.5px;
   color: #4b5563;
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 480px) {
+  .mobile-viewport {
+    padding: 16px 10px;
+  }
+
+  .mobile-shell {
+    max-width: 100%;
+  }
+
+  .global-theme-toggle {
+    right: 8px;
+  }
+
+  .login-card {
+    padding: 24px 20px 28px;
+  }
+}
+
+
+/* =========================================
+   MODO CLARO
+   ========================================= */
+
+:host-context(html[data-theme='light']) .mobile-viewport {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e8eef7 50%, #f8fafc 100%);
+}
+
+:host-context(html[data-theme='light']) .login-card {
+  background-color: #ffffff;
+  border-color: #d8e1ed;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.10);
+}
+
+:host-context(html[data-theme='light']) .screen-title-row {
+  border-bottom-color: #dce4ef;
+}
+
+:host-context(html[data-theme='light']) .screen-title-row h1 {
+  color: #172b4d;
+}
+
+:host-context(html[data-theme='light']) .input-block label {
+  color: #64748b;
+}
+
+:host-context(html[data-theme='light']) .input-block input {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+:host-context(html[data-theme='light']) .input-block input::placeholder {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='light']) .input-block input:focus {
+  border-color: #3b82f6;
+}
+
+:host-context(html[data-theme='light']) .eye-btn {
+  color: #64748b;
+}
+
+:host-context(html[data-theme='light']) .brand-caption {
+  color: #64748b;
+}
+
+:host-context(html[data-theme='light']) .mobile-footer .footer-copy {
+  color: #64748b;
+}
+
+:host-context(html[data-theme='light']) .mobile-footer .footer-sub {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='light']) .status-bar {
+  color: #64748b;
+}
+
+/* =========================================
+   MODO OSCURO
+   ========================================= */
+
+:host-context(html[data-theme='dark']) .mobile-viewport {
+  background: linear-gradient(135deg, #13171f 0%, #1a202c 50%, #11141b 100%);
+}
+
+:host-context(html[data-theme='dark']) .login-card {
+  background-color: #212631;
+  border-color: #333c4d;
+}
+
+:host-context(html[data-theme='dark']) .screen-title-row {
+  border-bottom-color: #333c4d;
+}
+
+:host-context(html[data-theme='dark']) .screen-title-row h1 {
+  color: #ffffff;
+}
+
+:host-context(html[data-theme='dark']) .input-block input {
+  background-color: #171b22;
+  border-color: #333c4d;
+  color: #ffffff;
+}
+
+:host-context(html[data-theme='dark']) .brand-caption {
+  color: #94a3b8;
 }

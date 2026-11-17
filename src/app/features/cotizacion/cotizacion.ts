@@ -4,11 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/services/catalog.service';
 import {
-  CotizacionResponse,
-  OperadorService,
-} from '../../core/services/operador.service';
-import { Department, District } from '../../core/models/catalog.models';
-import { GEOGRAPHY_MOCK } from '../../core/data/geography.mock';
+  PublicQuoteResponse,
+  PublicQuoteService,
+} from '../../core/services/public-quote.service';
+import {
+  Department,
+  District,
+  Sede,
+} from '../../core/models/catalog.models';
 
 @Component({
   standalone: true,
@@ -19,11 +22,13 @@ import { GEOGRAPHY_MOCK } from '../../core/data/geography.mock';
 })
 export class Cotizacion implements OnInit {
   private catalogService = inject(CatalogService);
-  private operadorService = inject(OperadorService);
+  private publicQuoteService = inject(PublicQuoteService);
   private cdr = inject(ChangeDetectorRef);
 
-  departamentos: Department[] = GEOGRAPHY_MOCK;
+  sedes: Sede[] = [];
+  departamentos: Department[] = [];
 
+  // Ambos campos contienen el ubigeo del distrito seleccionado.
   origen = '';
   destino = '';
 
@@ -32,24 +37,63 @@ export class Cotizacion implements OnInit {
   ancho: number | null = null;
   alto: number | null = null;
 
-  resultado: CotizacionResponse | null = null;
+  resultado: PublicQuoteResponse | null = null;
 
   cargando = false;
+  cargandoSedes = true;
+  cargandoGeografia = true;
+
   enviado = false;
   error = '';
+  errorCatalogos = '';
 
   camposTocados = new Set<string>();
 
   ngOnInit(): void {
-    this.catalogService.getGeography().subscribe({
+    this.cargarSedes();
+    this.cargarGeografia();
+  }
+
+  private cargarSedes(): void {
+    this.catalogService.getPublicSedes().subscribe({
       next: (data) => {
-        if (data?.length) {
-          this.departamentos = data;
+        this.sedes = (data ?? []).filter((sede) => sede.activa);
+        this.cargandoSedes = false;
+
+        if (!this.sedes.length) {
+          this.errorCatalogos =
+            'No hay sedes disponibles para realizar una cotización.';
         }
+
         this.cdr.markForCheck();
       },
       error: () => {
-        // Se conserva GEOGRAPHY_MOCK como respaldo.
+        this.cargandoSedes = false;
+        this.errorCatalogos =
+          'No fue posible cargar las sedes. Actualiza la página e inténtalo nuevamente.';
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  private cargarGeografia(): void {
+    this.catalogService.getPublicGeography().subscribe({
+      next: (data) => {
+        this.departamentos = data ?? [];
+        this.cargandoGeografia = false;
+
+        if (!this.departamentos.length) {
+          this.errorCatalogos =
+            'No fue posible cargar los distritos disponibles.';
+        }
+
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.cargandoGeografia = false;
+        this.errorCatalogos =
+          'No fue posible cargar los distritos. Actualiza la página e inténtalo nuevamente.';
+        this.cdr.markForCheck();
       },
     });
   }
@@ -57,6 +101,15 @@ export class Cotizacion implements OnInit {
   get distritos(): District[] {
     return this.departamentos.flatMap((departamento) =>
       departamento.provincias.flatMap((provincia) => provincia.distritos),
+    );
+  }
+
+  get catalogosCargados(): boolean {
+    return (
+      !this.cargandoSedes &&
+      !this.cargandoGeografia &&
+      this.sedes.length > 0 &&
+      this.distritos.length > 0
     );
   }
 
@@ -129,28 +182,59 @@ export class Cotizacion implements OnInit {
       return;
     }
 
+    if (!this.catalogosCargados) {
+      this.error = 'Los catálogos todavía no están disponibles.';
+      return;
+    }
+
+    // Identificar la zona correspondiente al distrito de origen.
+    const distritoOrigen = this.distritos.find(
+      (distrito) => distrito.ubigeo === this.origen,
+    );
+
+    if (!distritoOrigen) {
+      this.error = 'No se encontró el distrito de origen seleccionado.';
+      return;
+    }
+
+    // Buscar una sede activa que represente la misma zona.
+    const sedeOrigen = this.sedes.find(
+      (sede) => sede.id_zona === distritoOrigen.id_zona,
+    );
+
+    if (!sedeOrigen) {
+      this.error =
+        'No hay una sede activa que represente la zona del distrito de origen.';
+      return;
+    }
+
     this.cargando = true;
 
-    this.operadorService.cotizar({
-      // Pendiente de que el backend admita también ubigeo_origen.
-      ubigeo_destino: this.destino,
-      peso_kg: this.peso!,
-      largo_cm: this.largo!,
-      ancho_cm: this.ancho!,
-      alto_cm: this.alto!,
-    }).subscribe({
-      next: (respuesta) => {
-        this.resultado = respuesta;
-        this.cargando = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.cargando = false;
-        this.error =
-          'No fue posible calcular la cotización. Inténtalo nuevamente.';
-        this.cdr.markForCheck();
-      },
-    });
+    this.publicQuoteService
+      .cotizar({
+        id_sede: sedeOrigen.id,
+        ubigeo_destino: this.destino,
+        peso_kg: this.peso!,
+        largo_cm: this.largo!,
+        ancho_cm: this.ancho!,
+        alto_cm: this.alto!,
+      })
+      .subscribe({
+        next: (respuesta) => {
+          this.resultado = respuesta;
+          this.cargando = false;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.cargando = false;
+
+          this.error =
+            err?.error?.message ??
+            'No fue posible calcular la cotización. Inténtalo nuevamente.';
+
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   limpiarResultado(): void {

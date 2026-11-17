@@ -1405,3 +1405,343 @@
   width: 100%;
   max-width: 400px;
 }
+
+
+/* =========================================
+   MODO OSCURO - DETALLE DEL PAQUETE
+   ========================================= */
+
+:host-context(html[data-theme='dark']) {
+  color: #e5e7eb;
+  background: #111827;
+}
+
+:host-context(html[data-theme='dark']) .pagina-detalle {
+  background: #111827;
+  box-shadow: 0 0 30px rgb(0 0 0 / 25%);
+}
+
+/* Encabezado */
+
+:host-context(html[data-theme='dark']) .encabezado {
+  background: #1e293b;
+  border-bottom-color: #334155;
+}
+
+:host-context(html[data-theme='dark']) .encabezado h1 {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .boton-volver {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .boton-volver:hover {
+  background: #334155;
+}
+
+/* Tarjetas y contenido */
+
+:host-context(html[data-theme='dark']) .tracking,
+:host-context(html[data-theme='dark']) .tarjeta,
+:host-context(html[data-theme='dark']) .resumen-paquete-fallo,
+:host-context(html[data-theme='dark']) .contenido-error-acceso .tarjeta-error-acceso {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+:host-context(html[data-theme='dark']) .tracking h2,
+:host-context(html[data-theme='dark']) .tarjeta h3,
+:host-context(html[data-theme='dark']) .resumen-fallo-datos strong,
+:host-context(html[data-theme='dark']) .modal h2,
+:host-context(html[data-theme='dark']) .modal-fallo h2,
+:host-context(html[data-theme='dark']) .codigo-modal strong,
+:host-context(html[data-theme='dark']) .info-finalizado h3,
+:host-context(html[data-theme='dark']) .contenido-error-acceso h2 {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .etiqueta,
+:host-context(html[data-theme='dark']) .instruccion p,
+:host-context(html[data-theme='dark']) .ayuda,
+:host-context(html[data-theme='dark']) .resumen-fallo-datos p,
+:host-context(html[data-theme='dark']) .resumen-fallo-datos span,
+:host-context(html[data-theme='dark']) .modal > p,
+:host-context(html[data-theme='dark']) .modal-fallo > p,
+:host-context(html[data-theme='dark']) .codigo-modal span,
+:host-context(html[data-theme='dark']) .info-finalizado p,
+:host-context(html[data-theme='dark']) .contenido-error-acceso .descripcion-error {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .campo p,
+:host-context(html[data-theme='dark']) .direccion-texto,
+:host-context(html[data-theme='dark']) .telefono-enlace,
+:host-context(html[data-theme='dark']) .valor-especificacion,
+:host-context(html[data-theme='dark']) .modal-detalle-motivo {
+  color: #cbd5e1;
+}
+
+/* Estados */
+
+:host-context(html[data-theme='dark']) .estado.asignado {
+  background: #422f0b;
+  color: #fcd34d;
+}
+
+:host-context(html[data-theme='dark']) .estado.en-ruta {
+  background: #172f50;
+  color: #93c5fd;
+}
+
+/* Iconos y botones de acción */
+
+:host-context(html[data-theme='dark']) .icono-seccion {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .telefono-enlace:hover {
+  color: #60a5fa;
+}
+
+:host-context(html[data-theme='dark']) .boton-accion-redondo {
+  background: #263449;
+  border-color: #475569;
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .boton-accion-redondo:hover {
+  background: #334155;
+  border-color: #60a5fa;
+  color: #93c5fd;
+}
+
+/* Botones */
+
+:host-context(html[data-theme='dark']) .boton-fallido {
+  background: #1e293b;
+  border-color: #f87171;
+  color: #fca5a5;
+}
+
+:host-context(html[data-theme='dark']) .boton-fallido:hover {
+  background: #3b2028;
+}
+
+:host-context(html[data-theme='dark']) .boton-secundario,
+:host-context(html[data-theme='dark']) .boton-revisar-fallo {
+  background: #263449;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .boton-secundario:hover,
+:host-context(html[data-theme='dark']) .boton-revisar-fallo:hover {
+  background: #334155;
+}
+
+:host-context(html[data-theme='dark']) .boton-principal {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+:host-context(html[data-theme='dark']) .boton-principal:hover {
+  background: #1d4ed8;
+}
+
+/* Registro de entrega */
+
+:host-context(html[data-theme='dark']) .zona-foto {
+  background: #17263c;
+  border-color: #475569;
+  color: #60a5fa;
+}
+
+:host-context(html[data-theme='dark']) .zona-foto:hover {
+  background: #1e3452;
+  border-color: #60a5fa;
+}
+
+:host-context(html[data-theme='dark']) .zona-foto span {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .icono-camara-circulo {
+  background: #263f60;
+  color: #93c5fd;
+}
+
+:host-context(html[data-theme='dark']) .vista-foto img {
+  background: #263449;
+}
+
+:host-context(html[data-theme='dark']) .quitar-foto {
+  color: #fca5a5;
+}
+
+/* Campos de texto */
+
+:host-context(html[data-theme='dark']) .tarjeta label {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .tarjeta textarea,
+:host-context(html[data-theme='dark']) .textarea-fallo,
+:host-context(html[data-theme='dark']) .input-fallo-texto {
+  background: #111827;
+  border-color: #475569;
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .tarjeta textarea::placeholder,
+:host-context(html[data-theme='dark']) .textarea-fallo::placeholder,
+:host-context(html[data-theme='dark']) .input-fallo-texto::placeholder {
+  color: #64748b;
+}
+
+:host-context(html[data-theme='dark']) .tarjeta textarea:focus,
+:host-context(html[data-theme='dark']) .textarea-fallo:focus,
+:host-context(html[data-theme='dark']) .input-fallo-texto:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgb(96 165 250 / 15%);
+}
+
+/* Registro de fallo */
+
+:host-context(html[data-theme='dark']) .referencia-fallo {
+  background: #334155;
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .titulo-seccion-fallo {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .titulo-seccion-fallo svg {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .opcion-fallo {
+  background: #1e293b;
+  border-color: #475569;
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .opcion-fallo:hover {
+  background: #33252b;
+  border-color: #f87171;
+}
+
+:host-context(html[data-theme='dark']) .opcion-fallo.seleccionado {
+  background: #422329;
+  border-color: #f87171;
+  color: #fecaca;
+}
+
+:host-context(html[data-theme='dark']) .casilla-fallo {
+  background: #111827;
+  border-color: #64748b;
+}
+
+:host-context(html[data-theme='dark']) .opcion-fallo.seleccionado .casilla-fallo {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+/* Modales */
+
+:host-context(html[data-theme='dark']) .modal,
+:host-context(html[data-theme='dark']) .modal-fallo {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 -8px 35px rgb(0 0 0 / 35%);
+}
+
+:host-context(html[data-theme='dark']) .codigo-modal {
+  background: #263449;
+  border-color: #475569;
+}
+
+:host-context(html[data-theme='dark']) .fondo-modal {
+  background: rgb(0 0 0 / 65%);
+}
+
+:host-context(html[data-theme='dark']) .icono-advertencia {
+  background: #422f0b;
+  color: #fbbf24;
+}
+
+:host-context(html[data-theme='dark']) .icono-exito {
+  background: #123b2b;
+  color: #4ade80;
+}
+
+/* Alertas */
+
+:host-context(html[data-theme='dark']) .error-foto,
+:host-context(html[data-theme='dark']) .alerta-error-foto,
+:host-context(html[data-theme='dark']) .error-fallo {
+  background: #3b2028;
+  border-color: #7f343c;
+  color: #fecaca;
+}
+
+:host-context(html[data-theme='dark']) .error-foto svg {
+  color: #fca5a5;
+}
+
+:host-context(html[data-theme='dark']) .error-foto-texto,
+:host-context(html[data-theme='dark']) .ayuda-fallo.error-texto {
+  color: #fca5a5;
+}
+
+/* Acceso no permitido */
+
+:host-context(html[data-theme='dark']) .icono-error-contenedor {
+  background: #3b2028;
+  color: #f87171;
+}
+
+:host-context(html[data-theme='dark']) .btn-volver-mis-lotes {
+  background: #2563eb;
+}
+
+:host-context(html[data-theme='dark']) .btn-volver-mis-lotes:hover {
+  background: #1d4ed8;
+}
+
+/* Estado finalizado */
+
+:host-context(html[data-theme='dark']) .tarjeta-estado-finalizado {
+  background: #1e293b;
+  border-color: #475569;
+}
+
+:host-context(html[data-theme='dark']) .tarjeta-estado-finalizado.finalizado-entregado {
+  background: #153629;
+  border-color: #276749;
+}
+
+:host-context(html[data-theme='dark']) .tarjeta-estado-finalizado.finalizado-entregado .icono-finalizado {
+  background: #1b5139;
+  color: #86efac;
+}
+
+:host-context(html[data-theme='dark']) .tarjeta-estado-finalizado.finalizado-fallido {
+  background: #3b2028;
+  border-color: #7f343c;
+}
+
+:host-context(html[data-theme='dark']) .tarjeta-estado-finalizado.finalizado-fallido .icono-finalizado {
+  background: #572a32;
+  color: #fca5a5;
+}
+
+:host-context(html[data-theme='dark']) .info-finalizado h3 {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .info-finalizado p {
+  color: #cbd5e1;
+}

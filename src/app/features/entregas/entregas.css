@@ -1235,3 +1235,260 @@
   font-size: 14px;
   color: #64748b;
 }
+
+
+/* =========================================
+   MODO OSCURO - DETALLE Y GESTIÓN DE LOTES
+   ========================================= */
+
+:host-context(html[data-theme='dark']) {
+  color: #e2e8f0;
+}
+
+/* Fondos principales */
+
+:host-context(html[data-theme='dark']) .detalle-lote,
+:host-context(html[data-theme='dark']) .lote-activo,
+:host-context(html[data-theme='dark']) .secuencia-section,
+:host-context(html[data-theme='dark']) .hoja-ruta,
+:host-context(html[data-theme='dark']) .paradas-activas {
+  background: #111827;
+}
+
+/* Encabezados */
+
+:host-context(html[data-theme='dark']) .detalle-header,
+:host-context(html[data-theme='dark']) .lote-informacion,
+:host-context(html[data-theme='dark']) .activo-header,
+:host-context(html[data-theme='dark']) .progreso-lote {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+:host-context(html[data-theme='dark']) .header-info h1,
+:host-context(html[data-theme='dark']) .activo-titulo h1,
+:host-context(html[data-theme='dark']) .parada-titulo h3,
+:host-context(html[data-theme='dark']) .resumen-item strong,
+:host-context(html[data-theme='dark']) .sin-paradas h3,
+:host-context(html[data-theme='dark']) .confirmacion-dato strong {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .btn-volver,
+:host-context(html[data-theme='dark']) .activo-volver,
+:host-context(html[data-theme='dark']) .activo-menu {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .header-etiqueta,
+:host-context(html[data-theme='dark']) .progreso-contador,
+:host-context(html[data-theme='dark']) .codigo-seguimiento,
+:host-context(html[data-theme='dark']) .btn-mapa {
+  color: #60a5fa;
+}
+
+/* Estado y fecha */
+
+:host-context(html[data-theme='dark']) .estado-lote {
+  color: #93c5fd;
+  background: #1e3a5f;
+  border-color: #315b91;
+}
+
+:host-context(html[data-theme='dark']) .fecha-asignacion,
+:host-context(html[data-theme='dark']) .activo-titulo > span,
+:host-context(html[data-theme='dark']) .resumen-item > span,
+:host-context(html[data-theme='dark']) .progreso-porcentaje {
+  color: #94a3b8;
+}
+
+/* Resumen del lote */
+
+:host-context(html[data-theme='dark']) .lote-resumen {
+  background: #172b45;
+  border-color: #2563eb;
+}
+
+:host-context(html[data-theme='dark']) .resumen-paradas svg {
+  stroke: #94a3b8;
+}
+
+/* Secuencia de paradas */
+
+:host-context(html[data-theme='dark']) .secuencia-header,
+:host-context(html[data-theme='dark']) .parada-item,
+:host-context(html[data-theme='dark']) .paradas-activas .parada-item,
+:host-context(html[data-theme='dark']) .hoja-ruta > h2 {
+  border-color: #334155;
+}
+
+:host-context(html[data-theme='dark']) .secuencia-header h2,
+:host-context(html[data-theme='dark']) .parada-direccion {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .parada-numero,
+:host-context(html[data-theme='dark']) .paradas-activas .parada-numero {
+  color: #93c5fd;
+  background: #1e3a5f;
+  border-color: #315b91;
+}
+
+:host-context(html[data-theme='dark']) .parada-conector {
+  background: #475569;
+}
+
+:host-context(html[data-theme='dark']) .parada-flecha {
+  stroke: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .hoja-ruta > h2 {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .sin-paradas p {
+  color: #94a3b8;
+}
+
+/* Barra de progreso */
+
+:host-context(html[data-theme='dark']) .progreso-etiqueta {
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .progreso-barra {
+  background: #334155;
+}
+
+/* Acción de iniciar ruta */
+
+:host-context(html[data-theme='dark']) .acciones-lote {
+  background: #111827;
+  box-shadow: 0 -2px 8px rgb(0 0 0 / 20%);
+}
+
+:host-context(html[data-theme='dark']) .btn-iniciar-ruta:disabled {
+  background: #334155;
+  color: #94a3b8;
+}
+
+/* Confirmación de inicio de ruta */
+
+:host-context(html[data-theme='dark']) .confirmacion-panel {
+  background: #1e293b;
+  border: 1px solid #334155;
+}
+
+:host-context(html[data-theme='dark']) .confirmacion-indicador span {
+  background: #475569;
+}
+
+:host-context(html[data-theme='dark']) .confirmacion-header h2 {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .confirmacion-descripcion {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .confirmacion-descripcion strong {
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .confirmacion-resumen {
+  background: #172033;
+  border-color: #475569;
+}
+
+:host-context(html[data-theme='dark']) .confirmacion-dato {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .confirmacion-dato svg {
+  stroke: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .btn-cancelar {
+  color: #e2e8f0;
+  background: #1e293b;
+  border-color: #64748b;
+}
+
+:host-context(html[data-theme='dark']) .btn-cancelar:hover {
+  background: #334155;
+}
+
+:host-context(html[data-theme='dark']) .btn-cerrar-confirmacion {
+  color: #cbd5e1;
+}
+
+/* Aviso de lote en ruta */
+
+:host-context(html[data-theme='dark']) .aviso-ruta-panel {
+  background: #1e293b;
+  border-color: #475569;
+}
+
+:host-context(html[data-theme='dark']) .aviso-ruta-panel h2 {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .aviso-ruta-descripcion {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .aviso-ruta-descripcion strong {
+  color: #f8fafc;
+}
+
+:host-context(html[data-theme='dark']) .aviso-ruta-detalle {
+  background: #172033;
+  border-color: #475569;
+}
+
+:host-context(html[data-theme='dark']) .aviso-ruta-detalle > p {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .aviso-ruta-lote {
+  background: #1e293b;
+  border-color: #475569;
+}
+
+:host-context(html[data-theme='dark']) .aviso-ruta-entendido {
+  color: #e2e8f0;
+  background: #1e293b;
+  border-color: #64748b;
+}
+
+:host-context(html[data-theme='dark']) .aviso-ruta-entendido:hover {
+  background: #334155;
+}
+
+:host-context(html[data-theme='dark']) .aviso-ruta-pie {
+  color: #94a3b8;
+}
+
+/* Pantalla de error */
+
+:host-context(html[data-theme='dark']) .pantalla-error-lote {
+  background: #111827;
+}
+
+:host-context(html[data-theme='dark']) .tarjeta-error-acceso {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 25%);
+}
+
+:host-context(html[data-theme='dark']) .tarjeta-error-acceso h2 {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .descripcion-error {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .cargando-lote {
+  color: #cbd5e1;
+}

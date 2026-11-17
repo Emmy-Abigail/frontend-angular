@@ -8,22 +8,8 @@
       </a>
     </h1>
 
-    <button
-      class="menu-toggle"
-      type="button"
-      (click)="toggleMenu()"
-      [attr.aria-expanded]="menuAbierto()"
-      aria-label="Abrir o cerrar menú de navegación"
-    >
-      <span [class.open]="menuAbierto()"></span>
-      <span [class.open]="menuAbierto()"></span>
-      <span [class.open]="menuAbierto()"></span>
-    </button>
-
     <nav [class.menu-open]="menuAbierto()">
-      <a routerLink="/" (click)="cerrarMenu()">
-        Inicio
-      </a>
+      <a routerLink="/" (click)="cerrarMenu()">Inicio</a>
 
       <a routerLink="/cotizar" (click)="cerrarMenu()">
         Cotizar envío
@@ -41,6 +27,22 @@
         Acceso Conductor
       </a>
     </nav>
+
+    <div class="header-actions">
+      <app-theme-toggle />
+
+      <button
+        class="menu-toggle"
+        type="button"
+        (click)="toggleMenu()"
+        [attr.aria-expanded]="menuAbierto()"
+        aria-label="Abrir o cerrar menú de navegación"
+      >
+        <span [class.open]="menuAbierto()"></span>
+        <span [class.open]="menuAbierto()"></span>
+        <span [class.open]="menuAbierto()"></span>
+      </button>
+    </div>
 
   </div>
 </header>

@@ -1,0 +1,15 @@
+
+<button
+  type="button"
+  class="theme-toggle"
+  (click)="toggleTheme()"
+  [attr.aria-label]="theme() === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'"
+  [attr.title]="theme() === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'"
+  [attr.aria-pressed]="theme() === 'dark'"
+>
+  @if (theme() === 'dark') {
+    <span class="theme-emoji" aria-hidden="true">☀️</span>
+  } @else {
+    <span class="theme-emoji" aria-hidden="true">🌙</span>
+  }
+</button>

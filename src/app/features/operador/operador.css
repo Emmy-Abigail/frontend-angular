@@ -1304,3 +1304,256 @@
   font-size: 11px;
   color: #64748b;
 }
+
+/* =========================================
+   MODO OSCURO — REGISTRO DE PAQUETE
+   ========================================= */
+
+:host-context(html[data-theme='dark']) {
+  color: #e2e8f0;
+}
+
+/* Encabezados */
+:host-context(html[data-theme='dark']) .page-heading h1 {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .page-heading p {
+  color: #94a3b8;
+}
+
+/* Tarjetas del formulario */
+:host-context(html[data-theme='dark']) .form-card,
+:host-context(html[data-theme='dark']) .quote-card {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 15%);
+}
+
+:host-context(html[data-theme='dark']) .card-title {
+  border-bottom-color: #475569;
+}
+
+:host-context(html[data-theme='dark']) .card-title h2 {
+  color: #e2e8f0;
+}
+
+/* Remitente y destinatario */
+:host-context(html[data-theme='dark']) .person-section h3 {
+  color: #94a3b8;
+}
+
+/* Campos */
+:host-context(html[data-theme='dark']) .field label {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .field input,
+:host-context(html[data-theme='dark']) .field select {
+  border-color: #475569;
+  background: #0f172a;
+  color: #e2e8f0;
+  color-scheme: dark;
+}
+
+:host-context(html[data-theme='dark']) .field input::placeholder {
+  color: #64748b;
+}
+
+:host-context(html[data-theme='dark']) .field input:focus,
+:host-context(html[data-theme='dark']) .field select:focus {
+  border-color: #3996e8;
+  box-shadow: 0 0 0 2px rgb(57 150 232 / 18%);
+}
+
+:host-context(html[data-theme='dark']) .field select:disabled,
+:host-context(html[data-theme='dark']) .field input:disabled {
+  background: #1e293b;
+  color: #64748b;
+}
+
+:host-context(html[data-theme='dark']) .field-hint,
+:host-context(html[data-theme='dark']) .optional-label {
+  color: #94a3b8;
+}
+
+/* Selector DNI / RUC */
+:host-context(html[data-theme='dark']) .document-toggle {
+  border-color: #3996e8;
+}
+
+:host-context(html[data-theme='dark']) .document-toggle button {
+  background: #0f172a;
+  color: #60a5fa;
+}
+
+:host-context(html[data-theme='dark']) .document-toggle button + button {
+  border-left-color: #3996e8;
+}
+
+:host-context(html[data-theme='dark']) .document-toggle button.selected {
+  background: #3996e8;
+  color: #fff;
+}
+
+/* Dirección y mapa */
+:host-context(html[data-theme='dark']) .address-suggestions-dropdown {
+  border-color: #475569;
+  background: #1e293b;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 30%);
+}
+
+:host-context(html[data-theme='dark']) .address-suggestions-dropdown li {
+  border-bottom-color: #334155;
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .address-suggestions-dropdown li:hover {
+  background: #334155;
+}
+
+:host-context(html[data-theme='dark']) .address-suggestions-dropdown li div strong {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .address-suggestions-dropdown li div small {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) #mapa-entrega {
+  border-color: #475569 !important;
+}
+
+/* Cotización */
+:host-context(html[data-theme='dark']) .quote-header {
+  background: #334155;
+}
+
+:host-context(html[data-theme='dark']) .quote-header h2 {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .quote-route-row span,
+:host-context(html[data-theme='dark']) .quote-metric > span {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .quote-route-row strong {
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .quote-divider {
+  background: #475569;
+}
+
+:host-context(html[data-theme='dark']) .quote-metric > strong {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .quote-metric > strong.quote-number {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .quote-total {
+  border-color: #1e4972;
+  background: #172f49;
+}
+
+:host-context(html[data-theme='dark']) .quote-total > div > span,
+:host-context(html[data-theme='dark']) .quote-total > div > strong {
+  color: #60a5fa;
+}
+
+/* Botones */
+:host-context(html[data-theme='dark']) .btn-secondary {
+  border-color: #475569;
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .btn-secondary:hover {
+  border-color: #64748b;
+  background: #334155;
+}
+
+/* Mensajes */
+:host-context(html[data-theme='dark']) .error-message,
+:host-context(html[data-theme='dark']) .error-feedback {
+  color: #f87171;
+}
+
+/* Modal de confirmación */
+:host-context(html[data-theme='dark']) .registration-modal {
+  border: 1px solid #475569;
+  background: #1e293b;
+  box-shadow: 0 18px 60px rgb(0 0 0 / 45%);
+}
+
+:host-context(html[data-theme='dark']) .registration-modal-heading h2 {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .registration-modal-heading p {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .registration-email-notice {
+  border-color: #166534 !important;
+  background: #14532d !important;
+  color: #bbf7d0 !important;
+}
+
+:host-context(html[data-theme='dark']) .tracking-code-panel {
+  background: #1e3a5f;
+}
+
+:host-context(html[data-theme='dark']) .tracking-code-label {
+  color: #93c5fd;
+}
+
+:host-context(html[data-theme='dark']) .tracking-code-information strong {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .tracking-copy-button {
+  background: #334155;
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .tracking-copy-button:hover {
+  background: #475569;
+}
+
+:host-context(html[data-theme='dark']) .registration-summary-row {
+  border-bottom-color: #475569;
+}
+
+:host-context(html[data-theme='dark']) .registration-summary-row > span {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .registration-summary-row > strong {
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .modal-action-outline {
+  border-color: #3996e8;
+  background: #1e293b;
+  color: #60a5fa;
+}
+
+:host-context(html[data-theme='dark']) .modal-action-outline:hover {
+  background: #334155;
+}
+
+:host-context(html[data-theme='dark']) .registration-modal-disclaimer {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .registration-modal-close {
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .registration-modal-close:hover {
+  background: #334155;
+}

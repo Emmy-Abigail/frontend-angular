@@ -1,3 +1,4 @@
+
 .login-wrapper {
   position: relative;
   min-height: 100vh;
@@ -20,6 +21,13 @@
   filter: blur(2px);
   transform: scale(1.03);
   z-index: 1;
+}
+
+.login-theme-toggle {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 3;
 }
 
 .login-card {
@@ -288,8 +296,93 @@
   color: #94a3b8;
 }
 
+/* Modo oscuro */
+:host-context(html[data-theme='dark']) .login-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.55);
+}
+
+:host-context(html[data-theme='dark']) .brand-badge {
+  background: #172554;
+  border-color: #1e40af;
+}
+
+:host-context(html[data-theme='dark']) .login-header h1 {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .login-header .subtitle {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .form-group label,
+:host-context(html[data-theme='dark']) .password-label-row label {
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .form-group input {
+  background: #0f172a;
+  border-color: #475569;
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .form-group input::placeholder {
+  color: #64748b;
+}
+
+:host-context(html[data-theme='dark']) .form-group input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+:host-context(html[data-theme='dark']) .toggle-eye {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .toggle-eye:hover {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .login-footer {
+  border-top-color: #334155;
+}
+
+:host-context(html[data-theme='dark']) .secure-badge {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .copyright-text {
+  color: #64748b;
+}
+
+:host-context(html[data-theme='dark']) .alert-danger {
+  background-color: #451a1a;
+  border-color: #7f1d1d;
+  color: #fecaca;
+}
+
+:host-context(html[data-theme='dark']) .alert-warning {
+  background-color: #422006;
+  border-color: #854d0e;
+  color: #fde68a;
+}
+
+:host-context(html[data-theme='dark']) .alert-dismiss {
+  color: inherit;
+}
+
 @media (max-width: 480px) {
   .login-card {
     padding: 28px 20px 22px;
+  }
+
+  .login-theme-toggle {
+    top: 12px;
+    right: 12px;
+  }
+
+  .login-wrapper {
+    padding: 60px 16px 24px;
   }
 }

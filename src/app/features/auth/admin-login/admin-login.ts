@@ -1,13 +1,14 @@
+
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../../core/services/auth';
-
 import { timeout } from 'rxjs';
+import { AuthService } from '../../../core/services/auth';
+import { ThemeToggle } from '../../../shared/theme-toggle/theme-toggle';
 
 @Component({
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, ThemeToggle],
   selector: 'app-admin-login',
   styleUrl: './admin-login.css',
   templateUrl: './admin-login.html',
@@ -31,20 +32,22 @@ export class AdminLogin implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.isOperadorLogin) {
-      sessionStorage.setItem('ultimo_login', 'operador');
-    } else {
-      sessionStorage.setItem('ultimo_login', 'admin');
-    }
+    sessionStorage.setItem(
+      'ultimo_login',
+      this.isOperadorLogin ? 'operador' : 'admin'
+    );
 
     this.route.queryParams.subscribe((params) => {
       this.cuentaDesactivada = params['desactivado'] === 'true';
-      this.sessionExpired = !this.cuentaDesactivada && params['sessionExpired'] === 'true';
+      this.sessionExpired =
+        !this.cuentaDesactivada && params['sessionExpired'] === 'true';
+
       this.cdr.markForCheck();
     });
 
-    // Si ya está autenticado, redirigir según rol
+    // Si ya existe una sesión, dirigir al portal correspondiente.
     const user = this.authService.currentUser();
+
     if (this.authService.isAuthenticated() && user) {
       this.redirectByRole(user.rol);
     }
@@ -76,33 +79,39 @@ export class AdminLogin implements OnInit {
           this.cargando = false;
           this.cdr.markForCheck();
 
-          // Restringir: conductores no deben ingresar por el portal administrativo
+          // Los conductores deben utilizar su propio portal.
           if (response.user.rol === 'CONDUCTOR') {
             this.authService.cerrarSesion();
-            this.error = 'Acceso denegado: los conductores deben iniciar sesión desde el Portal Conductor (/login/conductor).';
+            this.error =
+              'Acceso denegado: los conductores deben iniciar sesión desde el Portal Conductor (/login/conductor).';
             this.cdr.markForCheck();
             return;
           }
 
           if (response.user.debe_cambiar_password) {
             this.router.navigate(['/cambiar-contrasena']);
-          } else {
-            this.redirectByRole(response.user.rol);
+            return;
           }
+
+          this.redirectByRole(response.user.rol);
         },
         error: (err) => {
           this.cargando = false;
+
           if (err.name === 'TimeoutError') {
-            this.error = 'El servidor tardó demasiado en responder. Por favor intente nuevamente.';
+            this.error =
+              'El servidor tardó demasiado en responder. Por favor intente nuevamente.';
           } else if (err.status === 401) {
             this.error =
               'El correo electrónico o contraseña que ha proporcionado no son correctos. Inténtelo de nuevo.';
           } else if (err.status === 422) {
-            this.error = err.error?.message || 'Los datos ingresados no son válidos.';
+            this.error =
+              err.error?.message || 'Los datos ingresados no son válidos.';
           } else {
             this.error =
               'Ocurrió un error al conectar con el servidor. Verifique su conexión.';
           }
+
           this.cdr.markForCheck();
         },
       });
@@ -110,9 +119,10 @@ export class AdminLogin implements OnInit {
 
   private redirectByRole(rol: string): void {
     const roleUpper = (rol || '').toUpperCase();
+
     if (roleUpper === 'ADMINISTRADOR' || roleUpper === 'ADMIN') {
       this.router.navigate(['/admin/usuarios']);
-    } else if (roleUpper === 'OPERADOR' || roleUpper === 'ORGANIZADOR') {
+    } else if (roleUpper === 'OPERADOR') {
       this.router.navigate(['/operador']);
     } else if (roleUpper === 'CONDUCTOR' || roleUpper === 'CHOFER') {
       this.router.navigate(['/conductor/mis-lotes']);
