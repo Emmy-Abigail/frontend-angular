@@ -348,6 +348,52 @@
   border-top-color: #334155;
 }
 
+.recaptcha-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 14px 0 16px;
+  min-height: 78px;
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0 16px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.login-divider span {
+  padding: 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.google-login-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 6px;
+  min-height: 44px;
+}
+
+:host-context(html[data-theme='dark']) .login-divider {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .login-divider::before,
+:host-context(html[data-theme='dark']) .login-divider::after {
+  border-color: #334155;
+}
+
 :host-context(html[data-theme='dark']) .secure-badge {
   color: #94a3b8;
 }

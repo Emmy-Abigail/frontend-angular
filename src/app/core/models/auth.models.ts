@@ -26,6 +26,11 @@ export interface UserProfile {
 export interface LoginRequest {
   correo: string;
   password: string;
+  recaptcha_token?: string;
+}
+
+export interface GoogleLoginRequest {
+  id_token: string;
 }
 
 export interface LoginResponse {

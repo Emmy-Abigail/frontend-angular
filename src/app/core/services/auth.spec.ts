@@ -182,4 +182,54 @@ describe('AuthService: cambio de contraseña y sesión', () => {
     expect(session.request.headers.get('Authorization')).toBe('Bearer token-temporal');
     session.flush(null, { status: 204, statusText: 'No Content' });
   });
+
+  it('inicia sesión con Google correctamente guardando token y usuario', () => {
+    const googleResponse = {
+      token: 'jwt-google-valido',
+      token_type: 'Bearer',
+      expires_at: '2026-11-19T23:00:00-05:00',
+      user: {
+        id: 1,
+        nombres: 'Admin Google',
+        correo: 'admin@google.com',
+        rol: 'ADMINISTRADOR' as const,
+        debe_cambiar_password: false,
+      },
+    };
+
+    service.loginWithGoogle({ id_token: 'fake-google-id-token' }).subscribe((res) => {
+      expect(res.token).toBe('jwt-google-valido');
+    });
+
+    const req = http.expectOne(`${environment.apiUrl}/auth/google`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ id_token: 'fake-google-id-token' });
+    req.flush(googleResponse);
+
+    expect(service.token()).toBe('jwt-google-valido');
+    expect(service.currentUser()?.correo).toBe('admin@google.com');
+    expect(localStorage.getItem('token')).toBe('jwt-google-valido');
+  });
+
+  it('envía recaptcha_token en login normal cuando está presente', () => {
+    service.login({
+      correo: 'admin@email.com',
+      password: 'Password123@',
+      recaptcha_token: 'fake-recaptcha-response',
+    }).subscribe();
+
+    const req = http.expectOne(`${environment.apiUrl}/auth/login`);
+    expect(req.request.body.recaptcha_token).toBe('fake-recaptcha-response');
+    req.flush({
+      token: 'jwt-token',
+      token_type: 'Bearer',
+      expires_at: '2026-11-19T23:00:00-05:00',
+      user: {
+        id: 1,
+        nombres: 'Admin',
+        correo: 'admin@email.com',
+        rol: 'ADMINISTRADOR' as const,
+      },
+    });
+  });
 });

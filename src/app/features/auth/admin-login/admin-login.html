@@ -119,6 +119,11 @@
         </div>
       </div>
 
+      <!-- reCAPTCHA v2 -->
+      <div class="recaptcha-wrap">
+        <div id="recaptcha-admin"></div>
+      </div>
+
       <button type="submit" class="submit-btn" [disabled]="cargando">
         @if (cargando) {
           <span>Ingresando...</span>
@@ -130,6 +135,14 @@
           </svg>
         }
       </button>
+
+      <div class="login-divider">
+        <span>O ingresar con</span>
+      </div>
+
+      <div class="google-login-wrap">
+        <div id="google-btn-admin"></div>
+      </div>
 
     </form>
 

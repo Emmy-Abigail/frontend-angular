@@ -1,4 +1,3 @@
-
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -28,8 +27,7 @@ export class Cotizacion implements OnInit {
   sedes: Sede[] = [];
   departamentos: Department[] = [];
 
-  // Ambos campos contienen el ubigeo del distrito seleccionado.
-  origen = '';
+  idSede: number | '' = '';
   destino = '';
 
   peso: number | null = null;
@@ -148,8 +146,8 @@ export class Cotizacion implements OnInit {
     }
 
     switch (campo) {
-      case 'origen':
-        return !this.origen;
+      case 'idSede':
+        return !this.idSede;
       case 'destino':
         return !this.destino;
       case 'peso':
@@ -171,7 +169,7 @@ export class Cotizacion implements OnInit {
     this.resultado = null;
 
     if (
-      !this.origen ||
+      !this.idSede ||
       !this.destino ||
       !this.pesoValido ||
       !this.dimensionValida(this.largo) ||
@@ -187,32 +185,11 @@ export class Cotizacion implements OnInit {
       return;
     }
 
-    // Identificar la zona correspondiente al distrito de origen.
-    const distritoOrigen = this.distritos.find(
-      (distrito) => distrito.ubigeo === this.origen,
-    );
-
-    if (!distritoOrigen) {
-      this.error = 'No se encontró el distrito de origen seleccionado.';
-      return;
-    }
-
-    // Buscar una sede activa que represente la misma zona.
-    const sedeOrigen = this.sedes.find(
-      (sede) => sede.id_zona === distritoOrigen.id_zona,
-    );
-
-    if (!sedeOrigen) {
-      this.error =
-        'No hay una sede activa que represente la zona del distrito de origen.';
-      return;
-    }
-
     this.cargando = true;
 
     this.publicQuoteService
       .cotizar({
-        id_sede: sedeOrigen.id,
+        id_sede: Number(this.idSede),
         ubigeo_destino: this.destino,
         peso_kg: this.peso!,
         largo_cm: this.largo!,
@@ -227,11 +204,9 @@ export class Cotizacion implements OnInit {
         },
         error: (err) => {
           this.cargando = false;
-
           this.error =
             err?.error?.message ??
             'No fue posible calcular la cotización. Inténtalo nuevamente.';
-
           this.cdr.markForCheck();
         },
       });

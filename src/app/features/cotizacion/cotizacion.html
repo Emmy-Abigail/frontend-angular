@@ -20,27 +20,27 @@
       <div class="form-row route-row">
 
         <div class="form-group">
-          <label for="origen">Distrito de origen</label>
+          <label for="idSede">Sede donde dejarás tu paquete</label>
 
           <select
-            id="origen"
-            name="origen"
-            [(ngModel)]="origen"
+            id="idSede"
+            name="idSede"
+            [(ngModel)]="idSede"
             (ngModelChange)="limpiarResultado()"
-            (blur)="marcarTocado('origen')"
-            [disabled]="cargandoGeografia || !distritos.length"
+            (blur)="marcarTocado('idSede')"
+            [disabled]="cargandoSedes || !sedes.length"
           >
-            <option value="">Selecciona el origen</option>
+            <option value="">Selecciona la sede</option>
 
-            @for (distrito of distritos; track distrito.ubigeo) {
-              <option [value]="distrito.ubigeo">
-                {{ distrito.nombre_mostrado }}
+            @for (sede of sedes; track sede.id) {
+              <option [value]="sede.id">
+                {{ sede.nombre }} - {{ sede.distrito }}
               </option>
             }
           </select>
 
-          @if (mostrarError('origen')) {
-            <small class="field-error">Selecciona el distrito de origen.</small>
+          @if (mostrarError('idSede')) {
+            <small class="field-error">Selecciona la sede donde dejarás tu paquete.</small>
           }
         </div>
 

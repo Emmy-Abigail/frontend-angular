@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, defer, finalize, Observable, of, Subscription, switchMap, tap, timer } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ChangePasswordResponse, LoginRequest, LoginResponse, UserProfile } from '../models/auth.models';
+import { ChangePasswordResponse, GoogleLoginRequest, LoginRequest, LoginResponse, UserProfile } from '../models/auth.models';
 
 @Injectable({
   providedIn: 'root',
@@ -62,6 +62,29 @@ export class AuthService {
           this.tokenSignal.set(response.token);
           this.currentUserSignal.set(response.user);
           sessionStorage.setItem('temp_password', credentials.password);
+          this.startSessionPolling();
+        })
+      );
+  }
+
+  loginWithGoogle(payload: GoogleLoginRequest): Observable<LoginResponse> {
+    return this.http
+      .post<LoginResponse>(`${environment.apiUrl}/auth/google`, payload)
+      .pipe(
+        tap((response) => {
+          localStorage.setItem('token', response.token);
+          localStorage.setItem('user', JSON.stringify(response.user));
+          localStorage.setItem(
+            'sesion',
+            JSON.stringify({
+              rol: response.user.rol,
+              correo: response.user.correo,
+              nombres: response.user.nombres,
+            })
+          );
+
+          this.tokenSignal.set(response.token);
+          this.currentUserSignal.set(response.user);
           this.startSessionPolling();
         })
       );
