@@ -224,6 +224,41 @@
   color: #475569;
 }
 
+/* Refresh Button */
+.btn-actualizar-dashboard {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #2563EB;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-actualizar-dashboard:hover:not(:disabled) {
+  background-color: #F8FAFC;
+  border-color: #93C5FD;
+}
+
+.btn-actualizar-dashboard:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* Date Range Error Hint */
 .date-range-error-hint {
   font-size: 0.75rem;

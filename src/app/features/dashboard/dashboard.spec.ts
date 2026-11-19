@@ -276,4 +276,28 @@ describe('Dashboard Component (Admin y Operador)', () => {
     expect(component.operadoresFiltrados.length).toBe(1);
     expect(component.operadoresFiltrados[0].nombre).toBe('Lucía Vega');
   });
+
+  it('el botón Actualizar vuelve a consultar las métricas con los filtros actuales', async () => {
+    await setupComponent(mockOperadorUser);
+    fixture.detectChanges();
+
+    http.expectOne((req) => req.url === '/api/v1/dashboard/metrics').flush({ data: mockMetricsData });
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const btnActualizar = compiled.querySelector('.btn-actualizar-dashboard') as HTMLButtonElement;
+    expect(btnActualizar).not.toBeNull();
+
+    // Al hacer clic en Actualizar, se dispara una nueva consulta a /metrics
+    btnActualizar.click();
+    fixture.detectChanges();
+
+    const reqUpdate = http.expectOne((req) => req.url === '/api/v1/dashboard/metrics');
+    expect(reqUpdate.request.params.get('desde')).toBe(component.desde);
+    expect(reqUpdate.request.params.get('hasta')).toBe(component.hasta);
+    reqUpdate.flush({ data: mockMetricsData });
+    fixture.detectChanges();
+
+    expect(component.cargando).toBe(false);
+  });
 });

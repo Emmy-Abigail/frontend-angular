@@ -316,7 +316,7 @@
     </div>
 
     <!-- Formulario para corregir dirección cuando el paquete falló por dirección errónea -->
-    <div class="card-corregir-direccion" *ngIf="p.estado === 'FALLIDO' && requiereCorregirDireccion && !esRechazadoPorDestinatario">
+    <div class="card-corregir-direccion" *ngIf="p.estado === 'FALLIDO' && requiereCorregirDireccion && !esRechazadoPorDestinatario && !yaReasignado">
       <div class="alerta-direccion-requerida">
         <svg viewBox="0 0 24 24" class="icono-alerta-dir" aria-hidden="true">
           <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
@@ -437,14 +437,17 @@
       <p class="reassign-error" role="alert" *ngIf="errorReasignacion">
         {{ errorReasignacion }}
       </p>
-      <p class="reassign-max-reached" role="alert" *ngIf="reintentosRestantes !== null && reintentosRestantes <= 0" style="color: #991b1b; background: #fef2f2; border: 1px solid #fecaca; padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
+      <div *ngIf="yaReasignado" class="reassign-already-notice" style="color: #1e40af; background: #eff6ff; border: 1px solid #bfdbfe; padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
+        Este paquete ya fue reasignado<span *ngIf="reintentoTrackingId"> como <a [routerLink]="['/operador/consulta-paquetes', reintentoTrackingId]" style="font-weight: 700; color: #1d4ed8; text-decoration: underline;">{{ reintentoTrackingId }}</a></span>.
+      </div>
+      <p class="reassign-max-reached" role="alert" *ngIf="!yaReasignado && reintentosRestantes !== null && reintentosRestantes <= 0" style="color: #991b1b; background: #fef2f2; border: 1px solid #fecaca; padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
         Este envío ya alcanzó el máximo de 3 reintentos.
       </p>
       <button
         type="button"
         class="btn-reassign"
         (click)="solicitarReasignacion()"
-        [disabled]="cargando || reasignando || !p.id || paqueteReintentadoId === p.id || (requiereCorregirDireccion && !direccionGuardada) || (reintentosRestantes !== null && reintentosRestantes <= 0)"
+        [disabled]="cargando || reasignando || !p.id || paqueteReintentadoId === p.id || yaReasignado || (requiereCorregirDireccion && !direccionGuardada) || (reintentosRestantes !== null && reintentosRestantes <= 0)"
         [attr.aria-busy]="reasignando"
       >
         {{ reasignando ? 'Reasignando…' : 'Reasignar' }}

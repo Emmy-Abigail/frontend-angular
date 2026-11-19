@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { OperadorService } from '../../core/services/operador.service';
 import { CatalogService } from '../../core/services/catalog.service';
@@ -60,7 +60,7 @@ interface PaqueteDetalle {
 @Component({
   selector: 'app-detalle-paquete',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './detalle-paquete.html',
   styleUrl: './detalle-paquete.css',
 })
@@ -118,6 +118,8 @@ export class DetallePaquete {
   mostrarModalConfirmacionReasignar = false;
 
   requiereCorregirDireccion = false;
+  yaReasignado = false;
+  reintentoTrackingId: string | null = null;
   direccionGuardada = false;
   errorDireccion = '';
   mensajeDireccionGuardada = '';
@@ -282,6 +284,11 @@ export class DetallePaquete {
     if (!this.paquete?.id || this.paquete.estado !== 'FALLIDO' || this.cargando || this.reasignando || this.paqueteReintentadoId === this.paquete.id) {
       return;
     }
+    if (this.yaReasignado) {
+      this.errorReasignacion = 'Este paquete ya fue reasignado.';
+      this.cdr.markForCheck();
+      return;
+    }
     if (this.esRechazadoPorDestinatario) {
       this.errorReasignacion = 'Los paquetes rechazados por el destinatario no admiten reasignación.';
       this.cdr.markForCheck();
@@ -361,6 +368,9 @@ export class DetallePaquete {
     ).subscribe({
       next: (resultado) => {
         this.paqueteReintentadoId = paqueteId;
+        this.yaReasignado = true;
+        this.reintentoTrackingId = resultado.tracking_id ?? null;
+        this.requiereCorregirDireccion = false;
         this.mensajeReasignacion = `Reintento creado con tracking ${resultado.tracking_id}. Pendiente de despacho.`;
         void this.router.navigate(['/operador/consulta-paquetes', resultado.id]);
       },
@@ -521,10 +531,9 @@ export class DetallePaquete {
           }
 
           this.motivoFalloCodigo = motivoFalloCodigo;
-          this.requiereCorregirDireccion =
-            !!res.requiere_corregir_direccion ||
-            motivoFalloCodigo === 'DIRECCION_ERRONEA' ||
-            motivoFalloStr.toLowerCase().includes('direcci');
+          this.requiereCorregirDireccion = !!res.requiere_corregir_direccion;
+          this.yaReasignado = !!res.ya_reasignado;
+          this.reintentoTrackingId = res.reintento_tracking_id ?? null;
 
           // Cargar vista previa de la evidencia si existe
           if (tieneEvidencia && res.id) {

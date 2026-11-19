@@ -188,6 +188,7 @@ describe('Reasignación desde el detalle del paquete', () => {
       id: 17,
       tracking_id: 'FALLIDO17',
       estado: { codigo: 'FALLIDO' },
+      requiere_corregir_direccion: true,
       direccion: {
         tipo_via: 'Jr.',
         nombre_via: 'Baca Flor',
@@ -208,6 +209,26 @@ describe('Reasignación desde el detalle del paquete', () => {
     expect(fixture.componentInstance.requiereCorregirDireccion).toBe(true);
     expect(fixture.componentInstance.esRechazadoPorDestinatario).toBe(false);
     expect(boton()).not.toBeNull();
+    expect(boton().disabled).toBe(true);
+  });
+
+  it('muestra aviso y deshabilita reasignación cuando el paquete ya fue reasignado', () => {
+    params.next(convertToParamMap({ tracking: '18' }));
+    http.expectOne('/api/v1/packages/18').flush({
+      id: 18,
+      tracking_id: 'FALLIDO18',
+      estado: { codigo: 'FALLIDO' },
+      ya_reasignado: true,
+      reintento_tracking_id: 'NUEVO18',
+      reintentos_restantes: 0,
+      requiere_corregir_direccion: false,
+    });
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.yaReasignado).toBe(true);
+    expect(fixture.componentInstance.reintentoTrackingId).toBe('NUEVO18');
+    expect(fixture.nativeElement.textContent).toContain('Este paquete ya fue reasignado como NUEVO18');
+    expect(fixture.nativeElement.textContent).not.toContain('Este envío ya alcanzó el máximo de 3 reintentos');
     expect(boton().disabled).toBe(true);
   });
 });
