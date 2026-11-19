@@ -969,3 +969,294 @@
     grid-column: 1 / -1;
   }
 }
+
+
+/* =========================================
+   MODO OSCURO - DETALLE DE PAQUETE
+   ========================================= */
+
+:host-context(html[data-theme='dark']) {
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .detail-page {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .detail-heading h1 {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .breadcrumb-nav,
+:host-context(html[data-theme='dark']) .crumb-link {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .crumb-link:hover {
+  color: #60a5fa;
+}
+
+:host-context(html[data-theme='dark']) .crumb-current {
+  color: #f1f5f9;
+}
+
+/* Tarjetas */
+
+:host-context(html[data-theme='dark']) .information-card,
+:host-context(html[data-theme='dark']) .not-found-card,
+:host-context(html[data-theme='dark']) .card-corregir-direccion {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 12%);
+}
+
+:host-context(html[data-theme='dark']) .information-card h2 {
+  color: #f1f5f9;
+  border-bottom-color: #475569;
+}
+
+:host-context(html[data-theme='dark']) .information-row > span,
+:host-context(html[data-theme='dark']) .failed-observation > span {
+  color: #a5b4c7;
+}
+
+:host-context(html[data-theme='dark']) .information-row > strong,
+:host-context(html[data-theme='dark']) .information-row small,
+:host-context(html[data-theme='dark']) .failed-observation p {
+  color: #e2e8f0;
+}
+
+/* Entrega registrada */
+
+:host-context(html[data-theme='dark']) .delivery-card {
+  background: #1e293b;
+  border-color: #7c6bc4;
+}
+
+:host-context(html[data-theme='dark']) .evidence-preview {
+  background: #0f172a;
+}
+
+:host-context(html[data-theme='dark']) .delivery-comment > span,
+:host-context(html[data-theme='dark']) .delivery-comment p {
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .evidence-button {
+  background: #172f46;
+  border-color: #38bdf8;
+  color: #7dd3fc;
+}
+
+:host-context(html[data-theme='dark']) .evidence-button:hover {
+  background: #1e405d;
+}
+
+/* Entrega fallida */
+
+:host-context(html[data-theme='dark']) .failed-card {
+  border-color: #dc5555;
+}
+
+:host-context(html[data-theme='dark']) .failed-card h2 {
+  border-bottom-color: #475569;
+}
+
+/* Historial */
+
+:host-context(html[data-theme='dark']) .timeline-item:not(:last-child)::before {
+  background: #475569;
+}
+
+:host-context(html[data-theme='dark']) .timeline-marker > span {
+  background: #1e293b;
+  border-color: #64748b;
+  box-shadow: inset 0 0 0 3px #1e293b;
+}
+
+:host-context(html[data-theme='dark']) .timeline-content h3 {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .timeline-content p {
+  color: #a5b4c7;
+}
+
+:host-context(html[data-theme='dark']) .timeline-item.timeline-current .timeline-marker > span {
+  border-color: #38bdf8;
+  background: #38bdf8;
+  box-shadow: inset 0 0 0 3px #1e293b, 0 0 0 2px #164e63;
+}
+
+:host-context(html[data-theme='dark']) .timeline-item.timeline-current .timeline-content h3 {
+  color: #7dd3fc;
+}
+
+:host-context(html[data-theme='dark']) .timeline-item.timeline-complete .timeline-marker > span {
+  border-color: #64748b;
+  background: #64748b;
+  box-shadow: inset 0 0 0 3px #334155;
+}
+
+:host-context(html[data-theme='dark']) .timeline-item.timeline-complete .timeline-content h3 {
+  color: #94a3b8;
+}
+
+/* Mensajes de estado */
+
+:host-context(html[data-theme='dark']) .reassign-success {
+  background: #123b2b;
+  border: 1px solid #166534;
+  color: #86efac;
+}
+
+:host-context(html[data-theme='dark']) .reassign-error {
+  color: #fca5a5;
+}
+
+:host-context(html[data-theme='dark']) .reassign-max-reached {
+  background: #451a1a !important;
+  border-color: #991b1b !important;
+  color: #fecaca !important;
+}
+
+:host-context(html[data-theme='dark']) .reassign-rejected-notice {
+  background: #451a1a !important;
+  border-color: #991b1b !important;
+  color: #fecaca !important;
+}
+
+:host-context(html[data-theme='dark']) .mensaje-error-dir {
+  background: #451a1a;
+  border-color: #991b1b;
+  color: #fecaca;
+}
+
+:host-context(html[data-theme='dark']) .mensaje-exito-dir {
+  background: #123b2b;
+  border-color: #166534;
+  color: #86efac;
+}
+
+/* Corrección de dirección */
+
+:host-context(html[data-theme='dark']) .alerta-direccion-requerida {
+  background: #422b16;
+  border-color: #854d0e;
+}
+
+:host-context(html[data-theme='dark']) .alerta-direccion-requerida h4 {
+  color: #fdba74;
+}
+
+:host-context(html[data-theme='dark']) .alerta-direccion-requerida p {
+  color: #fed7aa;
+}
+
+:host-context(html[data-theme='dark']) .campo-corregir label {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .campo-corregir input,
+:host-context(html[data-theme='dark']) .campo-corregir select {
+  background: #0f172a;
+  border-color: #475569;
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .campo-corregir input::placeholder {
+  color: #64748b;
+}
+
+:host-context(html[data-theme='dark']) .campo-corregir input:focus,
+:host-context(html[data-theme='dark']) .campo-corregir select:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgb(56 189 248 / 12%);
+}
+
+/* Modal de evidencia */
+
+:host-context(html[data-theme='dark']) .evidence-modal-card,
+:host-context(html[data-theme='dark']) .reassign-modal-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .evidence-modal-header,
+:host-context(html[data-theme='dark']) .reassign-modal-header {
+  background: #1e293b;
+  border-bottom-color: #475569;
+}
+
+:host-context(html[data-theme='dark']) .evidence-modal-header h3,
+:host-context(html[data-theme='dark']) .reassign-modal-header h3 {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .close-btn {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .close-btn:hover {
+  color: #f87171;
+}
+
+:host-context(html[data-theme='dark']) .evidence-modal-body {
+  background: #0f172a;
+}
+
+:host-context(html[data-theme='dark']) .evidence-status-msg {
+  color: #cbd5e1;
+}
+
+/* Modal de reasignación */
+
+:host-context(html[data-theme='dark']) .reassign-modal-body {
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .reassign-modal-body .modal-subtexto {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .reassign-modal-footer {
+  background: #172338;
+  border-top-color: #334155;
+}
+
+:host-context(html[data-theme='dark']) .btn-cancelar-modal {
+  background: #1e293b;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .btn-cancelar-modal:hover:not(:disabled) {
+  background: #334155;
+}
+
+:host-context(html[data-theme='dark']) .modal-subtexto-dir {
+  background: #123b2b !important;
+  border-color: #166534 !important;
+  color: #bbf7d0 !important;
+}
+
+:host-context(html[data-theme='dark']) .modal-subtexto-dir strong,
+:host-context(html[data-theme='dark']) .modal-subtexto-dir div {
+  color: #bbf7d0 !important;
+}
+
+/* Paquete no encontrado */
+
+:host-context(html[data-theme='dark']) .not-found-card h2 {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .not-found-card p {
+  color: #94a3b8;
+}
+
+/* Nota: los estados de paquete mantienen sus colores
+   semánticos para distinguirlos en ambos temas. */

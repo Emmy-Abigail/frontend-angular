@@ -355,3 +355,116 @@
     padding: 16px 12px;
   }
 }
+
+/* =========================================
+   MODO OSCURO — LAYOUT DEL OPERADOR
+   ========================================= */
+
+:host-context(html[data-theme='dark']) {
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .operador-layout-container {
+  background: #0f172a;
+}
+
+/* Barra lateral */
+:host-context(html[data-theme='dark']) .operador-sidebar {
+  background: #1e293b;
+  border-right-color: #334155;
+}
+
+:host-context(html[data-theme='dark']) .sidebar-brand {
+  border-bottom-color: #334155;
+}
+
+:host-context(html[data-theme='dark']) .brand-name {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .brand-version {
+  color: #94a3b8;
+}
+
+/* Navegación */
+:host-context(html[data-theme='dark']) .nav-item {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .nav-item:hover {
+  color: #60a5fa;
+  background: #334155;
+}
+
+:host-context(html[data-theme='dark']) .nav-item.active {
+  color: #60a5fa;
+  background: #1e3a5f;
+}
+
+/* Usuario al pie */
+:host-context(html[data-theme='dark']) .sidebar-footer {
+  border-top-color: #334155;
+}
+
+:host-context(html[data-theme='dark']) .user-avatar,
+:host-context(html[data-theme='dark']) .topbar-avatar {
+  background: #1e3a5f;
+  color: #60a5fa;
+}
+
+:host-context(html[data-theme='dark']) .sidebar-user-name {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .sidebar-user-email {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .logout-icon {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .logout-icon:hover {
+  color: #f87171;
+  background: #451a1a;
+}
+
+/* Área principal y encabezado */
+:host-context(html[data-theme='dark']) .operador-main {
+  background: #0f172a;
+}
+
+:host-context(html[data-theme='dark']) .operador-topbar {
+  background: #1e293b;
+  border-bottom-color: #334155;
+}
+
+:host-context(html[data-theme='dark']) .breadcrumb {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .topbar-user-name {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .topbar-user-role {
+  color: #94a3b8;
+}
+
+/* Botón cerrar sesión */
+:host-context(html[data-theme='dark']) .logout-button {
+  background: #1e293b;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .logout-button:hover {
+  color: #f87171;
+  border-color: #7f1d1d;
+  background: #334155;
+}
+
+/* Contenido */
+:host-context(html[data-theme='dark']) .operador-page-body {
+  background: #0f172a;
+}

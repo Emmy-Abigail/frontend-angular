@@ -1,6 +1,9 @@
+
 <section class="login-wrapper">
 
   <div class="login-backdrop"></div>
+
+  <app-theme-toggle class="login-theme-toggle" />
 
   <div class="login-card">
 
@@ -19,7 +22,6 @@
       <p class="subtitle">GESTIÓN DE ENVÍOS V1.0</p>
     </div>
 
-    <!-- Alerta de Credenciales Incorrectas (Visily pág 34) -->
     @if (error) {
       <div class="visily-alert alert-danger">
         <button type="button" class="alert-dismiss" (click)="error = ''" aria-label="Cerrar">×</button>
@@ -30,7 +32,6 @@
       </div>
     }
 
-    <!-- Alerta de Sesión Expirada (Visily pág 35) -->
     @if (cuentaDesactivada) {
       <div class="visily-alert alert-warning">
         <button type="button" class="alert-dismiss" (click)="cuentaDesactivada = false" aria-label="Cerrar">×</button>
@@ -141,7 +142,6 @@
       </div>
 
       <p class="copyright-text">
-        © 2026 RIVA Todos los derechos reservados.<br>
         Acceso restringido únicamente a personal autorizado.
       </p>
     </div>

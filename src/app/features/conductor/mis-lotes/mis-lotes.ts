@@ -1,3 +1,4 @@
+
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -5,6 +6,7 @@ import {
   EstadoLoteConductor,
   LotesConductorService,
 } from '../../../core/services/lotes-conductor';
+import { ThemeToggle } from '../../../shared/theme-toggle/theme-toggle';
 
 type FiltroLotes = 'TODOS' | 'ASIGNADO' | 'EN_RUTA';
 
@@ -22,7 +24,7 @@ interface LoteConductor {
 @Component({
   selector: 'app-mis-lotes',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ThemeToggle],
   templateUrl: './mis-lotes.html',
   styleUrl: './mis-lotes.css',
 })

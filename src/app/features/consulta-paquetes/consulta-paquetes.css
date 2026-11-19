@@ -923,3 +923,215 @@ td {
     flex-direction: column;
   }
 }
+
+/* =========================================
+   MODO OSCURO — CONSULTA DE PAQUETES
+   ========================================= */
+
+:host-context(html[data-theme='dark']) {
+  color: #e2e8f0;
+}
+
+/* Fondo y encabezados */
+:host-context(html[data-theme='dark']) .admin-layout-container {
+  background: #0f172a;
+}
+
+:host-context(html[data-theme='dark']) .page-heading h1 {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .page-heading p {
+  color: #94a3b8;
+}
+
+/* Botón actualizar */
+:host-context(html[data-theme='dark']) .refresh-button {
+  border-color: #3996e8;
+  background: #1e293b;
+  color: #60a5fa;
+}
+
+:host-context(html[data-theme='dark']) .refresh-button:hover {
+  background: #334155;
+}
+
+/* Filtros */
+:host-context(html[data-theme='dark']) .filter-field label {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .filter-field input,
+:host-context(html[data-theme='dark']) .filter-field select {
+  border-color: #475569;
+  background: #0f172a;
+  color: #e2e8f0;
+  color-scheme: dark;
+}
+
+:host-context(html[data-theme='dark']) .filter-field input::placeholder {
+  color: #64748b;
+}
+
+:host-context(html[data-theme='dark']) .filter-field input:focus,
+:host-context(html[data-theme='dark']) .filter-field select:focus {
+  border-color: #3996e8;
+  box-shadow: 0 0 0 2px rgb(57 150 232 / 18%);
+}
+
+/* Tabla */
+:host-context(html[data-theme='dark']) .table-container {
+  border-color: #475569;
+  background: #1e293b;
+}
+
+:host-context(html[data-theme='dark']) thead {
+  background: #334155;
+}
+
+:host-context(html[data-theme='dark']) th,
+:host-context(html[data-theme='dark']) td {
+  border-right-color: #475569;
+  border-bottom-color: #475569;
+}
+
+:host-context(html[data-theme='dark']) th {
+  background: #263449;
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) td {
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .tracking-cell {
+  color: #60a5fa;
+}
+
+:host-context(html[data-theme='dark']) .lot-cell,
+:host-context(html[data-theme='dark']) .date-cell {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) tbody tr {
+  background: #1e293b;
+}
+
+:host-context(html[data-theme='dark']) tbody tr:hover {
+  background: #263449;
+}
+
+/* Estados */
+:host-context(html[data-theme='dark']) .status-route {
+  background: #14532d;
+  color: #86efac;
+}
+
+:host-context(html[data-theme='dark']) .status-warehouse {
+  background: #7c2d12;
+  color: #fdba74;
+}
+
+:host-context(html[data-theme='dark']) .status-delivered {
+  background: #713f12;
+  color: #fde68a;
+}
+
+:host-context(html[data-theme='dark']) .status-assigned {
+  background: #1e3a5f;
+  color: #93c5fd;
+}
+
+:host-context(html[data-theme='dark']) .status-failed {
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+/* Detalle */
+:host-context(html[data-theme='dark']) .detail-link {
+  color: #60a5fa;
+}
+
+:host-context(html[data-theme='dark']) .detail-link:hover {
+  color: #93c5fd;
+}
+
+/* Sin resultados */
+:host-context(html[data-theme='dark']) .empty-state {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .empty-state strong {
+  color: #e2e8f0;
+}
+
+/* Pie y paginación */
+:host-context(html[data-theme='dark']) .table-footer p {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .table-footer p strong {
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme='dark']) .page-button {
+  border-color: #475569;
+  background: #1e293b;
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .page-button:hover:not(:disabled) {
+  border-color: #60a5fa;
+  background: #334155;
+}
+
+:host-context(html[data-theme='dark']) .page-button.current-page {
+  border-color: #3289ed;
+  background: #3289ed;
+  color: #fff;
+}
+
+:host-context(html[data-theme='dark']) .page-button:disabled {
+  color: #64748b;
+}
+
+/* Modal */
+:host-context(html[data-theme='dark']) .detail-overlay {
+  background: rgb(2 6 23 / 70%);
+}
+
+:host-context(html[data-theme='dark']) .detail-modal {
+  border-color: #475569;
+  background: #1e293b;
+  box-shadow: 0 18px 60px rgb(0 0 0 / 45%);
+}
+
+:host-context(html[data-theme='dark']) .detail-close {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .detail-close:hover {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .detail-modal h2 {
+  color: #f1f5f9;
+}
+
+:host-context(html[data-theme='dark']) .detail-tracking {
+  color: #60a5fa;
+}
+
+:host-context(html[data-theme='dark']) .detail-status-row {
+  border-top-color: #475569;
+  border-bottom-color: #475569;
+  color: #cbd5e1;
+}
+
+:host-context(html[data-theme='dark']) .detail-grid span {
+  color: #94a3b8;
+}
+
+:host-context(html[data-theme='dark']) .detail-grid strong {
+  color: #e2e8f0;
+}

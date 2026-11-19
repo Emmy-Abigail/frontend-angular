@@ -1,4 +1,3 @@
-
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import {
@@ -8,6 +7,7 @@ import {
   RouterOutlet
 } from '@angular/router';
 import { AuthService } from '../../core/services/auth';
+import { ThemeToggle } from '../../shared/theme-toggle/theme-toggle';
 
 @Component({
   selector: 'app-operador-layout',
@@ -16,7 +16,8 @@ import { AuthService } from '../../core/services/auth';
     CommonModule,
     RouterLink,
     RouterLinkActive,
-    RouterOutlet
+    RouterOutlet,
+    ThemeToggle
   ],
   templateUrl: './operador-layout.html',
   styleUrl: './operador-layout.css',
