@@ -432,7 +432,7 @@
                   </td>
                   <td>{{ f.destino }}</td>
                   <td>{{ f.motivo }}</td>
-                  <td class="text-right">{{ f.fecha }}</td>
+                  <td class="text-right">{{ formatearFechaHora(f.fecha) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -841,7 +841,7 @@
                 </td>
                 <td>{{ f.destino }}</td>
                 <td>{{ f.motivo }}</td>
-                <td>{{ f.fecha_fallo }}</td>
+                <td>{{ formatearFechaHora(f.fecha_fallo) }}</td>
               </tr>
 
               <tr *ngIf="fallidosList.length === 0">

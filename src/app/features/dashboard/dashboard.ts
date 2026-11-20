@@ -113,6 +113,38 @@ export class Dashboard implements OnInit {
     return iso;
   }
 
+  formatearFechaHora(valor: string | null | undefined): string {
+    if (!valor) return '—';
+
+    const fecha = new Date(valor);
+
+    if (Number.isNaN(fecha.getTime())) {
+      return '—';
+    }
+
+    const partes = new Intl.DateTimeFormat('es-PE', {
+      timeZone: 'America/Lima',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    }).formatToParts(fecha);
+
+    const obtener = (tipo: string): string =>
+      partes.find((parte) => parte.type === tipo)?.value ?? '';
+
+    const dia = obtener('day');
+    const mes = obtener('month');
+    const anio = obtener('year');
+    const hora = obtener('hour');
+    const minuto = obtener('minute');
+    const periodo = obtener('dayPeriod');
+
+    return `${dia}/${mes}/${anio} ${hora}:${minuto} ${periodo}`;
+  }
+
   inicializarFechas(periodo: PeriodoFiltro): void {
     this.periodoSeleccionado = periodo;
     const hoy = this.getFechaLimaActual();
