@@ -28,6 +28,7 @@ export interface DashboardSedeRanking {
   id_sede: number;
   nombre_sede: string;
   paquetes_registrados: number;
+  entregas_exitosas_qty: number;
   entregas_exitosas_pct: number | null;
   fallidos_qty: number;
   tiempo_promedio_horas: number | null;

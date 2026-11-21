@@ -362,9 +362,12 @@
               </td>
               <td>{{ s.paquetes_registrados | number }}</td>
               <td>
-                <span *ngIf="s.datos_insuficientes" class="badge-insuficiente">Datos insuficientes</span>
-                <span *ngIf="!s.datos_insuficientes">
-                  {{ s.entregas_exitosas_pct !== null ? s.entregas_exitosas_pct + '%' : '—' }}
+                <span>
+                  {{ s.entregas_exitosas_qty | number }}
+                  ({{ s.entregas_exitosas_pct !== null ? (s.entregas_exitosas_pct | number:'1.1-1') + '%' : '—' }})
+                </span>
+                <span *ngIf="s.datos_insuficientes" class="badge-insuficiente">
+                  Datos insuficientes
                 </span>
               </td>
               <td>{{ s.fallidos_qty | number }}</td>
