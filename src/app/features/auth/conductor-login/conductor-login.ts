@@ -2,6 +2,7 @@ import { AfterViewInit, ChangeDetectorRef, Component, inject, OnInit } from '@an
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { timeout } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth';
 import { RecaptchaService } from '../../../core/services/recaptcha.service';
 import { ThemeToggle } from '../../../shared/theme-toggle/theme-toggle';
@@ -51,6 +52,34 @@ export class ConductorLogin implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.iniciarRecaptcha();
+    this.iniciarGoogleSignIn();
+  }
+
+  private iniciarGoogleSignIn(): void {
+    const initGsi = () => {
+      const google = (window as any).google;
+      const container = document.getElementById('google-btn-conductor');
+      if (google?.accounts?.id && container) {
+        container.innerHTML = '';
+        google.accounts.id.initialize({
+          client_id: environment.googleClientId,
+          callback: (response: { credential: string }) => {
+            this.iniciarSesionConGoogle(response.credential);
+          },
+        });
+        google.accounts.id.renderButton(container, {
+          theme: 'outline',
+          size: 'large',
+          width: 320,
+          text: 'continue_with',
+          shape: 'rectangular',
+          locale: 'es',
+        });
+      } else {
+        setTimeout(initGsi, 200);
+      }
+    };
+    initGsi();
   }
 
   private iniciarRecaptcha(): void {
@@ -148,6 +177,61 @@ export class ConductorLogin implements OnInit, AfterViewInit {
             this.recaptchaToken = '';
           } else {
             this.error = 'Ocurrió un error al conectar con el servidor.';
+          }
+
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  iniciarSesionConGoogle(idToken: string): void {
+    if (!idToken) return;
+
+    this.cargando = true;
+    this.error = '';
+    this.sessionExpired = false;
+    this.cuentaDesactivada = false;
+
+    this.authService
+      .loginWithGoogle({ id_token: idToken })
+      .pipe(timeout(10000))
+      .subscribe({
+        next: (response) => {
+          this.cargando = false;
+          this.cdr.markForCheck();
+
+          if (response.user.rol !== 'CONDUCTOR') {
+            this.authService.cerrarSesion();
+            this.error =
+              'Acceso denegado: este portal es exclusivo para conductores. Administradores y operadores deben ingresar por el portal administrativo (/login/admin).';
+            this.cdr.markForCheck();
+            return;
+          }
+
+          if (response.user.debe_cambiar_password) {
+            this.router.navigate(['/cambiar-contrasena']);
+          } else {
+            this.router.navigate(['/conductor/mis-lotes']);
+          }
+        },
+        error: (err) => {
+          this.cargando = false;
+          const errCode = err.error?.error;
+
+          if (err.name === 'TimeoutError') {
+            this.error =
+              'El servidor tardó demasiado en responder al verificar con Google. Intente nuevamente.';
+          } else if (err.status === 429) {
+            this.error = err.error?.message;
+          } else if (errCode === 'cuenta_no_registrada') {
+            this.error = 'Tu cuenta de Google no está registrada en el sistema.';
+          } else if (errCode === 'google_token_invalido') {
+            this.error = 'El inicio de sesión con Google no es válido o expiró. Intenta de nuevo.';
+          } else if (errCode === 'google_no_disponible' || err.status === 503) {
+            this.error = 'El servicio de Google no está disponible temporalmente. Intenta más tarde.';
+          } else {
+            this.error =
+              err.error?.message || 'Ocurrió un error al iniciar sesión con Google.';
           }
 
           this.cdr.markForCheck();

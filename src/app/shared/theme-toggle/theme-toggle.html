@@ -1,15 +1,52 @@
-
 <button
   type="button"
   class="theme-toggle"
+  [class.dark]="theme() === 'dark'"
   (click)="toggleTheme()"
   [attr.aria-label]="theme() === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'"
   [attr.title]="theme() === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'"
   [attr.aria-pressed]="theme() === 'dark'"
 >
-  @if (theme() === 'dark') {
-    <span class="theme-emoji" aria-hidden="true">☀️</span>
-  } @else {
-    <span class="theme-emoji" aria-hidden="true">🌙</span>
-  }
+  <!-- Botón deslizador (Thumb) con icono activo -->
+  <span class="toggle-thumb" aria-hidden="true">
+    @if (theme() === 'dark') {
+      <svg class="thumb-icon moon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    } @else {
+      <svg class="thumb-icon sun" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4.5"></circle>
+        <line x1="12" y1="1.5" x2="12" y2="4.5"></line>
+        <line x1="12" y1="19.5" x2="12" y2="22.5"></line>
+        <line x1="1.5" y1="12" x2="4.5" y2="12"></line>
+        <line x1="19.5" y1="12" x2="22.5" y2="12"></line>
+        <line x1="4.5" y1="4.5" x2="6.6" y2="6.6"></line>
+        <line x1="17.4" y1="17.4" x2="19.5" y2="19.5"></line>
+        <line x1="4.5" y1="19.5" x2="6.6" y2="17.4"></line>
+        <line x1="17.4" y1="6.6" x2="19.5" y2="4.5"></line>
+      </svg>
+    }
+  </span>
+
+  <!-- Iconos de pista (inactivos / contraste) -->
+  <span class="track-icons" aria-hidden="true">
+    <span class="track-icon-slot slot-sun">
+      <svg class="track-icon sun" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4.5"></circle>
+        <line x1="12" y1="1.5" x2="12" y2="4.5"></line>
+        <line x1="12" y1="19.5" x2="12" y2="22.5"></line>
+        <line x1="1.5" y1="12" x2="4.5" y2="12"></line>
+        <line x1="19.5" y1="12" x2="22.5" y2="12"></line>
+        <line x1="4.5" y1="4.5" x2="6.6" y2="6.6"></line>
+        <line x1="17.4" y1="17.4" x2="19.5" y2="19.5"></line>
+        <line x1="4.5" y1="19.5" x2="6.6" y2="17.4"></line>
+        <line x1="17.4" y1="6.6" x2="19.5" y2="4.5"></line>
+      </svg>
+    </span>
+    <span class="track-icon-slot slot-moon">
+      <svg class="track-icon moon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </span>
+  </span>
 </button>

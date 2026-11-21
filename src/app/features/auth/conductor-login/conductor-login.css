@@ -301,6 +301,40 @@
 }
 
 /* =========================================
+   LOGIN CON GOOGLE & DIVISOR
+   ========================================= */
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 18px 0 14px;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #333c4d;
+}
+
+.login-divider span {
+  padding: 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.google-login-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 6px;
+  min-height: 44px;
+}
+
+/* =========================================
    FOOTER
    ========================================= */
 
@@ -404,6 +438,15 @@
 
 :host-context(html[data-theme='light']) .status-bar {
   color: #64748b;
+}
+
+:host-context(html[data-theme='light']) .login-divider {
+  color: #64748b;
+}
+
+:host-context(html[data-theme='light']) .login-divider::before,
+:host-context(html[data-theme='light']) .login-divider::after {
+  border-color: #dce4ef;
 }
 
 /* =========================================
