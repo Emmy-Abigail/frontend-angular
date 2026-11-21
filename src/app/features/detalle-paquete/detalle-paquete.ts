@@ -236,8 +236,9 @@ export class DetallePaquete {
     this.mensajeDireccionGuardada = '';
 
     const nombreVia = this.formDireccion.nombre_via.trim();
-    if (!nombreVia) {
-      this.errorDireccion = 'El nombre de la vía es obligatorio.';
+    const alfanumericos = nombreVia.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g, '');
+    if (!nombreVia || nombreVia.length < 3 || /^[-_.\s/\\,;#]+$/.test(nombreVia) || alfanumericos.length < 2) {
+      this.errorDireccion = 'Ingresa un nombre de vía o dirección válido (mínimo 3 caracteres).';
       this.cdr.markForCheck();
       return;
     }

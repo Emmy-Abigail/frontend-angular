@@ -104,4 +104,89 @@ describe('Operador Component - Factor de Zona y Cotización', () => {
     // El factor de zona debe seguir siendo 1.2 acorde al distrito seleccionado
     expect(component.factorZona).toBe(1.2);
   });
+
+  it('rechaza nombres de vía inválidos o que contengan solo guiones', () => {
+    expect(component.nombreViaValido('-')).toBe(false);
+    expect(component.nombreViaValido('--')).toBe(false);
+    expect(component.nombreViaValido(' - - ')).toBe(false);
+    expect(component.nombreViaValido('---')).toBe(false);
+    expect(component.nombreViaValido('..')).toBe(false);
+    expect(component.nombreViaValido('Av')).toBe(false);
+
+    expect(component.nombreViaValido('Av. Arequipa')).toBe(true);
+    expect(component.nombreViaValido('Calle 2')).toBe(true);
+    expect(component.nombreViaValido('Sol')).toBe(true);
+  });
+
+  it('valida que el punto de entrega en el mapa sea obligatorio y se ubique en Lima/Callao', () => {
+    component.punto = null;
+    expect(component.puntoMapaValido).toBe(false);
+    expect(component.errores['puntoMapa']).toBe(true);
+
+    // Fuera de límites
+    component.punto = { lat: 40.7128, lng: -74.0060 }; // New York
+    expect(component.puntoMapaValido).toBe(false);
+
+    // Dentro de Lima / Callao
+    component.punto = { lat: -12.0464, lng: -77.0428 };
+    expect(component.puntoMapaValido).toBe(true);
+    expect(component.errores['puntoMapa']).toBe(false);
+  });
+
+  it('no permite registrar el paquete si el nombre de vía es "-" o si falta el punto en el mapa', () => {
+    operadorServiceSpy.registrarPaquete = vi.fn().mockReturnValue(of({ tracking_id: 'RIVA-TEST-123' }));
+
+    // Configurar campos válidos
+    component.remitente = {
+      documento: '12345678',
+      nombre: 'Remitente Valido',
+      celular: '987654321',
+      correo: 'remitente@riva.pe',
+    };
+    component.destinatario = {
+      dni: '87654321',
+      nombre: 'Destinatario Valido',
+      celular: '912345678',
+      correo: 'destinatario@riva.pe',
+    };
+    component.direccion = {
+      departamento: 'Lima',
+      provincia: 'Lima',
+      distrito: '150101',
+      tipoVia: 'Av.',
+      nombreVia: '-', // Invalido
+      numero: '-', // Permitido guion si no hay numero
+      manzana: '',
+      lote: '',
+      referencia: '',
+    };
+    component.paquete = {
+      pesoReal: 2,
+      largo: 20,
+      ancho: 20,
+      alto: 20,
+    };
+    component.punto = null; // Falta punto
+
+    component.registrarPaquete();
+
+    // No debe llamar al servicio porque el formulario es inválido
+    expect(operadorServiceSpy.registrarPaquete).not.toHaveBeenCalled();
+    expect(component.errores['nombreVia']).toBe(true);
+    expect(component.errores['puntoMapa']).toBe(true);
+
+    // Corregir nombre de vía y marcar punto en el mapa
+    component.direccion.nombreVia = 'Av. Los Próceres';
+    component.punto = { lat: -12.0464, lng: -77.0428 };
+
+    component.registrarPaquete();
+
+    // Ahora sí debe enviar el registro incluyendo latitud y longitud
+    expect(operadorServiceSpy.registrarPaquete).toHaveBeenCalledTimes(1);
+    const payload = operadorServiceSpy.registrarPaquete.mock.calls[0][0];
+    expect(payload.direccion.nombre_via).toBe('Av. Los Próceres');
+    expect(payload.direccion.numero).toBe('-');
+    expect(payload.direccion.lat).toBe(-12.0464);
+    expect(payload.direccion.lng).toBe(-77.0428);
+  });
 });

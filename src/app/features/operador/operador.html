@@ -292,7 +292,7 @@
           </ul>
 
           <small class="error-message" *ngIf="mostrarError('nombreVia')">
-            Este campo es obligatorio.
+            {{ obtenerMensajeError('nombreVia', 'Ingresa un nombre de vía o dirección válido (mínimo 3 caracteres).') }}
           </small>
         </div>
 
@@ -356,14 +356,22 @@
 
         <!-- Punto en el mapa (Leaflet + OpenStreetMap) -->
         <div class="field" style="grid-column: 1 / -1; margin-top: 14px;">
-          <label style="font-weight: 600;">Punto exacto de entrega en el mapa</label>
+          <label style="font-weight: 600;">
+            Punto exacto de entrega en el mapa <span style="color: #dc2626;">*</span>
+          </label>
           <p style="font-size: 11px; color: #64748b; margin: 2px 0 8px;">Haz clic en el mapa para marcar el punto exacto de entrega (puedes arrastrar el marcador).</p>
-          <div id="mapa-entrega" style="height: 300px; width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; z-index: 1;"></div>
+          <div id="mapa-entrega"
+               [style.border-color]="mostrarError('puntoMapa') ? '#dc2626' : '#cbd5e1'"
+               [style.box-shadow]="mostrarError('puntoMapa') ? '0 0 0 1px #dc2626' : 'none'"
+               style="height: 300px; width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; z-index: 1; transition: border-color 0.2s, box-shadow 0.2s;"></div>
           <small *ngIf="geocodificandoPunto" style="display: block; margin-top: 6px; color: #0284c7; font-weight: 500;">
             Obteniendo dirección del punto seleccionado...
           </small>
           <small *ngIf="punto" style="display: block; margin-top: 6px; color: #0284c7; font-weight: 600;">
             Punto: {{ punto.lat | number:'1.6-6' }}, {{ punto.lng | number:'1.6-6' }}
+          </small>
+          <small class="error-message" *ngIf="mostrarError('puntoMapa')" style="display: block; margin-top: 6px;">
+            {{ obtenerMensajeError('puntoMapa', 'Debes seleccionar el punto exacto de entrega en el mapa (latitud y longitud obligatorias).') }}
           </small>
         </div>
       </div>

@@ -162,6 +162,7 @@ export class Operador implements OnInit, AfterViewInit {
 
   moverMarcadorYCentrar(lat: number, lng: number, zoom = 17): void {
     this.punto = { lat, lng };
+    this.marcarTocado('puntoMapa');
     if (this.mapa) {
       this.mapa.setView([lat, lng], zoom);
       if (!this.marcador) {
@@ -190,6 +191,7 @@ export class Operador implements OnInit, AfterViewInit {
 
   actualizarPuntoEnMapa(lat: number, lng: number): void {
     this.punto = { lat, lng };
+    this.marcarTocado('puntoMapa');
     this.geocodificandoPunto = true;
     this.operadorService.geocodificarInverso(lat, lng).subscribe({
       next: (res) => {
@@ -875,6 +877,37 @@ export class Operador implements OnInit, AfterViewInit {
     return trim.length >= 2 && /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(trim);
   }
 
+  // Validación de nombre de vía o dirección obligatoria y válida
+  nombreViaValido(via: string): boolean {
+    const trim = (via || '').trim();
+    if (trim.length < 3) {
+      return false;
+    }
+    // No puede ser solo guiones, puntos, barras o símbolos
+    if (/^[-_.\s/\\,;#]+$/.test(trim)) {
+      return false;
+    }
+    // Debe contener al menos 2 caracteres alfanuméricos válidos
+    const alfanumericos = trim.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g, '');
+    return alfanumericos.length >= 2;
+  }
+
+  // Validación de punto exacto de entrega en el mapa (Leaflet)
+  get puntoMapaValido(): boolean {
+    if (!this.punto || typeof this.punto.lat !== 'number' || typeof this.punto.lng !== 'number') {
+      return false;
+    }
+    const { lat, lng } = this.punto;
+    return (
+      !isNaN(lat) &&
+      !isNaN(lng) &&
+      lat >= -12.60 &&
+      lat <= -11.50 &&
+      lng >= -77.30 &&
+      lng <= -76.55
+    );
+  }
+
   // Validación del DNI o RUC del remitente
   get documentoRemitenteValido(): boolean {
     const documento = this.remitente.documento.trim();
@@ -941,10 +974,11 @@ export class Operador implements OnInit, AfterViewInit {
 
       distrito: !this.direccion.distrito,
       tipoVia: !this.direccion.tipoVia,
-      nombreVia: !this.direccion.nombreVia.trim(),
+      nombreVia: !this.nombreViaValido(this.direccion.nombreVia),
       numero: !tieneNumero && !tieneManzana,
       manzana: !tieneNumero && !tieneManzana,
       lote: tieneManzana && !tieneLote,
+      puntoMapa: !this.puntoMapaValido,
 
       pesoReal: !this.pesoRealValido(),
       largo: !this.dimensionValida(this.paquete.largo),
@@ -963,6 +997,17 @@ export class Operador implements OnInit, AfterViewInit {
     if (this.erroresServidor[campo]) {
       return true;
     }
+    if (
+      campo === 'puntoMapa' &&
+      (this.erroresServidor['direccion.lat'] ||
+        this.erroresServidor['direccion.lng'] ||
+        this.erroresServidor['direccion.coordenadas'])
+    ) {
+      return true;
+    }
+    if (campo === 'nombreVia' && this.erroresServidor['direccion.nombre_via']) {
+      return true;
+    }
     return (
       (this.enviado || this.camposTocados.has(campo)) &&
       this.errores[campo] === true
@@ -970,6 +1015,22 @@ export class Operador implements OnInit, AfterViewInit {
   }
 
   obtenerMensajeError(campo: string, defaultMsg: string): string {
+    if (campo === 'puntoMapa') {
+      return (
+        this.erroresServidor['direccion.lat'] ||
+        this.erroresServidor['direccion.lng'] ||
+        this.erroresServidor['direccion.coordenadas'] ||
+        this.erroresServidor['puntoMapa'] ||
+        defaultMsg
+      );
+    }
+    if (campo === 'nombreVia') {
+      return (
+        this.erroresServidor['direccion.nombre_via'] ||
+        this.erroresServidor['nombreVia'] ||
+        defaultMsg
+      );
+    }
     return this.erroresServidor[campo] || defaultMsg;
   }
 
