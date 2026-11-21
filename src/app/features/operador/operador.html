@@ -213,7 +213,8 @@
             id="distrito"
             name="distrito"
             [(ngModel)]="direccion.distrito"
-            (change)="marcarTocado('distrito')"
+            (ngModelChange)="onDistritoChange()"
+            (change)="onDistritoChange(); marcarTocado('distrito')"
             (blur)="marcarTocado('distrito')">
             <option value="">Seleccionar distrito</option>
 
